@@ -421,7 +421,7 @@ textarea {
   .sidebar-drafts button,
   .sidebar-drafts label {
     width: auto !important;
-    min-height: 42px;
+    min-height: 44px;
     white-space: nowrap;
   }
 
@@ -513,7 +513,7 @@ textarea {
 
   .section-body button,
   .section-navigation button {
-    min-height: 42px;
+    min-height: 44px;
     white-space: normal;
   }
 
@@ -546,7 +546,7 @@ textarea {
 
   .report-toolbar button {
     flex: 1 1 135px;
-    min-height: 42px;
+    min-height: 44px;
     padding: 8px 10px !important;
   }
 
