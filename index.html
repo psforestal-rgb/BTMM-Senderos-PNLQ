@@ -1534,10 +1534,10 @@ var SINAC_STAFF = [
 // Grupo 3
 'Yolanda Elizondo', 'Mariano Solis', 'Guillermo Perez', 'Carlos Cordero'];
 var SecB = function SecB() {
-  var mkRow = function mkRow() {
+  var mkRow = function mkRow(fecha) {
     return {
       id: Math.random(),
-      fecha: '',
+      fecha: fecha || TODAY,
       nombre: '',
       tipo: 'funcionario',
       ini: '08:00',
@@ -1546,13 +1546,31 @@ var SecB = function SecB() {
     };
   };
   var _useState13 = useState(function () {
-      return Array.from({
-        length: 6
-      }, mkRow);
+      return [];
     }),
     _useState14 = _slicedToArray(_useState13, 2),
     rows = _useState14[0],
     setRows = _useState14[1];
+  var _useStateDias = useState([]),
+    _useStateDias2 = _slicedToArray(_useStateDias, 2),
+    dias = _useStateDias2[0],
+    setDias = _useStateDias2[1];
+  var _useStateFechaNueva = useState(TODAY),
+    _useStateFechaNueva2 = _slicedToArray(_useStateFechaNueva, 2),
+    fechaNueva = _useStateFechaNueva2[0],
+    setFechaNueva = _useStateFechaNueva2[1];
+  var _useStateDiasCerrados = useState({}),
+    _useStateDiasCerrados2 = _slicedToArray(_useStateDiasCerrados, 2),
+    diasCerrados = _useStateDiasCerrados2[0],
+    setDiasCerrados = _useStateDiasCerrados2[1];
+  var _useStatePersonasCerradas = useState({}),
+    _useStatePersonasCerradas2 = _slicedToArray(_useStatePersonasCerradas, 2),
+    personasCerradas = _useStatePersonasCerradas2[0],
+    setPersonasCerradas = _useStatePersonasCerradas2[1];
+  var _useStateBloqueadas = useState({}),
+    _useStateBloqueadas2 = _slicedToArray(_useStateBloqueadas, 2),
+    bloqueadas = _useStateBloqueadas2[0],
+    setBloqueadas = _useStateBloqueadas2[1];
   var _useState15 = useState({}),
     _useState16 = _slicedToArray(_useState15, 2),
     b3x = _useState16[0],
@@ -1565,9 +1583,9 @@ var SecB = function SecB() {
       });
     });
   };
-  var addRow = function addRow() {
+  var addRow = function addRow(fecha) {
     return setRows(function (rs) {
-      return [].concat(_toConsumableArray(rs), [mkRow()]);
+      return [].concat(_toConsumableArray(rs), [mkRow(fecha)]);
     });
   };
   var delRow = function delRow(id) {
@@ -1577,6 +1595,83 @@ var SecB = function SecB() {
       });
     });
   };
+  var diasVisibles = useMemo(function () {
+    return Array.from(new Set([].concat(_toConsumableArray(dias), _toConsumableArray(rows.map(function (r) {
+      return r.fecha;
+    }).filter(Boolean))))).sort();
+  }, [dias, rows]);
+  var addDia = function addDia() {
+    if (!fechaNueva) {
+      alert('Seleccione una fecha antes de adicionar el día.');
+      return;
+    }
+    if (diasVisibles.includes(fechaNueva)) {
+      alert('La fecha seleccionada ya fue agregada.');
+      return;
+    }
+    setDias(function (ds) {
+      return [].concat(_toConsumableArray(ds), [fechaNueva]).sort();
+    });
+    setDiasCerrados(function (x) {
+      return _objectSpread(_objectSpread({}, x), {}, _defineProperty({}, fechaNueva, false));
+    });
+  };
+  var delDia = function delDia(fecha) {
+    var cantidad = rows.filter(function (r) {
+      return r.fecha === fecha;
+    }).length;
+    if (cantidad && !window.confirm("Se eliminarán ".concat(cantidad, " registro(s) del ").concat(fecha, ". ¿Continuar?"))) return;
+    setRows(function (rs) {
+      return rs.filter(function (r) {
+        return r.fecha !== fecha;
+      });
+    });
+    setDias(function (ds) {
+      return ds.filter(function (d) {
+        return d !== fecha;
+      });
+    });
+  };
+  var toggleDia = function toggleDia(fecha) {
+    return setDiasCerrados(function (x) {
+      return _objectSpread(_objectSpread({}, x), {}, _defineProperty({}, fecha, !x[fecha]));
+    });
+  };
+  var togglePersona = function togglePersona(id) {
+    return setPersonasCerradas(function (x) {
+      return _objectSpread(_objectSpread({}, x), {}, _defineProperty({}, id, !x[id]));
+    });
+  };
+  var toggleBloqueo = function toggleBloqueo(id) {
+    return setBloqueadas(function (x) {
+      return _objectSpread(_objectSpread({}, x), {}, _defineProperty({}, id, !x[id]));
+    });
+  };
+  var solapadas = useMemo(function () {
+    var result = {};
+    var toMin = function toMin(t) {
+      if (!t) return null;
+      var p = t.split(':').map(Number);
+      return p[0] * 60 + p[1];
+    };
+    var norm = function norm(s) {
+      return String(s || '').trim().toLocaleLowerCase('es');
+    };
+    rows.forEach(function (a, i) {
+      var aIni = toMin(a.ini);
+      var aFin = toMin(a.fin);
+      if (!a.fecha || !norm(a.nombre) || aIni === null || aFin === null || aFin <= aIni) return;
+      rows.slice(i + 1).forEach(function (b) {
+        var bIni = toMin(b.ini);
+        var bFin = toMin(b.fin);
+        if (a.fecha === b.fecha && norm(a.nombre) === norm(b.nombre) && bIni !== null && bFin !== null && bFin > bIni && aIni < bFin && bIni < aFin) {
+          result[a.id] = true;
+          result[b.id] = true;
+        }
+      });
+    });
+    return result;
+  }, [rows]);
 
   // ── B.2: agrupa por nombre ─────────────────────────────────────────────────
   var b2 = useMemo(function () {
@@ -1639,6 +1734,10 @@ var SecB = function SecB() {
   }, [periodB.ini, periodB.fin]); // eslint-disable-line
   var rowsRef = useRef(rows);
   rowsRef.current = rows;
+  var diasRef = useRef(dias);
+  diasRef.current = dias;
+  var bloqueadasRef = useRef(bloqueadas);
+  bloqueadasRef.current = bloqueadas;
   var b3xRef = useRef(b3x);
   b3xRef.current = b3x;
   useEffect(function () {
@@ -1646,7 +1745,19 @@ var SecB = function SecB() {
       return rowsRef.current;
     });
     registerRestorer('b_rows', function (saved) {
-      if (Array.isArray(saved) && saved.length) setRows(saved);
+      if (Array.isArray(saved)) setRows(saved);
+    });
+    registerCollector('b_days', function () {
+      return diasRef.current;
+    });
+    registerRestorer('b_days', function (saved) {
+      if (Array.isArray(saved)) setDias(saved);
+    });
+    registerCollector('b_locked', function () {
+      return bloqueadasRef.current;
+    });
+    registerRestorer('b_locked', function (saved) {
+      if (saved && _typeof(saved) === 'object') setBloqueadas(saved);
     });
     registerCollector('b_b3x', function () {
       return b3xRef.current;
@@ -1742,6 +1853,233 @@ var SecB = function SecB() {
       }
     });
   };
+  var b1ControlStyle = {
+    width: '100%',
+    minHeight: 44,
+    border: "1px solid ".concat(G.border),
+    borderRadius: 7,
+    padding: '9px 10px',
+    fontSize: 14,
+    fontFamily: 'inherit',
+    color: G.text,
+    background: G.white,
+    outline: 'none'
+  };
+  var fmtDia = function fmtDia(fecha) {
+    try {
+      return new Date("".concat(fecha, "T12:00:00")).toLocaleDateString('es-CR', {
+        weekday: 'long',
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      });
+    } catch (_) {
+      return fecha;
+    }
+  };
+  var b1UI = /*#__PURE__*/React.createElement("div", {
+    className: "b1-manager"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "b1-day-creator"
+  }, /*#__PURE__*/React.createElement("label", {
+    htmlFor: "b1-fecha-nueva"
+  }, "Fecha de la jornada"), /*#__PURE__*/React.createElement("input", {
+    id: "b1-fecha-nueva",
+    type: "date",
+    value: fechaNueva,
+    onChange: function onChange(e) {
+      return setFechaNueva(e.target.value);
+    },
+    style: b1ControlStyle
+  }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: addDia,
+    className: "b1-primary-button"
+  }, "\uFF0B Adicionar d\xEDa")), diasVisibles.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    className: "b1-empty-state"
+  }, /*#__PURE__*/React.createElement("div", {
+    "aria-hidden": "true"
+  }, "\uD83D\uDCC5"), /*#__PURE__*/React.createElement("strong", null, "A\xFAn no hay jornadas registradas"), /*#__PURE__*/React.createElement("span", null, "Seleccione una fecha y presione \xABAdicionar d\xEDa\xBB.")) : /*#__PURE__*/React.createElement("div", {
+    className: "b1-day-list"
+  }, diasVisibles.map(function (fecha) {
+    var dayRows = rows.filter(function (r) {
+      return r.fecha === fecha;
+    });
+    var diaCerrado = !!diasCerrados[fecha];
+    return /*#__PURE__*/React.createElement("section", {
+      className: "b1-day-card",
+      key: fecha
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "b1-day-header"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "b1-collapse-button",
+      onClick: function onClick() {
+        return toggleDia(fecha);
+      },
+      "aria-expanded": !diaCerrado,
+      "aria-label": "".concat(diaCerrado ? 'Expandir' : 'Contraer', " jornada ").concat(fecha)
+    }, diaCerrado ? '\u25B6' : '\u25BC'), /*#__PURE__*/React.createElement("div", {
+      className: "b1-day-title"
+    }, /*#__PURE__*/React.createElement("strong", null, fmtDia(fecha)), /*#__PURE__*/React.createElement("span", null, dayRows.length, " ", dayRows.length === 1 ? 'persona' : 'personas')), /*#__PURE__*/React.createElement("div", {
+      className: "b1-day-actions"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "b1-add-person-button",
+      onClick: function onClick() {
+        addRow(fecha);
+        setDiasCerrados(function (x) {
+          return _objectSpread(_objectSpread({}, x), {}, _defineProperty({}, fecha, false));
+        });
+      }
+    }, "\uFF0B Adicionar persona"), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "b1-delete-button",
+      onClick: function onClick() {
+        return delDia(fecha);
+      },
+      "aria-label": "Eliminar jornada ".concat(fecha)
+    }, "\uD83D\uDDD1 Eliminar d\xEDa"))), !diaCerrado && /*#__PURE__*/React.createElement("div", {
+      className: "b1-day-body"
+    }, dayRows.length === 0 ? /*#__PURE__*/React.createElement("div", {
+      className: "b1-day-empty"
+    }, "D\xEDa creado. Use \xABAdicionar persona\xBB para registrar participantes.") : dayRows.map(function (r) {
+      var min = calcMin(r.ini, r.fin);
+      var cerrada = !!personasCerradas[r.id];
+      var bloqueada = !!bloqueadas[r.id];
+      var manualConNombre = r.nombreMode === 'custom' && !!r.nombre.trim();
+      return /*#__PURE__*/React.createElement("article", {
+        className: "b1-person-card".concat(solapadas[r.id] ? ' has-overlap' : '').concat(bloqueada ? ' is-locked' : ''),
+        key: r.id
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "b1-person-header"
+      }, /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        className: "b1-collapse-button",
+        onClick: function onClick() {
+          return togglePersona(r.id);
+        },
+        "aria-expanded": !cerrada,
+        "aria-label": "".concat(cerrada ? 'Expandir' : 'Contraer', " registro de ").concat(r.nombre || 'persona sin seleccionar')
+      }, cerrada ? '\u25B6' : '\u25BC'), /*#__PURE__*/React.createElement("div", {
+        className: "b1-person-title"
+      }, /*#__PURE__*/React.createElement("strong", null, r.nombre || 'Persona sin seleccionar'), /*#__PURE__*/React.createElement("span", null, r.ini, " \u2013 ", r.fin, min > 0 ? " \xB7 ".concat(fmtMin(min), " h") : '')), solapadas[r.id] && /*#__PURE__*/React.createElement("span", {
+        className: "b1-overlap-badge"
+      }, "\u26A0 Traslape"), bloqueada && /*#__PURE__*/React.createElement("span", {
+        className: "b1-lock-badge"
+      }, "\uD83D\uDD12 Bloqueado")), !cerrada && /*#__PURE__*/React.createElement("div", {
+        className: "b1-person-body"
+      }, /*#__PURE__*/React.createElement("fieldset", {
+        disabled: bloqueada,
+        className: "b1-person-fields"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "b1-field b1-name-field"
+      }, /*#__PURE__*/React.createElement("label", {
+        htmlFor: "b1-nombre-".concat(r.id)
+      }, "Nombre completo"), /*#__PURE__*/React.createElement("select", {
+        id: "b1-nombre-".concat(r.id),
+        value: r.nombreMode === 'custom' ? '__custom__' : SINAC_STAFF.includes(r.nombre) ? r.nombre : '',
+        onChange: function onChange(e) {
+          var v = e.target.value;
+          if (v === '__custom__') {
+            upd(r.id, 'nombreMode', 'custom');
+            upd(r.id, 'nombre', '');
+          } else {
+            upd(r.id, 'nombreMode', 'select');
+            upd(r.id, 'nombre', v);
+            if (v) upd(r.id, 'tipo', 'funcionario');
+          }
+        },
+        style: b1ControlStyle
+      }, /*#__PURE__*/React.createElement("option", {
+        value: ""
+      }, "\u2014 Seleccionar funcionario \u2014"), SINAC_STAFF.map(function (n) {
+        return /*#__PURE__*/React.createElement("option", {
+          key: n,
+          value: n
+        }, n);
+      }), /*#__PURE__*/React.createElement("option", {
+        value: "__custom__"
+      }, "\u270F Ingresar nombre manualmente")), r.nombreMode === 'custom' && /*#__PURE__*/React.createElement("input", {
+        type: "text",
+        value: r.nombre,
+        onChange: function onChange(e) {
+          var value = e.target.value;
+          upd(r.id, 'nombre', value);
+          var prev = rows.find(function (x) {
+            return x.id !== r.id && x.nombre.trim().toLocaleLowerCase('es') === value.trim().toLocaleLowerCase('es');
+          });
+          if (prev) upd(r.id, 'tipo', prev.tipo);
+        },
+        placeholder: "Escriba el nombre completo",
+        style: b1ControlStyle
+      })), manualConNombre && /*#__PURE__*/React.createElement("div", {
+        className: "b1-field b1-type-field"
+      }, /*#__PURE__*/React.createElement("span", {
+        className: "b1-field-label"
+      }, "Tipo de participante"), /*#__PURE__*/React.createElement("div", {
+        className: "b1-type-options"
+      }, [['funcionario', 'SINAC'], ['externo', 'Externo']].map(function (opt) {
+        return /*#__PURE__*/React.createElement("label", {
+          key: opt[0]
+        }, /*#__PURE__*/React.createElement("input", {
+          type: "radio",
+          name: "tipo_".concat(r.id),
+          checked: r.tipo === opt[0],
+          onChange: function onChange() {
+            return upd(r.id, 'tipo', opt[0]);
+          }
+        }), opt[1]);
+      }))), /*#__PURE__*/React.createElement("div", {
+        className: "b1-time-grid"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "b1-field"
+      }, /*#__PURE__*/React.createElement("label", {
+        htmlFor: "b1-inicio-".concat(r.id)
+      }, "Inicio"), /*#__PURE__*/React.createElement("input", {
+        id: "b1-inicio-".concat(r.id),
+        type: "time",
+        value: r.ini,
+        onChange: function onChange(e) {
+          return upd(r.id, 'ini', e.target.value);
+        },
+        style: b1ControlStyle
+      })), /*#__PURE__*/React.createElement("div", {
+        className: "b1-field"
+      }, /*#__PURE__*/React.createElement("label", {
+        htmlFor: "b1-fin-".concat(r.id)
+      }, "Fin"), /*#__PURE__*/React.createElement("input", {
+        id: "b1-fin-".concat(r.id),
+        type: "time",
+        value: r.fin,
+        onChange: function onChange(e) {
+          return upd(r.id, 'fin', e.target.value);
+        },
+        style: b1ControlStyle
+      })), /*#__PURE__*/React.createElement("div", {
+        className: "b1-hours-box"
+      }, /*#__PURE__*/React.createElement("span", null, "Horas efectivas"), /*#__PURE__*/React.createElement("strong", null, min > 0 ? fmtMin(min) : '\u2014')))), solapadas[r.id] && /*#__PURE__*/React.createElement("div", {
+        className: "b1-overlap-alert",
+        role: "alert",
+        "aria-live": "assertive"
+      }, "\u26A0 Este horario se traslapa total o parcialmente con otro registro de la misma persona en esta fecha."), /*#__PURE__*/React.createElement("div", {
+        className: "b1-person-actions"
+      }, /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        className: "b1-lock-button",
+        onClick: function onClick() {
+          return toggleBloqueo(r.id);
+        }
+      }, bloqueada ? '\uD83D\uDD13 Desbloquear edición' : '\uD83D\uDD12 Bloquear edición'), /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        className: "b1-delete-button",
+        disabled: bloqueada,
+        onClick: function onClick() {
+          return delRow(r.id);
+        }
+      }, "\uD83D\uDDD1 Eliminar persona"))));
+    })));
+  })));
   var emptyMsg = /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 13,
@@ -1752,10 +2090,10 @@ var SecB = function SecB() {
   }, "Se calcular\xE1 autom\xE1ticamente al ingresar datos en B.1.");
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(InfoBox, {
     t: "amber",
-    c: "Registre una fila por persona y por d\xEDa. Las horas efectivas se calculan solas a partir de Inicio y Fin. Para personal externo adjuntar lista de asistencia, inducci\xF3n de seguridad, p\xF3liza o autorizaci\xF3n seg\xFAn corresponda."
+    c: "Primero agregue la fecha de la jornada y luego las personas participantes. Las horas efectivas se calculan automáticamente. Bloquee cada registro terminado para evitar cambios accidentales."
   }), /*#__PURE__*/React.createElement(Sub, {
     title: "B.1 \u2014 Registro diario de participantes"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, b1UI, false && /*#__PURE__*/React.createElement("div", {
     className: "mobile-card-table-wrap",
     style: {
       overflowX: 'auto'
@@ -1952,7 +2290,7 @@ var SecB = function SecB() {
         width: '100%'
       }
     }, "\u2715")));
-  })))), /*#__PURE__*/React.createElement("button", {
+  })))), false && /*#__PURE__*/React.createElement("button", {
     onClick: addRow,
     style: {
       display: 'flex',
@@ -7656,13 +7994,23 @@ function App() {
 
   // ── Restauradores por sección ───────────────────────────────────
   var restorersRef = useRef({});
+  var pendingRestoreRef = useRef({});
   var registerRestorer = useCallback(function (key, fn) {
     restorersRef.current[key] = fn;
+    if (Object.prototype.hasOwnProperty.call(pendingRestoreRef.current, key)) {
+      try {
+        fn(pendingRestoreRef.current[key]);
+        delete pendingRestoreRef.current[key];
+      } catch (e) {
+        console.warn('Deferred restore error', key, e);
+      }
+    }
   }, []);
   var restoreFormData = useCallback(function (savedData) {
     var _savedData$context;
     if ((_savedData$context = savedData.context) !== null && _savedData$context !== void 0 && _savedData$context.sendero) setSendero(savedData.context.sendero);
     var secs = savedData.sections || {};
+    pendingRestoreRef.current = _objectSpread({}, secs);
     Object.entries(restorersRef.current).forEach(function (_ref61) {
       var _ref62 = _slicedToArray(_ref61, 2),
         k = _ref62[0],
@@ -7670,6 +8018,7 @@ function App() {
       if (secs[k] !== undefined) {
         try {
           fn(secs[k]);
+          delete pendingRestoreRef.current[k];
         } catch (e) {
           console.warn('Restore error', k, e);
         }
@@ -8150,7 +8499,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.15'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.16'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];
