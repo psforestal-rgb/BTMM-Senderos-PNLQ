@@ -554,6 +554,237 @@ textarea {
     max-width: none !important;
     padding: 24px 16px !important;
   }
+
+  /* Las tablas operativas cambian a tarjetas; no dependen de desplazamiento horizontal. */
+  .mobile-card-table-wrap {
+    overflow: visible !important;
+    width: 100%;
+  }
+
+  table.mobile-card-table {
+    display: block !important;
+    width: 100% !important;
+    overflow: visible !important;
+    border-collapse: separate !important;
+  }
+
+  .mobile-card-table thead {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+
+  .mobile-card-table tbody {
+    display: grid !important;
+    gap: 14px;
+    width: 100%;
+  }
+
+  .mobile-card-table tr {
+    display: block !important;
+    width: 100%;
+    overflow: hidden;
+    border: 1px solid var(--ui-border);
+    border-radius: 10px;
+    background: var(--ui-surface);
+    box-shadow: 0 2px 8px rgba(2, 26, 83, 0.08);
+  }
+
+  .mobile-card-table td {
+    display: grid !important;
+    grid-template-columns: minmax(108px, 38%) minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+    width: 100% !important;
+    min-height: 52px;
+    padding: 10px 12px !important;
+    border: 0 !important;
+    border-bottom: 1px solid #dce2e9 !important;
+    background: #fff !important;
+    text-align: left !important;
+  }
+
+  .mobile-card-table td:last-child {
+    border-bottom: 0 !important;
+  }
+
+  .mobile-card-table td::before {
+    content: attr(data-label);
+    color: var(--brand-navy);
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.25;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .mobile-card-table td[data-label="Acciones"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mobile-card-table td[data-label="Acciones"]::before,
+  .mobile-card-table td[data-label="Detalle"]:empty::before {
+    display: none;
+  }
+
+  .mobile-card-table td[colspan] {
+    grid-column: auto !important;
+  }
+
+  .mobile-card-table input,
+  .mobile-card-table select,
+  .mobile-card-table textarea {
+    min-height: 48px !important;
+    padding: 10px !important;
+    border: 1px solid var(--ui-border) !important;
+    border-radius: 7px !important;
+    background: #fff !important;
+    font-size: 16px !important;
+  }
+
+  .mobile-card-table button {
+    min-width: 44px;
+    min-height: 44px !important;
+    border-radius: 7px !important;
+  }
+
+  .mobile-card-table td[data-label="Acciones"] button {
+    width: 100% !important;
+    border: 1px solid #d99b9b !important;
+    background: #fff7f7 !important;
+  }
+
+  .mobile-summary-row {
+    border-color: #8ca2bd !important;
+  }
+
+  .mobile-summary-row td {
+    background: #edf2f8 !important;
+    font-weight: 700;
+  }
+
+  .mobile-inline-options {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .mobile-option-chip {
+    min-height: 48px;
+    padding: 8px 10px;
+    border: 1px solid #c8d1dc;
+    border-radius: 7px;
+    background: #f7f9fb;
+  }
+
+  .mobile-option-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .mobile-option-grid > label,
+  .mobile-option-grid > div > label {
+    min-height: 48px;
+    padding: 9px 10px;
+    border: 1px solid #d8dee6;
+    border-radius: 7px;
+    background: #fafbfc;
+  }
+
+  .mobile-option-grid input[type="checkbox"],
+  .mobile-option-grid input[type="radio"],
+  .mobile-option-chip input {
+    width: 22px !important;
+    height: 22px !important;
+    flex: 0 0 22px;
+  }
+
+  .mobile-option-grid > div > input[type="text"] {
+    width: 100% !important;
+    margin: 6px 0 0 !important;
+  }
+
+  .photo-actions {
+    align-items: stretch !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .photo-add-button {
+    justify-content: center;
+    width: 100%;
+    min-height: 50px !important;
+    font-size: 16px !important;
+  }
+
+  .photo-empty {
+    padding: 28px 16px !important;
+  }
+
+  .photo-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 14px !important;
+  }
+
+  .photo-card {
+    width: 100%;
+  }
+
+  .photo-delete-button {
+    width: 44px !important;
+    height: 44px !important;
+    border: 1px solid #d99b9b !important;
+    border-radius: 7px !important;
+    background: #fff !important;
+  }
+
+  .photo-preview {
+    min-height: 210px !important;
+    aspect-ratio: 4 / 3;
+  }
+
+  .photo-preview img {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: none !important;
+    object-fit: contain !important;
+  }
+
+  .trail-map {
+    height: clamp(280px, 88vw, 380px) !important;
+    min-height: 280px;
+    touch-action: none !important;
+    overscroll-behavior: contain;
+  }
+
+  .trail-map-control {
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 20px !important;
+  }
+
+  .signature-module {
+    width: 100%;
+    max-width: none !important;
+  }
+
+  .signature-card {
+    padding: 14px !important;
+  }
+
+  .signature-pad {
+    width: 100%;
+    min-height: 140px;
+    height: 140px !important;
+    padding: 12px;
+    text-align: center;
+  }
 }
 
 @container (max-width: 480px) {
@@ -575,6 +806,15 @@ textarea {
 
   .option-label {
     width: 100%;
+  }
+
+  .mobile-card-table td {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .mobile-inline-options {
+    grid-template-columns: minmax(0, 1fr) !important;
   }
 }
 
@@ -642,6 +882,19 @@ textarea {
   #viewport-toggle {
     right: 12px;
     bottom: 12px;
+    width: 50px;
+    min-width: 50px;
+    height: 50px;
+    padding: 0;
+    overflow: hidden;
+    border-radius: 50%;
+    font-size: 0;
+  }
+
+  #viewport-toggle::before {
+    content: "↔";
+    font-size: 22px;
+    line-height: 1;
   }
 }
 

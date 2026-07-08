@@ -1107,10 +1107,12 @@ var Tabla = function Tabla(_ref1) {
     });
   };
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "mobile-card-table-wrap",
     style: {
       overflowX: 'auto'
     }
   }, /*#__PURE__*/React.createElement("table", {
+    className: "mobile-card-table generic-edit-table",
     style: {
       width: '100%',
       borderCollapse: 'collapse',
@@ -1143,6 +1145,7 @@ var Tabla = function Tabla(_ref1) {
     }, heads.map(function (_, ci) {
       return /*#__PURE__*/React.createElement("td", {
         key: ci,
+        "data-label": heads[ci],
         style: {
           border: "1px solid #E0DDD5",
           padding: 0
@@ -1160,6 +1163,7 @@ var Tabla = function Tabla(_ref1) {
         }
       }));
     }), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Acciones",
       style: {
         border: "1px solid #E0DDD5",
         textAlign: 'center',
@@ -1752,10 +1756,12 @@ var SecB = function SecB() {
   }), /*#__PURE__*/React.createElement(Sub, {
     title: "B.1 \u2014 Registro diario de participantes"
   }, /*#__PURE__*/React.createElement("div", {
+    className: "mobile-card-table-wrap",
     style: {
       overflowX: 'auto'
     }
   }, /*#__PURE__*/React.createElement("table", {
+    className: "mobile-card-table b1-table",
     style: {
       width: '100%',
       borderCollapse: 'collapse',
@@ -1788,10 +1794,12 @@ var SecB = function SecB() {
     return /*#__PURE__*/React.createElement("tr", {
       key: r.id
     }, /*#__PURE__*/React.createElement("td", {
+      "data-label": "Fecha",
       style: tdBase(ev)
     }, cellInp(r.fecha, function (v) {
       return upd(r.id, 'fecha', v);
     }, 'date')), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Nombre completo",
       style: tdBase(ev)
     }, /*#__PURE__*/React.createElement("div", {
       style: {
@@ -1857,10 +1865,12 @@ var SecB = function SecB() {
         background: G.pale
       }
     }))), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Tipo",
       style: _objectSpread(_objectSpread({}, tdBase(ev)), {}, {
         padding: '3px 8px'
       })
     }, /*#__PURE__*/React.createElement("div", {
+      className: "mobile-inline-options",
       style: {
         display: 'flex',
         gap: 10,
@@ -1871,6 +1881,7 @@ var SecB = function SecB() {
         val = _ref12[0],
         lbl = _ref12[1];
       return /*#__PURE__*/React.createElement("label", {
+        className: "mobile-option-chip",
         key: val,
         style: {
           display: 'flex',
@@ -1906,20 +1917,24 @@ var SecB = function SecB() {
       }
       return null;
     }()), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Inicio",
       style: tdBase(ev)
     }, cellInp(r.ini, function (v) {
       return upd(r.id, 'ini', v);
     }, 'time')), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Fin",
       style: tdBase(ev)
     }, cellInp(r.fin, function (v) {
       return upd(r.id, 'fin', v);
     }, 'time')), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Horas efectivas",
       style: _objectSpread(_objectSpread({}, tdCal(ev)), {}, {
         textAlign: 'center',
         fontWeight: 700,
         color: min > 0 ? G.mid : G.muted
       })
     }, min > 0 ? fmtMin(min) : '—'), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Acciones",
       style: _objectSpread(_objectSpread({}, tdBase(ev)), {}, {
         textAlign: 'center'
       })
@@ -1957,10 +1972,12 @@ var SecB = function SecB() {
   }, "\uFF0B Agregar fila")), /*#__PURE__*/React.createElement(Sub, {
     title: "B.2 \u2014 Consolidado de horas por participante (autom\xE1tico)"
   }, b2.length === 0 ? emptyMsg : /*#__PURE__*/React.createElement("div", {
+    className: "mobile-card-table-wrap",
     style: {
       overflowX: 'auto'
     }
   }, /*#__PURE__*/React.createElement("table", {
+    className: "mobile-card-table b2-table",
     style: {
       width: '100%',
       borderCollapse: 'collapse',
@@ -1982,8 +1999,10 @@ var SecB = function SecB() {
     return /*#__PURE__*/React.createElement("tr", {
       key: p.nombre
     }, /*#__PURE__*/React.createElement("td", {
+      "data-label": "Nombre completo",
       style: tdCal(idx % 2 === 0)
     }, p.nombre), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Tipo",
       style: tdCal(idx % 2 === 0)
     }, /*#__PURE__*/React.createElement("span", {
       style: {
@@ -1994,18 +2013,23 @@ var SecB = function SecB() {
         color: p.tipo === 'funcionario' ? G.mid : G.amber
       }
     }, p.tipo === 'funcionario' ? 'SINAC' : 'Externo')), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Días participó",
       style: _objectSpread(_objectSpread({}, tdCal(idx % 2 === 0)), {}, {
         textAlign: 'center',
         fontWeight: 600
       })
     }, p.fechas.size), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Total horas",
       style: _objectSpread(_objectSpread({}, tdCal(idx % 2 === 0)), {}, {
         textAlign: 'center',
         fontWeight: 700,
         color: G.mid
       })
     }, fmtMin(p.totalMin)));
-  }), /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+  }), /*#__PURE__*/React.createElement("tr", {
+    className: "mobile-summary-row"
+  }, /*#__PURE__*/React.createElement("td", {
+    "data-label": "Resumen",
     colSpan: 2,
     style: {
       border: '1px solid #E0DDD5',
@@ -2016,6 +2040,7 @@ var SecB = function SecB() {
       color: G.dark
     }
   }, "TOTAL"), /*#__PURE__*/React.createElement("td", {
+    "data-label": "Personas",
     style: {
       border: '1px solid #E0DDD5',
       padding: '6px 9px',
@@ -2025,6 +2050,7 @@ var SecB = function SecB() {
       color: G.dark
     }
   }, b2.length, " personas"), /*#__PURE__*/React.createElement("td", {
+    "data-label": "Total horas",
     style: {
       border: '1px solid #E0DDD5',
       padding: '6px 9px',
@@ -2038,10 +2064,12 @@ var SecB = function SecB() {
   }, 0)))))))), /*#__PURE__*/React.createElement(Sub, {
     title: "B.3 \u2014 Consolidado diario de cuadrilla (autom\xE1tico)"
   }, b3.length === 0 ? emptyMsg : /*#__PURE__*/React.createElement("div", {
+    className: "mobile-card-table-wrap",
     style: {
       overflowX: 'auto'
     }
   }, /*#__PURE__*/React.createElement("table", {
+    className: "mobile-card-table b3-table",
     style: {
       width: '100%',
       borderCollapse: 'collapse',
@@ -2069,21 +2097,25 @@ var SecB = function SecB() {
     return /*#__PURE__*/React.createElement("tr", {
       key: d.fecha
     }, /*#__PURE__*/React.createElement("td", {
+      "data-label": "Fecha",
       style: _objectSpread(_objectSpread({}, tdCal(ev)), {}, {
         fontWeight: 600
       })
     }, d.fecha), /*#__PURE__*/React.createElement("td", {
+      "data-label": "N.° personas",
       style: _objectSpread(_objectSpread({}, tdCal(ev)), {}, {
         textAlign: 'center',
         fontWeight: 600
       })
     }, d.nombres.size), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Horas-persona",
       style: _objectSpread(_objectSpread({}, tdCal(ev)), {}, {
         textAlign: 'center',
         fontWeight: 700,
         color: G.mid
       })
     }, fmtMin(d.totalMin)), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Responsable de cuadrilla",
       style: tdBase(ev)
     }, /*#__PURE__*/React.createElement("input", {
       type: "text",
@@ -2105,6 +2137,7 @@ var SecB = function SecB() {
         background: 'transparent'
       }
     })), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Observaciones",
       style: tdBase(ev)
     }, /*#__PURE__*/React.createElement("input", {
       type: "text",
@@ -2126,7 +2159,10 @@ var SecB = function SecB() {
         background: 'transparent'
       }
     })));
-  }), /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+  }), /*#__PURE__*/React.createElement("tr", {
+    className: "mobile-summary-row"
+  }, /*#__PURE__*/React.createElement("td", {
+    "data-label": "Resumen",
     style: {
       border: '1px solid #E0DDD5',
       padding: '6px 9px',
@@ -2135,6 +2171,7 @@ var SecB = function SecB() {
       color: G.dark
     }
   }, "TOTAL"), /*#__PURE__*/React.createElement("td", {
+    "data-label": "Personas-día",
     style: {
       border: '1px solid #E0DDD5',
       padding: '6px 9px',
@@ -2146,6 +2183,7 @@ var SecB = function SecB() {
   }, b3.reduce(function (s, d) {
     return s + d.nombres.size;
   }, 0), " pers-d\xEDa"), /*#__PURE__*/React.createElement("td", {
+    "data-label": "Total horas-persona",
     style: {
       border: '1px solid #E0DDD5',
       padding: '6px 9px',
@@ -2157,6 +2195,7 @@ var SecB = function SecB() {
   }, fmtMin(b3.reduce(function (s, d) {
     return s + d.totalMin;
   }, 0))), /*#__PURE__*/React.createElement("td", {
+    "data-label": "Detalle",
     colSpan: 2,
     style: {
       border: '1px solid #E0DDD5',
@@ -2372,6 +2411,7 @@ var TrailMap = function TrailMap(_ref13) {
   };
   var statusText = !activeSendero ? 'Seleccione un sendero en la Sección A para mostrar el mapa.' : selecting ? "Haga clic en el trazado \u2192 ".concat(selecting.field === 'ini' ? '▶ INICIO' : '⏹ FIN', " del tramo") : 'Haga clic en 📍 de una fila para seleccionar inicio o fin en el mapa.';
   return /*#__PURE__*/React.createElement("div", {
+    className: "trail-map-module",
     style: {
       marginBottom: 16
     }
@@ -2387,10 +2427,12 @@ var TrailMap = function TrailMap(_ref13) {
       borderBottom: 'none'
     }
   }, statusText), /*#__PURE__*/React.createElement("div", {
+    className: "trail-map-stage",
     style: {
       position: 'relative'
     }
   }, /*#__PURE__*/React.createElement("div", {
+    className: "trail-map-north",
     style: {
       position: 'absolute',
       top: 8,
@@ -2420,6 +2462,7 @@ var TrailMap = function TrailMap(_ref13) {
     fill: G.mid,
     fontFamily: "sans-serif"
   }, "N"))), activeSendero && /*#__PURE__*/React.createElement("div", {
+    className: "trail-map-controls",
     style: {
       position: 'absolute',
       top: 8,
@@ -2439,6 +2482,7 @@ var TrailMap = function TrailMap(_ref13) {
       title = _ref19[1],
       fn = _ref19[2];
     return /*#__PURE__*/React.createElement("button", {
+      className: "trail-map-control",
       key: i,
       onClick: fn,
       title: title,
@@ -2474,6 +2518,7 @@ var TrailMap = function TrailMap(_ref13) {
       border: "1px solid ".concat(G.border)
     }
   }, "Escala ", scaleLabel, zoom > 1 ? ' · arrastre para desplazar' : ''), /*#__PURE__*/React.createElement("svg", {
+    className: "trail-map",
     ref: svgRef,
     id: "trail-map-svg",
     viewBox: vb,
@@ -3170,6 +3215,7 @@ var SecC_sec = function SecC_sec() {
       overflowX: 'auto'
     }
   }, /*#__PURE__*/React.createElement("table", {
+    className: "mobile-card-table trail-segments-table",
     style: {
       width: '100%',
       borderCollapse: 'collapse',
@@ -3215,6 +3261,7 @@ var SecC_sec = function SecC_sec() {
         outline: isSel ? "2px solid ".concat(G.amber) : 'none'
       }
     }, /*#__PURE__*/React.createElement("td", {
+      "data-label": "Captura",
       style: _objectSpread(_objectSpread({}, tdC(ev)), {}, {
         textAlign: 'center',
         padding: '3px'
@@ -3259,16 +3306,19 @@ var SecC_sec = function SecC_sec() {
         fontWeight: 700
       }
     }, "\uD83D\uDCCF"))), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Tramo",
       style: _objectSpread(_objectSpread({}, tdC(ev)), {}, {
         textAlign: 'center',
         fontWeight: 700,
         color: G.mid
       })
     }, "Tramo ", idx + 1), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Estación inicio (m)",
       style: tdB(ev)
     }, ci(t.estIni, function (v) {
       return applyStation(t.id, 'ini', v);
     }, 'number', '0')), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Estación fin (m)",
       style: tdB(ev)
     }, t.distMode ? /*#__PURE__*/React.createElement("div", {
       style: {
@@ -3288,6 +3338,7 @@ var SecC_sec = function SecC_sec() {
     }, "auto (\uD83D\uDCCF)")) : ci(t.estFin, function (v) {
       return applyStation(t.id, 'fin', v);
     }, 'number', '0')), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Longitud (m)",
       style: t.distMode ? tdB(ev) : _objectSpread(_objectSpread({}, tdC(ev)), {}, {
         textAlign: 'center',
         fontWeight: 700,
@@ -3332,18 +3383,23 @@ var SecC_sec = function SecC_sec() {
         flexShrink: 0
       }
     }, t.distDir === 'fwd' ? '→' : '←')) : lng !== null ? "".concat(lng, " m") : '—'), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Coordenada inicio CRTM05",
       style: tdB(ev)
     }, ciCoord(t, 'ini')), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Coordenada fin CRTM05",
       style: tdB(ev)
     }, ciCoord(t, 'fin')), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Superficie",
       style: tdB(ev)
     }, sel(t.sup, function (v) {
       return upd(t.id, 'sup', v);
     }, SUPERFICIE_OPTS)), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Pendiente",
       style: tdB(ev)
     }, sel(t.pend || '', function (v) {
       return upd(t.id, 'pend', v);
     }, ['— Selec. —'].concat(PENDIENTE_OPTS))), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Acciones",
       style: _objectSpread(_objectSpread({}, tdC(ev)), {}, {
         textAlign: 'center',
         padding: 0
@@ -3362,7 +3418,10 @@ var SecC_sec = function SecC_sec() {
         width: '100%'
       }
     }, "\u2715")));
-  }), /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+  }), /*#__PURE__*/React.createElement("tr", {
+    className: "mobile-summary-row"
+  }, /*#__PURE__*/React.createElement("td", {
+    "data-label": "Resumen",
     colSpan: 4,
     style: {
       border: '1px solid #E0DDD5',
@@ -3373,6 +3432,7 @@ var SecC_sec = function SecC_sec() {
       color: G.dark
     }
   }, "LONGITUD TOTAL INTERVENIDA"), /*#__PURE__*/React.createElement("td", {
+    "data-label": "Longitud total",
     style: {
       border: '1px solid #E0DDD5',
       padding: '6px 9px',
@@ -3383,6 +3443,7 @@ var SecC_sec = function SecC_sec() {
       color: G.dark
     }
   }, totalM > 0 ? "".concat(totalM, " m") : '—'), /*#__PURE__*/React.createElement("td", {
+    "data-label": "Detalle",
     colSpan: 5,
     style: {
       border: '1px solid #E0DDD5',
@@ -3529,6 +3590,7 @@ var SecD = function SecD() {
   return /*#__PURE__*/React.createElement(Sub, {
     title: "D.1 \u2014 Problemas observados antes de intervenir"
   }, /*#__PURE__*/React.createElement("div", {
+    className: "mobile-option-grid",
     style: {
       display: 'grid',
       gridTemplateColumns: '1fr 1fr',
@@ -3590,6 +3652,7 @@ var SecD = function SecD() {
       fontStyle: 'italic'
     }
   }, "La tabla de detalle se genera autom\xE1ticamente al marcar problemas arriba.") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Sep, null), /*#__PURE__*/React.createElement("table", {
+    className: "mobile-card-table d1-table",
     style: {
       width: '100%',
       borderCollapse: 'collapse',
@@ -3609,6 +3672,7 @@ var SecD = function SecD() {
     return /*#__PURE__*/React.createElement("tr", {
       key: p
     }, /*#__PURE__*/React.createElement("td", {
+      "data-label": "ID",
       style: _objectSpread(_objectSpread({}, td(ev)), {}, {
         fontWeight: 700,
         color: G.mid,
@@ -3616,8 +3680,10 @@ var SecD = function SecD() {
         fontSize: 12.5
       })
     }, "P-".concat(String(idx + 1).padStart(2, '0'))), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Problema",
       style: td(ev)
     }, tabLabel(p)), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Severidad",
       style: _objectSpread(_objectSpread({}, td(ev)), {}, {
         padding: 0
       })
@@ -3741,6 +3807,7 @@ var CbSec = function CbSec(_ref36) {
     otroTexts = _ref36.otroTexts,
     setOtroTexts = _ref36.setOtroTexts;
   return /*#__PURE__*/React.createElement("div", {
+    className: "mobile-option-grid",
     style: {
       display: 'grid',
       gridTemplateColumns: '1fr 1fr',
@@ -3912,6 +3979,7 @@ var SecG = function SecG() {
     t: "amber",
     c: "Todos los \xEDtems aparecen marcados por defecto (cumplimiento est\xE1ndar). Desmarque los que NO se cumplieron durante la jornada."
   }), /*#__PURE__*/React.createElement("div", {
+    className: "mobile-option-grid",
     style: {
       display: 'grid',
       gridTemplateColumns: '1fr 1fr',
@@ -4243,6 +4311,7 @@ var SecH = function SecH() {
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Sub, {
     title: "H.1 \u2014 Tipo de recursos utilizados"
   }, /*#__PURE__*/React.createElement("div", {
+    className: "mobile-option-grid resources-option-grid",
     style: {
       display: 'grid',
       gridTemplateColumns: '1fr 1fr 1fr',
@@ -4280,6 +4349,7 @@ var SecH = function SecH() {
       marginTop: 4
     }
   }, "La tabla de recursos se genera autom\xE1ticamente al marcar \xEDtems arriba. La unidad se asigna sola seg\xFAn el recurso.") : /*#__PURE__*/React.createElement("table", {
+    className: "mobile-card-table resources-table",
     style: {
       width: '100%',
       borderCollapse: 'collapse',
@@ -4302,11 +4372,13 @@ var SecH = function SecH() {
     return /*#__PURE__*/React.createElement("tr", {
       key: r
     }, /*#__PURE__*/React.createElement("td", {
+      "data-label": "Recurso",
       style: _objectSpread(_objectSpread({}, td(ev)), {}, {
         fontWeight: 600,
         color: G.dark
       })
     }, r), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Unidad",
       style: _objectSpread(_objectSpread({}, td(ev)), {}, {
         padding: 0
       })
@@ -4334,12 +4406,14 @@ var SecH = function SecH() {
         value: u
       }, u);
     }))), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Cantidad",
       style: _objectSpread(_objectSpread({}, td(ev)), {}, {
         padding: 0
       })
     }, cellInp(row.cantidad, function (v) {
       return upd(r, 'cantidad', v);
     }, 'number', '0')), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Estado / observación",
       style: _objectSpread(_objectSpread({}, td(ev)), {}, {
         padding: 0
       })
@@ -4351,6 +4425,7 @@ var SecH = function SecH() {
     return /*#__PURE__*/React.createElement("tr", {
       key: c.id
     }, /*#__PURE__*/React.createElement("td", {
+      "data-label": "Recurso",
       style: _objectSpread(_objectSpread({}, td(ev)), {}, {
         padding: 0
       })
@@ -4391,6 +4466,7 @@ var SecH = function SecH() {
         padding: '4px 6px'
       }
     }, "\u2715"))), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Unidad",
       style: _objectSpread(_objectSpread({}, td(ev)), {}, {
         padding: 0
       })
@@ -4418,12 +4494,14 @@ var SecH = function SecH() {
         value: u
       }, u);
     }))), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Cantidad",
       style: _objectSpread(_objectSpread({}, td(ev)), {}, {
         padding: 0
       })
     }, cellInp(c.cantidad, function (v) {
       return updCustom(c.id, 'cantidad', v);
     }, 'number', '0')), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Estado / observación",
       style: _objectSpread(_objectSpread({}, td(ev)), {}, {
         padding: 0
       })
@@ -4849,7 +4927,9 @@ var SecJ = function SecJ() {
       });
     });
   };
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("input", {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "photo-module"
+  }, /*#__PURE__*/React.createElement("input", {
     ref: fileRef,
     type: "file",
     accept: "image/*",
@@ -4859,6 +4939,7 @@ var SecJ = function SecJ() {
       display: 'none'
     }
   }), /*#__PURE__*/React.createElement("div", {
+    className: "photo-actions",
     style: {
       display: 'flex',
       alignItems: 'center',
@@ -4866,6 +4947,7 @@ var SecJ = function SecJ() {
       marginBottom: 20
     }
   }, /*#__PURE__*/React.createElement("button", {
+    className: "photo-add-button",
     onClick: function onClick() {
       return fileRef.current.click();
     },
@@ -4889,6 +4971,7 @@ var SecJ = function SecJ() {
       color: G.muted
     }
   }, fotos.length, " ", fotos.length === 1 ? 'fotografía' : 'fotografías', " agregada", fotos.length > 1 ? 's' : '')), fotos.length === 0 && /*#__PURE__*/React.createElement("div", {
+    className: "photo-empty",
     style: {
       border: "2px dashed ".concat(G.border),
       borderRadius: 8,
@@ -4909,6 +4992,7 @@ var SecJ = function SecJ() {
       opacity: 0.7
     }
   }, "Se pueden seleccionar varias fotos a la vez.")), fotos.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "photo-grid",
     style: {
       display: 'grid',
       gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
@@ -4916,6 +5000,7 @@ var SecJ = function SecJ() {
     }
   }, fotos.map(function (f, idx) {
     return /*#__PURE__*/React.createElement("div", {
+      className: "photo-card",
       key: f.id,
       style: {
         background: G.white,
@@ -4944,6 +5029,8 @@ var SecJ = function SecJ() {
         letterSpacing: '0.06em'
       }
     }, "Foto ", String(idx + 1).padStart(2, '0')), /*#__PURE__*/React.createElement("button", {
+      className: "photo-delete-button",
+      "aria-label": "Eliminar foto ".concat(idx + 1),
       onClick: function onClick() {
         return removeFoto(f.id);
       },
@@ -4958,6 +5045,7 @@ var SecJ = function SecJ() {
         lineHeight: 1
       }
     }, "\u2715")), /*#__PURE__*/React.createElement("div", {
+      className: "photo-preview",
       style: {
         position: 'relative',
         background: '#111',
@@ -4980,6 +5068,7 @@ var SecJ = function SecJ() {
         flexDirection: 'column'
       }
     }, /*#__PURE__*/React.createElement("label", {
+      htmlFor: "foto-desc-".concat(f.id),
       style: {
         fontSize: 10.5,
         fontWeight: 700,
@@ -4990,6 +5079,7 @@ var SecJ = function SecJ() {
         display: 'block'
       }
     }, "Descripci\xF3n"), /*#__PURE__*/React.createElement("textarea", {
+      id: "foto-desc-".concat(f.id),
       value: f.desc,
       onChange: function onChange(e) {
         return updDesc(f.id, e.target.value);
@@ -5249,11 +5339,13 @@ var SecK = function SecK() {
     });
   };
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "mobile-card-table-wrap",
     style: {
       overflowX: 'auto',
       marginBottom: 10
     }
   }, /*#__PURE__*/React.createElement("table", {
+    className: "mobile-card-table k1-table",
     style: {
       width: '100%',
       borderCollapse: 'collapse',
@@ -5278,10 +5370,12 @@ var SecK = function SecK() {
     return /*#__PURE__*/React.createElement("tr", {
       key: r.id
     }, /*#__PURE__*/React.createElement("td", {
+      "data-label": "ID",
       style: tdB(ev)
     }, ci(r.idTxt, function (v) {
       return upd(r.id, 'idTxt', v);
     }, "P-".concat(String(idx + 1).padStart(2, '0')))), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Situación pendiente",
       style: tdB(ev)
     }, /*#__PURE__*/React.createElement("div", {
       style: {
@@ -5303,6 +5397,7 @@ var SecK = function SecK() {
     }, "D"), ci(r.situacion, function (v) {
       return upd(r.id, 'situacion', v);
     }, 'Describa la situación pendiente'))), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Riesgo / Severidad",
       style: tdB(ev)
     }, /*#__PURE__*/React.createElement("select", {
       value: r.sev,
@@ -5333,10 +5428,12 @@ var SecK = function SecK() {
         }
       }, o);
     }))), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Acción recomendada",
       style: tdB(ev)
     }, ci(r.accion, function (v) {
       return upd(r.id, 'accion', v);
     }, 'Acción recomendada')), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Acciones",
       style: _objectSpread(_objectSpread({}, tdC(ev)), {}, {
         textAlign: 'center',
         padding: 0
@@ -5692,10 +5789,12 @@ var SecM = function SecM() {
     cursor: 'pointer'
   };
   return /*#__PURE__*/React.createElement("div", {
+    className: "signature-module",
     style: {
       maxWidth: 420
     }
   }, /*#__PURE__*/React.createElement("div", {
+    className: "signature-card",
     style: {
       border: "1px solid ".concat(G.border),
       borderRadius: 8,
@@ -5779,6 +5878,9 @@ var SecM = function SecM() {
   }, participants.length > 0 ? '🔒 La lista se toma de los participantes registrados en la Sección B. Use «Otro» solo si el responsable no figura allí.' : 'ℹ Registre el personal en la Sección B para elegir el responsable de la lista. Mientras tanto, puede escribir el nombre.')), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Lbl, {
     c: "Firma"
   }), /*#__PURE__*/React.createElement("div", {
+    className: "signature-pad",
+    role: "img",
+    "aria-label": "Espacio reservado para firma",
     style: {
       height: 70,
       border: "1px dashed ".concat(G.border),
@@ -5790,7 +5892,7 @@ var SecM = function SecM() {
       fontSize: 12,
       background: G.soft
     }
-  }, "\u2014 firma \u2014")), /*#__PURE__*/React.createElement(Inp, {
+  }, "Espacio para firma")), /*#__PURE__*/React.createElement(Inp, {
     label: "Fecha",
     type: "date",
     dv: TODAY
@@ -8048,7 +8150,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.14'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.15'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];
