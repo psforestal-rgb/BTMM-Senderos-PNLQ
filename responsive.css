@@ -1,0 +1,334 @@
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  max-width: 100%;
+  min-height: 100%;
+}
+
+body {
+  background: #e6ebe7;
+  overflow-x: auto;
+}
+
+#root {
+  container-type: inline-size;
+  width: 100%;
+  min-width: 0;
+  transition: width 180ms ease, box-shadow 180ms ease;
+}
+
+body.preview-mobile #root,
+body.preview-desktop #root {
+  margin: 72px auto 24px;
+  min-height: calc(100vh - 96px);
+  background: #f5f2e9;
+  box-shadow: 0 18px 60px rgba(18, 50, 35, 0.24);
+}
+
+body.preview-mobile #root {
+  width: min(390px, calc(100vw - 24px));
+  border: 8px solid #1f2924;
+  border-radius: 28px;
+  overflow: clip;
+}
+
+body.preview-mobile .report-modal {
+  inset: 80px auto 24px 50% !important;
+  width: min(374px, calc(100vw - 40px)) !important;
+  transform: translateX(-50%);
+  border-radius: 18px;
+}
+
+body.preview-desktop #root {
+  width: 1180px;
+  min-width: 1180px;
+}
+
+#viewport-toggle {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 10001;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 999px;
+  background: #173f2f;
+  color: #fff;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.24);
+  font: 700 13px/1.2 "Segoe UI", system-ui, sans-serif;
+  cursor: pointer;
+}
+
+#viewport-toggle:hover,
+#viewport-toggle:focus-visible {
+  background: #2f7655;
+  outline: 3px solid rgba(224, 169, 58, 0.45);
+  outline-offset: 2px;
+}
+
+.draft-banner {
+  position: relative !important;
+  inset: auto !important;
+}
+
+.app-shell {
+  padding-top: 0 !important;
+}
+
+.app-sidebar {
+  position: sticky !important;
+  top: 0 !important;
+  align-self: flex-start;
+  height: 100vh;
+}
+
+.app-main {
+  margin-left: 0 !important;
+}
+
+input,
+select,
+textarea,
+button {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+textarea {
+  min-height: 74px;
+}
+
+@container (max-width: 700px) {
+  .app-shell {
+    display: flex !important;
+    flex-direction: column !important;
+    min-width: 0 !important;
+  }
+
+  .app-sidebar {
+    position: sticky !important;
+    top: 0 !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    z-index: 1000 !important;
+    display: flex !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+    white-space: nowrap;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.24) !important;
+  }
+
+  .sidebar-brand,
+  .nav-group-title,
+  .subnav,
+  .sidebar-generate > div,
+  .sidebar-drafts > div {
+    display: none !important;
+  }
+
+  .nav-group,
+  .nav-item {
+    display: flex !important;
+    flex: 0 0 auto !important;
+    padding: 0 !important;
+  }
+
+  .nav-button {
+    min-height: 54px;
+    padding: 8px 12px !important;
+    border-left: 0 !important;
+    border-bottom: 3px solid transparent;
+  }
+
+  .sidebar-generate,
+  .sidebar-drafts {
+    display: flex !important;
+    flex: 0 0 auto !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px !important;
+    margin: 0 !important;
+    padding: 6px !important;
+    border: 0 !important;
+  }
+
+  .sidebar-generate button,
+  .sidebar-drafts button,
+  .sidebar-drafts label {
+    width: auto !important;
+    min-height: 42px;
+    white-space: nowrap;
+  }
+
+  .app-main {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin-left: 0 !important;
+  }
+
+  .app-header {
+    padding: 18px 16px !important;
+  }
+
+  .app-header > div:nth-child(2) {
+    font-size: 21px !important;
+    line-height: 1.15;
+  }
+
+  .header-meta,
+  .section-body [style*="grid-template-columns"],
+  #informe-preview [style*="grid-template-columns"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .header-meta > div {
+    border-right: 0 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .app-content {
+    width: 100%;
+    max-width: none !important;
+    padding: 16px 12px 84px !important;
+  }
+
+  .breadcrumb {
+    flex-wrap: wrap;
+    line-height: 1.45;
+  }
+
+  .section-card {
+    min-width: 0;
+  }
+
+  .section-header {
+    align-items: flex-start !important;
+    gap: 10px !important;
+    padding: 12px !important;
+  }
+
+  .section-header > div:last-child {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: 16px !important;
+    line-height: 1.25;
+  }
+
+  .section-body {
+    min-width: 0;
+    padding: 14px 12px !important;
+  }
+
+  .section-body *,
+  #informe-preview * {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .section-body [style*="white-space: nowrap"],
+  #informe-preview [style*="white-space: nowrap"] {
+    white-space: normal !important;
+  }
+
+  .section-body table,
+  #informe-preview table {
+    display: block;
+    width: 100% !important;
+    max-width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+  }
+
+  .section-body input,
+  .section-body select,
+  .section-body textarea {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .section-body button,
+  .section-navigation button {
+    min-height: 42px;
+    white-space: normal;
+  }
+
+  .section-navigation {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .section-navigation button {
+    flex: 1 1 120px;
+    justify-content: center;
+  }
+
+  .report-modal {
+    align-items: stretch !important;
+    padding: 0 !important;
+  }
+
+  .report-toolbar {
+    max-width: none !important;
+    border-radius: 0 !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 12px !important;
+  }
+
+  .report-toolbar > div:last-child {
+    flex-wrap: wrap;
+  }
+
+  .report-toolbar button {
+    flex: 1 1 135px;
+    min-height: 42px;
+    padding: 8px 10px !important;
+  }
+
+  #informe-preview {
+    max-width: none !important;
+    padding: 24px 16px !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .draft-banner {
+    padding: 10px 12px !important;
+    gap: 8px !important;
+  }
+
+  .draft-banner > div:first-child {
+    flex-basis: 100%;
+  }
+
+  #viewport-toggle {
+    right: 12px;
+    bottom: 12px;
+  }
+}
+
+@media print {
+  #viewport-toggle {
+    display: none !important;
+  }
+
+  body.preview-mobile #root,
+  body.preview-desktop #root {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+}

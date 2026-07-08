@@ -17,6 +17,7 @@
   <link rel="manifest" href="./manifest.webmanifest"/>
   <link rel="icon" href="./icons/icon.svg" type="image/svg+xml"/>
   <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
+  <link rel="stylesheet" href="./responsive.css"/>
   <script src="./vendor/react.production.min.js"></script>
   <script src="./vendor/react-dom.production.min.js"></script>
   <script src="./vendor/jszip.min.js"></script>
@@ -6384,6 +6385,7 @@ var InformeModal = function InformeModal(_ref46) {
     }, v || '—');
   };
   return /*#__PURE__*/React.createElement("div", {
+    className: "report-modal",
     style: {
       position: 'fixed',
       inset: 0,
@@ -6396,6 +6398,7 @@ var InformeModal = function InformeModal(_ref46) {
       padding: '20px 0'
     }
   }, /*#__PURE__*/React.createElement("div", {
+    className: "report-toolbar",
     style: {
       width: '100%',
       maxWidth: 840,
@@ -7445,6 +7448,7 @@ function NavBtn(_ref58) {
     hov = _useState84[0],
     setHov = _useState84[1];
   return /*#__PURE__*/React.createElement("div", {
+    className: "nav-button",
     onMouseEnter: function onMouseEnter() {
       return setHov(true);
     },
@@ -7748,6 +7752,7 @@ function App() {
       restoreFormData: restoreFormData
     }
   }, bannerVisible && /*#__PURE__*/React.createElement("div", {
+    className: "draft-banner",
     style: {
       position: 'fixed',
       top: 0,
@@ -7807,6 +7812,7 @@ function App() {
       cursor: 'pointer'
     }
   }, "\xD7 Cerrar")), /*#__PURE__*/React.createElement("div", {
+    className: "app-shell",
     style: {
       display: 'flex',
       minHeight: '100vh',
@@ -7815,6 +7821,7 @@ function App() {
       paddingTop: bannerVisible ? 48 : 0
     }
   }, /*#__PURE__*/React.createElement("div", {
+    className: "app-sidebar",
     style: {
       width: 210,
       minWidth: 210,
@@ -7829,6 +7836,7 @@ function App() {
       boxShadow: '2px 0 10px rgba(0,0,0,0.2)'
     }
   }, /*#__PURE__*/React.createElement("div", {
+    className: "sidebar-brand",
     style: {
       padding: '15px 13px 12px',
       borderBottom: '1px solid rgba(255,255,255,0.1)',
@@ -7858,11 +7866,13 @@ function App() {
     }
   }, "Reporte Mantenimiento Senderos")), SCHEMA.map(function (group, gi) {
     return /*#__PURE__*/React.createElement("div", {
+      className: "nav-group",
       key: gi,
       style: {
         padding: '6px 0'
       }
     }, /*#__PURE__*/React.createElement("div", {
+      className: "nav-group-title",
       style: {
         padding: '6px 13px 3px',
         fontSize: 9,
@@ -7873,6 +7883,7 @@ function App() {
       }
     }, group.group), group.sections.map(function (sec) {
       return /*#__PURE__*/React.createElement("div", {
+        className: "nav-item",
         key: sec.id
       }, /*#__PURE__*/React.createElement(NavBtn, {
         sec: sec,
@@ -7881,6 +7892,7 @@ function App() {
           return go(sec.id);
         }
       }), active === sec.id && sec.subs.length > 0 && /*#__PURE__*/React.createElement("div", {
+        className: "subnav",
         style: {
           paddingBottom: 4
         }
@@ -7897,6 +7909,7 @@ function App() {
       })));
     }));
   }), /*#__PURE__*/React.createElement("div", {
+    className: "sidebar-generate",
     style: {
       padding: '12px 13px',
       marginTop: 8,
@@ -7930,6 +7943,7 @@ function App() {
       marginTop: 4
     }
   }, "Seleccione sendero para activar")), /*#__PURE__*/React.createElement("div", {
+    className: "sidebar-drafts",
     style: {
       padding: '10px 13px',
       borderTop: '1px solid rgba(255,255,255,0.08)',
@@ -7998,12 +8012,14 @@ function App() {
       display: 'none'
     }
   })))), /*#__PURE__*/React.createElement("div", {
+    className: "app-main",
     style: {
       marginLeft: 210,
       flex: 1,
       minWidth: 0
     }
   }, /*#__PURE__*/React.createElement("div", {
+    className: "app-header",
     style: {
       background: G.mid,
       color: 'white',
@@ -8027,6 +8043,7 @@ function App() {
       marginBottom: 3
     }
   }, "Reporte de Mantenimiento de Senderos"), /*#__PURE__*/React.createElement("div", {
+    className: "header-meta",
     style: {
       display: 'grid',
       gridTemplateColumns: 'repeat(3,1fr)',
@@ -8035,7 +8052,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.11'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.12'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];
@@ -8060,11 +8077,13 @@ function App() {
       }
     }, v));
   }))), /*#__PURE__*/React.createElement("div", {
+    className: "app-content",
     style: {
       padding: '22px 28px',
       maxWidth: 1000
     }
   }, /*#__PURE__*/React.createElement("div", {
+    className: "breadcrumb",
     style: {
       fontSize: 12,
       color: G.muted,
@@ -8087,6 +8106,7 @@ function App() {
       fontWeight: 700
     }
   }, activeSec === null || activeSec === void 0 ? void 0 : activeSec.heading)), /*#__PURE__*/React.createElement("div", {
+    className: "section-card",
     style: {
       background: G.white,
       borderRadius: 8,
@@ -8096,6 +8116,7 @@ function App() {
       marginBottom: 18
     }
   }, /*#__PURE__*/React.createElement("div", {
+    className: "section-header",
     style: {
       display: 'flex',
       alignItems: 'center',
@@ -8127,6 +8148,7 @@ function App() {
       color: G.dark
     }
   }, activeSec === null || activeSec === void 0 ? void 0 : activeSec.heading)), /*#__PURE__*/React.createElement("div", {
+    className: "section-body",
     style: {
       padding: 20
     }
@@ -8144,6 +8166,7 @@ function App() {
       }
     }, "Secci\xF3n en construcci\xF3n."));
   }))), /*#__PURE__*/React.createElement("div", {
+    className: "section-navigation",
     style: {
       display: 'flex',
       justifyContent: 'space-between',
@@ -8240,6 +8263,38 @@ function App() {
   }));
 }
 ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+</script>
+<button id="viewport-toggle" type="button" aria-pressed="false" title="Alternar vista temporal"></button>
+<script>
+  (function () {
+    var button = document.getElementById('viewport-toggle');
+    var root = document.getElementById('root');
+    function naturalMode() {
+      return window.matchMedia('(max-width: 700px)').matches ? 'mobile' : 'desktop';
+    }
+    function currentMode() {
+      return document.body.classList.contains('preview-mobile') ? 'mobile' :
+        document.body.classList.contains('preview-desktop') ? 'desktop' : naturalMode();
+    }
+    function paint() {
+      var mode = currentMode();
+      button.textContent = mode === 'mobile' ? '🖥 Vista PC' : '📱 Vista móvil';
+      button.setAttribute('aria-label', mode === 'mobile' ? 'Cambiar temporalmente a vista de PC' : 'Cambiar temporalmente a vista móvil');
+      button.setAttribute('aria-pressed', mode === 'mobile' ? 'true' : 'false');
+      root.setAttribute('data-preview', mode);
+    }
+    button.addEventListener('click', function () {
+      var next = currentMode() === 'mobile' ? 'desktop' : 'mobile';
+      document.body.classList.toggle('preview-mobile', next === 'mobile');
+      document.body.classList.toggle('preview-desktop', next === 'desktop');
+      paint();
+      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('resize', function () {
+      if (!document.body.classList.contains('preview-mobile') && !document.body.classList.contains('preview-desktop')) paint();
+    });
+    paint();
+  }());
 </script><script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
