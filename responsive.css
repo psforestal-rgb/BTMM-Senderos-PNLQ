@@ -357,7 +357,7 @@ textarea {
   min-height: 74px;
 }
 
-@container (max-width: 700px) {
+@container (max-width: 780px) {
   .app-shell {
     display: flex !important;
     flex-direction: column !important;
