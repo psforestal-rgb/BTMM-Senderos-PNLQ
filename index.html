@@ -9,7 +9,7 @@
   <!-- PNLQ · v20260615_225405 -->
   <title>Reporte Mantenimiento Senderos — PNLQ</title>
   <meta name="description" content="Formulario para reportar el mantenimiento de senderos del Parque Nacional Los Quetzales."/>
-  <meta name="theme-color" content="#24543b"/>
+  <meta name="theme-color" content="#021A53"/>
   <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -104,18 +104,18 @@ var MEMBRETE = {
 
 // ─── COLORES ─────────────────────────────────────────────────────────────────
 var G = {
-  dark: '#1A3C2A',
-  mid: '#2E6B4F',
-  light: '#52B788',
-  pale: '#D8F3DC',
-  amber: '#C8860A',
-  amberBg: '#FFF8E1',
-  bg: '#F4F1EB',
+  dark: '#021A53',
+  mid: '#002E7A',
+  light: '#164687',
+  pale: '#EEF2F8',
+  amber: '#CFAC65',
+  amberBg: '#FBF7ED',
+  bg: '#F4F6F8',
   white: '#FFFFFF',
-  border: '#D4CEBD',
-  text: '#1C1816',
-  muted: '#7A756A',
-  soft: '#FAF7F2'
+  border: '#AAB2BD',
+  text: '#021A53',
+  muted: '#4B5563',
+  soft: '#F7F8FA'
 };
 
 // ─── CONTEXTO COMPARTIDO (sendero seleccionado en A → leído en C) ────────────
@@ -759,8 +759,10 @@ var Sep = function Sep() {
   });
 };
 var Lbl = function Lbl(_ref3) {
-  var c = _ref3.c;
-  return /*#__PURE__*/React.createElement("div", {
+  var c = _ref3.c,
+    htmlFor = _ref3.htmlFor;
+  var labelProps = {
+    className: 'field-label',
     style: {
       fontSize: 11,
       fontWeight: 700,
@@ -769,7 +771,9 @@ var Lbl = function Lbl(_ref3) {
       color: G.muted,
       marginBottom: 5
     }
-  }, c);
+  };
+  if (htmlFor) labelProps.htmlFor = htmlFor;
+  return /*#__PURE__*/React.createElement(htmlFor ? "label" : "div", labelProps, c);
 };
 var Inp = function Inp(_ref4) {
   var label = _ref4.label,
@@ -780,13 +784,16 @@ var Inp = function Inp(_ref4) {
     span = _ref4.span,
     ro = _ref4.ro,
     dv = _ref4.dv;
+  var fieldId = "field-".concat(React.useId().replace(/:/g, ''));
   return /*#__PURE__*/React.createElement("div", {
     style: _objectSpread({}, span ? {
       gridColumn: "span ".concat(span)
     } : {})
   }, label && /*#__PURE__*/React.createElement(Lbl, {
-    c: label
+    c: label,
+    htmlFor: fieldId
   }), /*#__PURE__*/React.createElement("input", _extends({
+    id: fieldId,
     type: type,
     placeholder: ph || '___________',
     readOnly: ro
@@ -813,13 +820,16 @@ var Txt = function Txt(_ref5) {
     span = _ref5.span,
     value = _ref5.value,
     _onChange = _ref5.onChange;
+  var fieldId = "field-".concat(React.useId().replace(/:/g, ''));
   return /*#__PURE__*/React.createElement("div", {
     style: _objectSpread({}, span ? {
       gridColumn: "span ".concat(span)
     } : {})
   }, label && /*#__PURE__*/React.createElement(Lbl, {
-    c: label
+    c: label,
+    htmlFor: fieldId
   }), /*#__PURE__*/React.createElement("textarea", _extends({
+    id: fieldId,
     rows: rows
   }, _onChange ? {
     value: value || '',
@@ -846,14 +856,22 @@ var Radios = function Radios(_ref6) {
     opts = _ref6.opts,
     value = _ref6.value,
     _onChange2 = _ref6.onChange;
-  return /*#__PURE__*/React.createElement("div", {
+  return /*#__PURE__*/React.createElement("fieldset", {
+    className: "option-group radio-group",
     style: {
       display: 'flex',
       flexWrap: 'wrap',
-      gap: '6px 16px'
+      gap: '6px 16px',
+      border: 0,
+      margin: 0,
+      padding: 0,
+      minWidth: 0
     }
-  }, opts.map(function (o) {
+  }, /*#__PURE__*/React.createElement("legend", {
+    className: "sr-only"
+  }, name || "Opciones"), opts.map(function (o) {
     return /*#__PURE__*/React.createElement("label", {
+      className: "option-label",
       key: o,
       style: {
         display: 'flex',
@@ -887,15 +905,22 @@ var CbsCtrl = function CbsCtrl(_ref7) {
     cols = _ref7$cols === void 0 ? 2 : _ref7$cols,
     checked = _ref7.checked,
     onToggle = _ref7.onToggle;
-  return /*#__PURE__*/React.createElement("div", {
+  return /*#__PURE__*/React.createElement("fieldset", {
+    className: "option-group checkbox-group",
     style: {
       display: 'grid',
       gridTemplateColumns: "repeat(".concat(cols, ",1fr)"),
       gap: '7px 20px',
-      padding: '2px 0'
+      padding: '2px 0',
+      border: 0,
+      margin: 0,
+      minWidth: 0
     }
-  }, opts.map(function (o, i) {
+  }, /*#__PURE__*/React.createElement("legend", {
+    className: "sr-only"
+  }, "Opciones disponibles"), opts.map(function (o, i) {
     return /*#__PURE__*/React.createElement("label", {
+      className: "option-label",
       key: i,
       style: {
         display: 'flex',
@@ -1285,8 +1310,10 @@ var SecA = function SecA() {
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Gr, {
     cols: 2
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Lbl, {
-    c: "N\xFAmero de oficio"
+    c: "N\xFAmero de oficio",
+    htmlFor: "oficio-numero"
   }), /*#__PURE__*/React.createElement("div", {
+    className: "office-number",
     style: {
       display: 'flex',
       alignItems: 'stretch',
@@ -1294,6 +1321,7 @@ var SecA = function SecA() {
       flexWrap: 'wrap'
     }
   }, /*#__PURE__*/React.createElement("span", {
+    className: "office-prefix",
     style: {
       fontSize: 11.5,
       fontWeight: 700,
@@ -1308,6 +1336,8 @@ var SecA = function SecA() {
       alignItems: 'center'
     }
   }, "SINAC-ACC-BTMM-PNLQ-INF-"), /*#__PURE__*/React.createElement("input", {
+    id: "oficio-numero",
+    className: "office-input",
     type: "text",
     inputMode: "numeric",
     value: oficioNum,
@@ -1329,6 +1359,7 @@ var SecA = function SecA() {
       letterSpacing: '0.1em'
     }
   }), /*#__PURE__*/React.createElement("span", {
+    className: "office-year",
     style: {
       fontSize: 11.5,
       fontWeight: 700,
@@ -1343,6 +1374,7 @@ var SecA = function SecA() {
       alignItems: 'center'
     }
   }, "-", oficioYear), /*#__PURE__*/React.createElement("a", {
+    className: "office-link",
     href: "https://docs.google.com/spreadsheets/d/1zxI2c3m_g9ygRF0pUXlhVFuX__DMak2jkjUfUpEFTFs/edit?gid=1491842575#gid=1491842575",
     target: "_blank",
     rel: "noopener noreferrer",
@@ -1419,9 +1451,15 @@ var SecA = function SecA() {
       color: G.mid,
       fontWeight: 700
     }
-  }, "Parque Nacional Los Quetzales")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Lbl, {
-    c: "Sendero \u2014 nombre oficial"
+  }, "Parque Nacional Los Quetzales")), /*#__PURE__*/React.createElement("div", {
+    className: "sendero-field"
+  }, /*#__PURE__*/React.createElement(Lbl, {
+    c: "Sendero \u2014 nombre oficial",
+    htmlFor: "sendero-oficial"
   }), /*#__PURE__*/React.createElement("select", {
+    id: "sendero-oficial",
+    className: "field-select sendero-select",
+    "aria-describedby": "sendero-help",
     value: sendero,
     onChange: function onChange(e) {
       return setSendero(e.target.value);
@@ -1445,7 +1483,10 @@ var SecA = function SecA() {
       key: s,
       value: s
     }, s);
-  })))), /*#__PURE__*/React.createElement(Sep, null), /*#__PURE__*/React.createElement(Gr, {
+  })), /*#__PURE__*/React.createElement("div", {
+    id: "sendero-help",
+    className: "field-help"
+  }, "Seleccione el sendero oficial para habilitar el informe y la ubicaci\xF3n."))), /*#__PURE__*/React.createElement(Sep, null), /*#__PURE__*/React.createElement(Gr, {
     cols: 2
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Lbl, {
     c: "Tipo de intervenci\xF3n"
@@ -8052,7 +8093,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.12'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.13'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];
