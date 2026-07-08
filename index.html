@@ -1229,7 +1229,7 @@ var SecA = function SecA() {
   var _useState5 = useState(''),
     _useState6 = _slicedToArray(_useState5, 2),
     oficioNum = _useState6[0],
-    setOficioNum = _useState6[1]; // 4 dígitos
+    setOficioNum = _useState6[1]; // número de oficio completo
   var _useState7 = useState(function () {
       return new Set();
     }),
@@ -1266,9 +1266,7 @@ var SecA = function SecA() {
   var fechaIni = (sharedA === null || sharedA === void 0 ? void 0 : sharedA.periodIni) || '';
   var fechaFin = (sharedA === null || sharedA === void 0 ? void 0 : sharedA.periodFin) || '';
 
-  // Año del oficio: derivado del período (si existe) o el año actual
-  var oficioYear = fechaIni && /^\d{4}/.test(fechaIni) ? fechaIni.slice(0, 4) : String(new Date().getFullYear());
-  var oficioFull = oficioNum ? "SINAC-ACC-BTMM-PNLQ-INF-".concat(oficioNum, "-").concat(oficioYear) : '';
+  var oficioFull = oficioNum.trim();
   var _useContext2 = useContext(FormCtx),
     updateShared = _useContext2.updateShared,
     rcA = _useContext2.registerCollector,
@@ -1293,7 +1291,7 @@ var SecA = function SecA() {
     rrA('a_data', function (d) {
       if (d.restriccion) setRestriccion(d.restriccion);
       if (d.sendero) setSendero(d.sendero);
-      if (d.oficioNum) setOficioNum(d.oficioNum);
+      if (d.oficio || d.oficioNum) setOficioNum(d.oficio || d.oficioNum);
       if (d.tipoInterv) setTipoInterv(new Set(d.tipoInterv));
       if (d.origen) setOrigen(new Set(d.origen));
       if (d.clima) setClima(new Set(d.clima));
@@ -1320,65 +1318,32 @@ var SecA = function SecA() {
       gap: 0,
       flexWrap: 'wrap'
     }
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "office-prefix",
-    style: {
-      fontSize: 11.5,
-      fontWeight: 700,
-      color: G.mid,
-      background: G.pale,
-      padding: '7px 7px',
-      borderRadius: '4px 0 0 4px',
-      border: "1px solid ".concat(G.border),
-      borderRight: 'none',
-      whiteSpace: 'nowrap',
-      display: 'flex',
-      alignItems: 'center'
-    }
-  }, "SINAC-ACC-BTMM-PNLQ-INF-"), /*#__PURE__*/React.createElement("input", {
+  }, /*#__PURE__*/React.createElement("input", {
     id: "oficio-numero",
     className: "office-input",
     type: "text",
-    inputMode: "numeric",
     value: oficioNum,
-    maxLength: 4,
+    maxLength: 120,
     onChange: function onChange(e) {
-      return setOficioNum(e.target.value.replace(/\D/g, '').slice(0, 4));
+      return setOficioNum(e.target.value);
     },
-    placeholder: "0000",
+    placeholder: "Escriba el n\xFAmero de oficio completo",
     style: {
-      width: 58,
-      textAlign: 'center',
+      width: '100%',
       border: "1px solid ".concat(G.border),
-      padding: '7px 4px',
+      padding: '7px 10px',
       fontSize: 13,
       fontFamily: 'inherit',
       color: G.text,
       background: G.white,
-      outline: 'none',
-      letterSpacing: '0.1em'
+      outline: 'none'
     }
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "office-year",
-    style: {
-      fontSize: 11.5,
-      fontWeight: 700,
-      color: G.mid,
-      background: G.pale,
-      padding: '7px 8px',
-      borderRadius: '0 4px 4px 0',
-      border: "1px solid ".concat(G.border),
-      borderLeft: 'none',
-      whiteSpace: 'nowrap',
-      display: 'flex',
-      alignItems: 'center'
-    }
-  }, "-", oficioYear), /*#__PURE__*/React.createElement("a", {
+  }), /*#__PURE__*/React.createElement("a", {
     className: "office-link",
-    href: "https://docs.google.com/spreadsheets/d/1zxI2c3m_g9ygRF0pUXlhVFuX__DMak2jkjUfUpEFTFs/edit?gid=1491842575#gid=1491842575",
+    href: "https://myoffice.sinac.go.cr/Identity/Account/Login",
     target: "_blank",
     rel: "noopener noreferrer",
-    title: "Abrir tabla de consecutivos PNLQ 2026 en Google Sheets",
+    title: "Abrir MyOffice en una pesta\xF1a nueva",
     style: {
       marginLeft: 8,
       display: 'flex',
@@ -1393,17 +1358,7 @@ var SecA = function SecA() {
       textDecoration: 'none',
       whiteSpace: 'nowrap'
     }
-  }, "\uD83D\uDCCA Consecutivos")), oficioNum && /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 10.5,
-      color: G.light,
-      marginTop: 4
-    }
-  }, "Oficio completo: ", /*#__PURE__*/React.createElement("strong", {
-    style: {
-      color: G.mid
-    }
-  }, oficioFull))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Lbl, {
+  }, "\u2197 MyOffice"))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Lbl, {
     c: "Per\xEDodo del mantenimiento"
   }), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -8093,7 +8048,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.13'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.14'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];
