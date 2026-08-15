@@ -1553,6 +1553,7 @@ var SINAC_STAFF = [
 'Juan Pablo Granados', 'Karen Valle', 'Josué Brenes', 'Laura Valverde', 'Diana Tencio', 'Jetzelly Villalobos', 'Pablo Sánchez',
 // Grupo 3
 'Yolanda Elizondo', 'Mariano Solis', 'Guillermo Perez', 'Carlos Cordero'];
+var B1_MEMORY_KEY = 'senderos_pnlq_b1_memory_v1';
 var SecB = function SecB() {
   var mkRow = function mkRow(fecha) {
     var encargado = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
@@ -1607,8 +1608,13 @@ var SecB = function SecB() {
     _useState16 = _slicedToArray(_useState15, 2),
     b3x = _useState16[0],
     setB3x = _useState16[1]; // campos manuales de B.3: { [fecha]: {responsable, obs} }
+  var _useStateSavedNotice = useState(''),
+    _useStateSavedNotice2 = _slicedToArray(_useStateSavedNotice, 2),
+    savedNotice = _useStateSavedNotice2[0],
+    setSavedNotice = _useStateSavedNotice2[1];
 
   var upd = function upd(id, k, v) {
+    setSavedNotice('');
     return setRows(function (rs) {
       return rs.map(function (r) {
         return r.id === id ? _objectSpread(_objectSpread({}, r), {}, _defineProperty({}, k, v)) : r;
@@ -1616,11 +1622,13 @@ var SecB = function SecB() {
     });
   };
   var addRow = function addRow(fecha) {
+    setSavedNotice('');
     return setRows(function (rs) {
       return [].concat(_toConsumableArray(rs), [mkRow(fecha || fechaNueva, false)]);
     });
   };
   var addLeaderRow = function addLeaderRow() {
+    setSavedNotice('');
     return setRows(function (rs) {
       if (rs.some(function (r) {
         return r.encargado;
@@ -1629,6 +1637,7 @@ var SecB = function SecB() {
     });
   };
   var updateJornada = function updateJornada(campo, valor) {
+    setSavedNotice('');
     if (campo === 'fecha') setFechaNueva(valor);
     if (campo === 'ini') setJornadaIni(valor);
     if (campo === 'fin') setJornadaFin(valor);
@@ -1645,11 +1654,62 @@ var SecB = function SecB() {
     }
     return calcMin(r.ini || jornadaIni, r.fin || jornadaFin);
   };
+  var persistB1Memory = function persistB1Memory(nextRows) {
+    try {
+      localStorage.setItem(B1_MEMORY_KEY, JSON.stringify({
+        version: 1,
+        fecha: fechaNueva,
+        ini: jornadaIni,
+        fin: jornadaFin,
+        rows: nextRows,
+        savedAt: new Date().toISOString()
+      }));
+      return true;
+    } catch (error) {
+      console.warn('No se pudo guardar B.1 en este navegador:', error);
+      return false;
+    }
+  };
+  var saveRow = function saveRow(id) {
+    var record = rows.find(function (r) {
+      return r.id === id;
+    });
+    if (!record || !record.nombre.trim()) {
+      alert('Seleccione o escriba el nombre antes de guardar.');
+      return;
+    }
+    var conflict = rows.find(function (other) {
+      return other.id !== record.id && !!other.encargado !== !!record.encargado && normB1Name(other.nombre) === normB1Name(record.nombre);
+    });
+    if (conflict) {
+      alert(record.encargado ? 'Esta persona ya está registrada como participante.' : 'Esta persona ya está registrada como encargado de cuadrilla.');
+      return;
+    }
+    if (record.parcial) {
+      var partialMin = rowMinutes(record);
+      var maxMin = calcMin(jornadaIni, jornadaFin);
+      if (partialMin <= 0 || partialMin > maxMin) {
+        alert("Indique una cantidad de horas parciales mayor que cero y no superior a ".concat(maxMin / 60, " horas."));
+        return;
+      }
+    }
+    if (!persistB1Memory(rows)) {
+      alert('No fue posible guardar los cambios en este navegador.');
+      return;
+    }
+    setSavedNotice("Cambios de ".concat(record.nombre, " guardados en este navegador."));
+    setPersonasCerradas(function (state) {
+      return _objectSpread(_objectSpread({}, state), {}, _defineProperty({}, id, true));
+    });
+  };
   var delRow = function delRow(id) {
     return setRows(function (rs) {
-      return rs.filter(function (r) {
+      var nextRows = rs.filter(function (r) {
         return r.id !== id;
       });
+      persistB1Memory(nextRows);
+      setSavedNotice('Registro eliminado y cambios guardados en este navegador.');
+      return nextRows;
     });
   };
   var diasVisibles = useMemo(function () {
@@ -1798,6 +1858,36 @@ var SecB = function SecB() {
   bloqueadasRef.current = bloqueadas;
   var b3xRef = useRef(b3x);
   b3xRef.current = b3x;
+  useEffect(function () {
+    try {
+      var memoryRaw = localStorage.getItem(B1_MEMORY_KEY);
+      if (!memoryRaw) return;
+      var memory = JSON.parse(memoryRaw);
+      if (!memory || !Array.isArray(memory.rows) || memory.rows.length === 0) return;
+      var memoryIniMin = Math.min(930, clockToMinutes(memory.ini, 480));
+      var memoryFinMin = Math.max(memoryIniMin + 30, clockToMinutes(memory.fin, 960));
+      var memoryDate = memory.fecha || TODAY;
+      var memoryIni = minutesToClock(memoryIniMin);
+      var memoryFin = minutesToClock(memoryFinMin);
+      setFechaNueva(memoryDate);
+      setJornadaIni(memoryIni);
+      setJornadaFin(memoryFin);
+      setRows(memory.rows.map(function (r) {
+        return _objectSpread(_objectSpread({}, r), {}, {
+          fecha: memoryDate,
+          ini: memoryIni,
+          fin: memoryFin
+        });
+      }));
+      setPersonasCerradas(memory.rows.reduce(function (state, r) {
+        state[r.id] = true;
+        return state;
+      }, {}));
+      setSavedNotice('Registros recuperados de la memoria de este navegador.');
+    } catch (error) {
+      console.warn('No se pudo recuperar B.1 desde este navegador:', error);
+    }
+  }, []);
   useEffect(function () {
     registerCollector('b_rows', function () {
       return rowsRef.current;
@@ -2091,7 +2181,11 @@ var SecB = function SecB() {
     },
     disabled: !fechaNueva || jornadaMin <= 0,
     className: "b1-primary-button b1-add-participant-main"
-  }, "＋ Adicionar persona")), rows.length === 0 ? /*#__PURE__*/React.createElement("div", {
+  }, "＋ Adicionar persona")), savedNotice && /*#__PURE__*/React.createElement("div", {
+    className: "b1-save-notice",
+    role: "status",
+    "aria-live": "polite"
+  }, "✓ ", savedNotice), rows.length === 0 ? /*#__PURE__*/React.createElement("div", {
     className: "b1-empty-state"
   }, /*#__PURE__*/React.createElement("div", {
     "aria-hidden": "true"
@@ -2123,7 +2217,7 @@ var SecB = function SecB() {
       "aria-label": "".concat(cerrada ? 'Expandir' : 'Contraer', " participante ").concat(idx + 1)
     }, cerrada ? '▶' : '▼'), /*#__PURE__*/React.createElement("div", {
       className: "b1-person-title"
-    }, /*#__PURE__*/React.createElement("strong", null, r.encargado ? 'Encargado de cuadrilla' : r.nombre || "Participante ".concat(idx + 1)), /*#__PURE__*/React.createElement("span", null, r.encargado ? "".concat(r.nombre || 'Nombre pendiente', " · ").concat(r.parcial ? 'Participación parcial' : 'Jornada completa') : r.parcial ? 'Participación parcial' : 'Jornada completa'))), !cerrada && /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("strong", null, r.nombre || (r.encargado ? 'Encargado sin seleccionar' : "Participante ".concat(idx + 1))), /*#__PURE__*/React.createElement("span", null, r.encargado ? "Encargado de cuadrilla · ".concat(r.parcial ? 'Participación parcial' : 'Jornada completa') : r.parcial ? 'Participación parcial' : 'Jornada completa'))), !cerrada && /*#__PURE__*/React.createElement("div", {
       className: "b1-person-body"
     }, /*#__PURE__*/React.createElement("div", {
       className: "b1-person-fields"
@@ -2222,11 +2316,17 @@ var SecB = function SecB() {
       },
       placeholder: "Ej.: 4.5",
       style: b1ControlStyle
-    }), /*#__PURE__*/React.createElement("small", null, "Máximo recomendado: ", jornadaMin > 0 ? jornadaMin / 60 : 0, " horas"))), /*#__PURE__*/React.createElement("div", {
-      className: "b1-person-actions"
-    }, /*#__PURE__*/React.createElement("button", {
-      type: "button",
-      className: "b1-delete-button",
+  }), /*#__PURE__*/React.createElement("small", null, "Máximo recomendado: ", jornadaMin > 0 ? jornadaMin / 60 : 0, " horas"))), /*#__PURE__*/React.createElement("div", {
+    className: "b1-person-actions"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "b1-save-button",
+    onClick: function onClick() {
+      return saveRow(r.id);
+    }
+  }, "💾 Guardar cambios"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "b1-delete-button",
       onClick: function onClick() {
         return delRow(r.id);
       }
@@ -8843,7 +8943,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.21'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.22'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];

@@ -391,6 +391,7 @@ textarea {
 .b1-primary-button,
 .b1-add-person-button,
 .b1-lock-button,
+.b1-save-button,
 .b1-delete-button,
 .b1-collapse-button {
   min-height: 44px;
@@ -731,7 +732,38 @@ textarea {
 
 .b1-person-card.is-leader {
   border-color: #c79419;
+  background: #fffaf0;
   box-shadow: 0 0 0 2px rgba(199, 148, 25, 0.12);
+}
+
+.b1-person-card.is-leader .b1-person-header {
+  border-bottom-color: #e1c36f;
+  background: #fff0bf;
+}
+
+.b1-person-card.is-leader .b1-person-body {
+  background: #fffaf0;
+}
+
+.b1-save-button {
+  border: 1px solid #2f6b4f;
+  background: #edf8f2;
+  color: #174b35;
+}
+
+.b1-save-button:hover,
+.b1-save-button:focus-visible {
+  background: #d9f0e3;
+}
+
+.b1-save-notice {
+  padding: 10px 12px;
+  border: 1px solid #78a78d;
+  border-radius: 8px;
+  background: #edf8f2;
+  color: #174b35;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .b1-leader-chip {

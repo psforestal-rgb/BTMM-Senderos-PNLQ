@@ -7,7 +7,7 @@
 - Sitio: https://psforestal-rgb.github.io/BTMM-Senderos-PNLQ/
 - Carpeta local: `C:\Users\psfor\OneDrive\Documents\SENDEROS`
 - Punto de restauración anterior: tag `restore-v1.18`, commit `fd6ef68`.
-- Versión preparada: `1.21`; caché: `senderos-pnlq-v11`.
+- Versión preparada: `1.22`; caché: `senderos-pnlq-v12`.
 - La aplicación es React compilado y autocontenido dentro de `index.html`; no hay fuentes JSX ni proceso npm.
 
 ## Modelo funcional vigente
@@ -25,6 +25,7 @@ Cada formulario corresponde a una única jornada:
 9. Al marcar **Participó parcialmente**, aparece un campo numérico para indicar sus horas.
 10. Un botón independiente crea una tarjeta de **Encargado de cuadrilla** antes de las tarjetas de participantes.
 11. El nombre elegido como encargado desaparece del selector de participantes, y los participantes elegidos desaparecen del selector del encargado.
+12. Cada tarjeta tiene **Guardar cambios** antes de eliminar; guarda B.1 en `localStorage` y contrae la tarjeta.
 
 Ya no se muestran ni se usan en B.1:
 
@@ -59,6 +60,7 @@ Ya no se muestran ni se usan en B.1:
 - Los controles tienen altura táctil mínima de 44 px.
 - Las tarjetas no requieren desplazamiento horizontal.
 - El encargado tiene un flujo de adición separado y una tarjeta visualmente diferenciada.
+- Al colapsarse, la tarjeta dorada del encargado muestra su nombre con la misma jerarquía que los participantes.
 - La participación parcial y sus horas tienen jerarquía clara y mensajes de apoyo.
 
 ## Verificación realizada
