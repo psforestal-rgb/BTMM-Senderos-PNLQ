@@ -7,7 +7,7 @@
 - Sitio: https://psforestal-rgb.github.io/BTMM-Senderos-PNLQ/
 - Carpeta local: `C:\Users\psfor\OneDrive\Documents\SENDEROS`
 - Punto de restauración anterior: tag `restore-v1.18`, commit `fd6ef68`.
-- Versión preparada: `1.27`; caché: `senderos-pnlq-v17`.
+- Versión preparada: `1.28`; caché: `senderos-pnlq-v18`.
 - La aplicación es React compilado y autocontenido dentro de `index.html`; no hay fuentes JSX ni proceso npm.
 
 ## Modelo funcional vigente
@@ -136,6 +136,12 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - Cada tarjeta incorpora una barra segmentada táctil **Baja · Media · Alta**.
 - La barra permanece deshabilitada hasta seleccionar la tarjeta y usa verde, naranja o rojo para el nivel activo.
 - La estructura de datos sigue usando los mismos conjuntos y valores `Baja`, `Media` y `Alta`, conservando compatibilidad con borradores e informes.
+
+## Ajustes de G.1 (versión 1.28)
+
+- Se retiraron **Condiciones meteorológicas aptas** y **No se dejaron obstáculos bloqueando cauces o drenajes**.
+- **Visitantes informados de restricciones o desvíos** se reemplazó por **Rotulación o información al visitante**.
+- Al restaurar borradores anteriores, el texto antiguo se migra al nuevo y los dos controles eliminados se descartan.
 
 ## Precauciones
 

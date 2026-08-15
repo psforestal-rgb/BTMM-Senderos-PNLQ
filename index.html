@@ -5090,7 +5090,8 @@ var CbSec = function CbSec(_ref36) {
     }));
   }));
 };
-var G1_ITEMS = ['Medio de comunicación disponible', 'Herramientas revisadas antes de uso', 'Al menos una persona con primeros auxilios', 'Condiciones meteorológicas aptas', 'Visitantes informados de restricciones o desvíos', 'Zona de trabajo delimitada cuando corresponde', 'Residuos retirados o dispuestos correctamente', 'No se dejaron obstáculos bloqueando cauces o drenajes', 'Se evitó afectación innecesaria de vegetación, suelo o fauna', 'Otro'];
+var G1_VISITOR_INFO = 'Rotulación o información al visitante';
+var G1_ITEMS = ['Medio de comunicación disponible', 'Herramientas revisadas antes de uso', 'Al menos una persona con primeros auxilios', G1_VISITOR_INFO, 'Zona de trabajo delimitada cuando corresponde', 'Residuos retirados o dispuestos correctamente', 'Se evitó afectación innecesaria de vegetación, suelo o fauna', 'Otro'];
 var SecG = function SecG() {
   // G.1: todos pre-marcados por defecto — el funcionario desmarca los que NO se cumplieron
   var _useState39 = useState(function () {
@@ -5159,7 +5160,14 @@ var SecG = function SecG() {
       };
     });
     rrG('g1_data', function (d) {
-      if (d.g1) setG1(new Set(d.g1));
+      if (d.g1) {
+        var migratedG1 = d.g1.map(function (item) {
+          return item === 'Visitantes informados de restricciones o desvíos' ? G1_VISITOR_INFO : item;
+        }).filter(function (item) {
+          return G1_ITEMS.includes(item);
+        });
+        setG1(new Set(migratedG1));
+      }
       if (d.otroG1 != null) setOtroG1(d.otroG1);
       if (d.incidente) setIncidente(d.incidente);
       if (d.incDet) {
@@ -9367,7 +9375,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.27'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.28'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];
