@@ -697,6 +697,28 @@ textarea {
   width: 100%;
 }
 
+.b1-add-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 9px;
+  width: 100%;
+}
+
+.b1-add-actions button {
+  width: 100%;
+}
+
+.b1-add-leader-main {
+  border-color: #9a6d00;
+  background: #fff2c7;
+  color: #5b4000;
+}
+
+.b1-add-leader-main:hover:not(:disabled),
+.b1-add-leader-main:focus-visible:not(:disabled) {
+  background: #ffe7a0;
+}
+
 .b1-add-participant-main:disabled {
   cursor: not-allowed;
   opacity: 0.5;
@@ -792,6 +814,11 @@ textarea {
   .b1-add-participant-main {
     width: fit-content;
     min-width: 210px;
+  }
+
+  .b1-add-actions button {
+    width: fit-content;
+    min-width: 260px;
   }
 
   .b1-person-header {

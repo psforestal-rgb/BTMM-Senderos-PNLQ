@@ -1555,6 +1555,7 @@ var SINAC_STAFF = [
 'Yolanda Elizondo', 'Mariano Solis', 'Guillermo Perez', 'Carlos Cordero'];
 var SecB = function SecB() {
   var mkRow = function mkRow(fecha) {
+    var encargado = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
     return {
       id: Math.random(),
       fecha: fecha || TODAY,
@@ -1565,7 +1566,7 @@ var SecB = function SecB() {
       nombreMode: 'select',
       parcial: false,
       horasParciales: '',
-      encargado: false
+      encargado: encargado
     };
   };
   var _useState13 = useState(function () {
@@ -1616,7 +1617,15 @@ var SecB = function SecB() {
   };
   var addRow = function addRow(fecha) {
     return setRows(function (rs) {
-      return [].concat(_toConsumableArray(rs), [mkRow(fecha || fechaNueva)]);
+      return [].concat(_toConsumableArray(rs), [mkRow(fecha || fechaNueva, false)]);
+    });
+  };
+  var addLeaderRow = function addLeaderRow() {
+    return setRows(function (rs) {
+      if (rs.some(function (r) {
+        return r.encargado;
+      })) return rs;
+      return [mkRow(fechaNueva, true)].concat(_toConsumableArray(rs));
     });
   };
   var updateJornada = function updateJornada(campo, valor) {
@@ -1626,15 +1635,6 @@ var SecB = function SecB() {
     setRows(function (rs) {
       return rs.map(function (r) {
         return _objectSpread(_objectSpread({}, r), {}, _defineProperty({}, campo, valor));
-      });
-    });
-  };
-  var setEncargado = function setEncargado(id) {
-    setRows(function (rs) {
-      return rs.map(function (r) {
-        return _objectSpread(_objectSpread({}, r), {}, {
-          encargado: r.id === id ? !r.encargado : false
-        });
       });
     });
   };
@@ -1813,17 +1813,22 @@ var SecB = function SecB() {
           var restoredLeader = saved.find(function (r) {
             return r.encargado;
           });
+          var restoredLeaderName = restoredLeader ? normB1Name(restoredLeader.nombre) : '';
           setFechaNueva(restoredDate);
           setJornadaIni(restoredIni);
           setJornadaFin(restoredFin);
           setRows(saved.map(function (r) {
+            var isLeader = !!restoredLeader && r.id === restoredLeader.id;
+            var duplicatesLeader = !isLeader && !!restoredLeaderName && normB1Name(r.nombre) === restoredLeaderName;
             return _objectSpread(_objectSpread({}, r), {}, {
               fecha: restoredDate,
               ini: restoredIni,
               fin: restoredFin,
+              nombre: duplicatesLeader ? '' : r.nombre,
+              nombreMode: duplicatesLeader ? 'select' : r.nombreMode,
               parcial: !!r.parcial,
               horasParciales: r.horasParciales || '',
-              encargado: !!restoredLeader && r.id === restoredLeader.id
+              encargado: isLeader
             });
           }));
         } else {
@@ -1978,6 +1983,12 @@ var SecB = function SecB() {
     var next = Math.max(Number(raw), jornadaIniRange + 30);
     updateJornada('fin', minutesToClock(next));
   };
+  var encargadoRow = rows.find(function (r) {
+    return r.encargado;
+  });
+  var normB1Name = function normB1Name(value) {
+    return String(value || '').trim().toLocaleLowerCase('es');
+  };
   var simpleB1UI = /*#__PURE__*/React.createElement("div", {
     className: "b1-manager b1-simple-manager"
   }, /*#__PURE__*/React.createElement("section", {
@@ -2066,23 +2077,37 @@ var SecB = function SecB() {
     className: "b1-range-help"
   }, "Deslice los marcadores. Cada paso equivale a 30 minutos.")), /*#__PURE__*/React.createElement("div", {
     className: "b1-shift-footer"
-  }, /*#__PURE__*/React.createElement("span", null, fechaNueva ? fmtDia(fechaNueva) : 'Seleccione la fecha'), /*#__PURE__*/React.createElement("strong", null, jornadaMin > 0 ? "Jornada de ".concat(fmtMin(jornadaMin), " h") : 'Horario pendiente'))), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("span", null, fechaNueva ? fmtDia(fechaNueva) : 'Seleccione la fecha'), /*#__PURE__*/React.createElement("strong", null, jornadaMin > 0 ? "Jornada de ".concat(fmtMin(jornadaMin), " h") : 'Horario pendiente'))), /*#__PURE__*/React.createElement("div", {
+    className: "b1-add-actions"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: addLeaderRow,
+    disabled: !fechaNueva || jornadaMin <= 0 || !!encargadoRow,
+    className: "b1-primary-button b1-add-leader-main"
+  }, encargadoRow ? "✓ Encargado de cuadrilla agregado" : "＋ Adicionar encargado de cuadrilla"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function onClick() {
       return addRow(fechaNueva);
     },
     disabled: !fechaNueva || jornadaMin <= 0,
     className: "b1-primary-button b1-add-participant-main"
-  }, "＋ Adicionar persona"), rows.length === 0 ? /*#__PURE__*/React.createElement("div", {
+  }, "＋ Adicionar persona")), rows.length === 0 ? /*#__PURE__*/React.createElement("div", {
     className: "b1-empty-state"
   }, /*#__PURE__*/React.createElement("div", {
     "aria-hidden": "true"
-  }, "👥"), /*#__PURE__*/React.createElement("strong", null, "Aún no hay participantes"), /*#__PURE__*/React.createElement("span", null, "Defina la jornada y use «Adicionar persona» para iniciar el registro.")) : /*#__PURE__*/React.createElement("div", {
+  }, "👥"), /*#__PURE__*/React.createElement("strong", null, "Aún no hay personas registradas"), /*#__PURE__*/React.createElement("span", null, "Use los botones anteriores para agregar al encargado y a los participantes.")) : /*#__PURE__*/React.createElement("div", {
     className: "b1-participant-list"
   }, rows.map(function (r, idx) {
     var cerrada = !!personasCerradas[r.id];
     var manualConNombre = r.nombreMode === 'custom' && !!r.nombre.trim();
-    var min = rowMinutes(r);
+    var excludedNames = new Set(rows.filter(function (other) {
+      return other.id !== r.id && !!other.encargado !== !!r.encargado;
+    }).map(function (other) {
+      return normB1Name(other.nombre);
+    }).filter(Boolean));
+    var availableStaff = SINAC_STAFF.filter(function (name) {
+      return !excludedNames.has(normB1Name(name));
+    });
     return /*#__PURE__*/React.createElement("article", {
       className: "b1-person-card".concat(r.encargado ? ' is-leader' : ''),
       key: r.id
@@ -2098,18 +2123,7 @@ var SecB = function SecB() {
       "aria-label": "".concat(cerrada ? 'Expandir' : 'Contraer', " participante ").concat(idx + 1)
     }, cerrada ? '▶' : '▼'), /*#__PURE__*/React.createElement("div", {
       className: "b1-person-title"
-    }, /*#__PURE__*/React.createElement("strong", null, r.nombre || "Participante ".concat(idx + 1)), /*#__PURE__*/React.createElement("span", null, r.parcial ? "Participación parcial · ".concat(min ? fmtMin(min) : 'sin horas') : "Jornada completa · ".concat(min ? fmtMin(min) : '—'))), /*#__PURE__*/React.createElement("label", {
-      className: "b1-leader-chip".concat(r.encargado ? ' is-active' : '')
-    }, /*#__PURE__*/React.createElement("input", {
-      type: "checkbox",
-      checked: !!r.encargado,
-      disabled: !r.nombre.trim(),
-      onChange: function onChange() {
-        return setEncargado(r.id);
-      }
-    }), /*#__PURE__*/React.createElement("span", {
-      "aria-hidden": "true"
-    }, r.encargado ? '✓' : '○'), " Encargado de cuadrilla")), !cerrada && /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("strong", null, r.encargado ? 'Encargado de cuadrilla' : r.nombre || "Participante ".concat(idx + 1)), /*#__PURE__*/React.createElement("span", null, r.encargado ? "".concat(r.nombre || 'Nombre pendiente', " · ").concat(r.parcial ? 'Participación parcial' : 'Jornada completa') : r.parcial ? 'Participación parcial' : 'Jornada completa'))), !cerrada && /*#__PURE__*/React.createElement("div", {
       className: "b1-person-body"
     }, /*#__PURE__*/React.createElement("div", {
       className: "b1-person-fields"
@@ -2117,7 +2131,7 @@ var SecB = function SecB() {
       className: "b1-field b1-name-field"
     }, /*#__PURE__*/React.createElement("label", {
       htmlFor: "b1-nombre-simple-".concat(r.id)
-    }, "Nombre completo"), /*#__PURE__*/React.createElement("select", {
+    }, r.encargado ? "Nombre del encargado" : "Nombre completo"), /*#__PURE__*/React.createElement("select", {
       id: "b1-nombre-simple-".concat(r.id),
       value: r.nombreMode === 'custom' ? '__custom__' : SINAC_STAFF.includes(r.nombre) ? r.nombre : '',
       onChange: function onChange(e) {
@@ -2134,7 +2148,7 @@ var SecB = function SecB() {
       style: b1ControlStyle
     }, /*#__PURE__*/React.createElement("option", {
       value: ""
-    }, "— Seleccionar funcionario —"), SINAC_STAFF.map(function (n) {
+    }, r.encargado ? "— Seleccionar encargado —" : "— Seleccionar funcionario —"), availableStaff.map(function (n) {
       return /*#__PURE__*/React.createElement("option", {
         key: n,
         value: n
@@ -2151,6 +2165,17 @@ var SecB = function SecB() {
           return x.id !== r.id && x.nombre.trim().toLocaleLowerCase('es') === value.trim().toLocaleLowerCase('es');
         });
         if (prev) upd(r.id, 'tipo', prev.tipo);
+      },
+      onBlur: function onBlur(e) {
+        var value = normB1Name(e.target.value);
+        if (!value) return;
+        var conflict = rows.find(function (other) {
+          return other.id !== r.id && !!other.encargado !== !!r.encargado && normB1Name(other.nombre) === value;
+        });
+        if (conflict) {
+          alert(r.encargado ? 'Esta persona ya está registrada como participante.' : 'Esta persona ya está registrada como encargado de cuadrilla.');
+          upd(r.id, 'nombre', '');
+        }
       },
       placeholder: "Escriba el nombre completo",
       style: b1ControlStyle
@@ -2197,9 +2222,7 @@ var SecB = function SecB() {
       },
       placeholder: "Ej.: 4.5",
       style: b1ControlStyle
-    }), /*#__PURE__*/React.createElement("small", null, "Máximo recomendado: ", jornadaMin > 0 ? jornadaMin / 60 : 0, " horas")), /*#__PURE__*/React.createElement("div", {
-      className: "b1-hours-box"
-    }, /*#__PURE__*/React.createElement("span", null, "Horas computadas"), /*#__PURE__*/React.createElement("strong", null, min > 0 ? fmtMin(min) : '—'))), /*#__PURE__*/React.createElement("div", {
+    }), /*#__PURE__*/React.createElement("small", null, "Máximo recomendado: ", jornadaMin > 0 ? jornadaMin / 60 : 0, " horas"))), /*#__PURE__*/React.createElement("div", {
       className: "b1-person-actions"
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
@@ -2207,7 +2230,7 @@ var SecB = function SecB() {
       onClick: function onClick() {
         return delRow(r.id);
       }
-    }, "🗑 Eliminar persona"))));
+    }, r.encargado ? "🗑 Eliminar encargado" : "🗑 Eliminar persona"))));
   })));
   var b1UI = /*#__PURE__*/React.createElement("div", {
     className: "b1-manager"
@@ -8820,7 +8843,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.20'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.21'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];

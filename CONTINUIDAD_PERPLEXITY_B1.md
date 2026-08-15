@@ -7,7 +7,7 @@
 - Sitio: https://psforestal-rgb.github.io/BTMM-Senderos-PNLQ/
 - Carpeta local: `C:\Users\psfor\OneDrive\Documents\SENDEROS`
 - Punto de restauración anterior: tag `restore-v1.18`, commit `fd6ef68`.
-- Versión preparada: `1.20`; caché: `senderos-pnlq-v10`.
+- Versión preparada: `1.21`; caché: `senderos-pnlq-v11`.
 - La aplicación es React compilado y autocontenido dentro de `index.html`; no hay fuentes JSX ni proceso npm.
 
 ## Modelo funcional vigente
@@ -23,7 +23,8 @@ Cada formulario corresponde a una única jornada:
 7. El tipo **SINAC / Externo** aparece solo para un nombre ingresado manualmente.
 8. Cada persona cuenta la jornada completa de forma predeterminada.
 9. Al marcar **Participó parcialmente**, aparece un campo numérico para indicar sus horas.
-10. Una insignia seleccionable marca a una sola persona como **Encargado de cuadrilla**.
+10. Un botón independiente crea una tarjeta de **Encargado de cuadrilla** antes de las tarjetas de participantes.
+11. El nombre elegido como encargado desaparece del selector de participantes, y los participantes elegidos desaparecen del selector del encargado.
 
 Ya no se muestran ni se usan en B.1:
 
@@ -57,7 +58,7 @@ Ya no se muestran ni se usan en B.1:
 - El horario usa una barra táctil con tramo seleccionado y marcadores diferenciados para inicio y final.
 - Los controles tienen altura táctil mínima de 44 px.
 - Las tarjetas no requieren desplazamiento horizontal.
-- La insignia de encargado es táctil y visualmente diferenciada.
+- El encargado tiene un flujo de adición separado y una tarjeta visualmente diferenciada.
 - La participación parcial y sus horas tienen jerarquía clara y mensajes de apoyo.
 
 ## Verificación realizada
@@ -70,7 +71,8 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - Sin desbordamiento horizontal.
 - Adición y edición de participantes correctas.
 - `4.5` horas parciales se computan como `4:30`.
-- Al marcar dos encargados sucesivamente queda exactamente uno.
+- Solo se permite crear una tarjeta de encargado; al eliminarla, el botón vuelve a habilitarse.
+- No se muestra el bloque de horas computadas en las tarjetas, aunque las horas siguen guardándose para el informe.
 - B.2 y B.3 no aparecen en la sección B.
 - La vista previa usa el nuevo detalle y no muestra Área de Conservación ni Período.
 - Sin errores de JavaScript en ejecución.
