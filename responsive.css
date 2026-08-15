@@ -2312,6 +2312,19 @@ table.mobile-card-table.trail-segments-table-hidden {
   gap: 8px;
 }
 
+.trail-new-group-button {
+  width: 100%;
+  min-height: 44px;
+  margin: 0 0 10px;
+  border: 1px dashed var(--brand-blue);
+  border-radius: 7px;
+  background: #eef4fb;
+  color: var(--brand-blue);
+  font: 800 12px/1.2 inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
 .trail-selected-card {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto 44px;
@@ -2319,10 +2332,14 @@ table.mobile-card-table.trail-segments-table-hidden {
   gap: 8px;
   min-width: 0;
   padding: 9px 8px 9px 11px;
-  border: 1px solid #d7bd7c;
-  border-left: 5px solid var(--brand-gold);
+  border: 1px solid #c7ae00;
+  border-left: 7px solid #ffea00;
   border-radius: 8px;
-  background: #fffaf0;
+  background: #fffef0;
+}
+
+.trail-selected-card-active {
+  box-shadow: 0 0 0 2px rgba(0, 46, 122, 0.22);
 }
 
 .trail-selected-card > div {
@@ -2332,6 +2349,11 @@ table.mobile-card-table.trail-segments-table-hidden {
 .trail-selected-card strong,
 .trail-selected-card small {
   display: block;
+}
+
+.trail-selected-card .trail-selected-sections {
+  color: var(--brand-blue);
+  font-weight: 800;
 }
 
 .trail-selected-card strong {

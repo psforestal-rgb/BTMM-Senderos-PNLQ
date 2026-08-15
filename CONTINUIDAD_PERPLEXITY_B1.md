@@ -7,7 +7,7 @@
 - Sitio: https://psforestal-rgb.github.io/BTMM-Senderos-PNLQ/
 - Carpeta local: `C:\Users\psfor\OneDrive\Documents\SENDEROS`
 - Punto de restauración anterior: tag `restore-v1.18`, commit `fd6ef68`.
-- Versión preparada: `1.23`; caché: `senderos-pnlq-v13`.
+- Versión preparada: `1.24`; caché: `senderos-pnlq-v14`.
 - La aplicación es React compilado y autocontenido dentro de `index.html`; no hay fuentes JSX ni proceso npm.
 
 ## Modelo funcional vigente
@@ -100,6 +100,15 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - Cambiar de sendero limpia la selección anterior para impedir mezclar geometrías distintas.
 - **Agregar sendero completo** sustituye cualquier selección parcial y conserva el flujo manual existente.
 - Verificado en 375, 390, 430, 768 y 1280 px: toque real sobre el trazado, eliminación desde tarjeta, ausencia de escala numérica, cero desbordamiento horizontal y cero errores de JavaScript.
+
+### Nomenclatura desde la versión 1.24
+
+- **Sección:** cada subdivisión básica del sendero, de longitud uniforme y cercana a 100 m.
+- **Tramo:** una sección aislada o un grupo de secciones consecutivas seleccionadas.
+- Las selecciones consecutivas amplían el tramo activo; una sección no seleccionada interrumpe el grupo y hace que la siguiente selección inicie un nuevo tramo.
+- **Iniciar otro tramo** permite separar dos tramos aunque sus secciones sean contiguas (por ejemplo, Tramo 1 = secciones 1–4 y Tramo 2 = sección 5).
+- Las tarjetas y los informes enumeran los tramos y detallan las secciones que los componen.
+- El resaltado cartográfico usa amarillo fluorescente con contorno azul oscuro para mantener contraste sobre el mapa.
 
 ## Precauciones
 
