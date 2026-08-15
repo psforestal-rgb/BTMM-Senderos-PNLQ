@@ -674,9 +674,9 @@ var SCHEMA = [{
   }, {
     id: 'B',
     badge: 'B',
-    title: 'Personal y horas',
-    heading: 'B. Personal participante, días y horas trabajadas',
-    subs: ['B.1 Registro diario de participantes', 'B.2 Consolidado de horas por participante', 'B.3 Consolidado diario de cuadrilla']
+    title: 'Participantes',
+    heading: 'B. Registro de participantes',
+    subs: ['B.1 Registro de participantes']
   }, {
     id: 'C',
     badge: 'C',
@@ -1364,7 +1364,7 @@ var SecA = function SecA() {
       textDecoration: 'none',
       whiteSpace: 'nowrap'
     }
-  }, "\u2197 MyOffice"))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Lbl, {
+  }, "\u2197 MyOffice"))), false && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Lbl, {
     c: "Per\xEDodo del mantenimiento"
   }), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -1387,8 +1387,8 @@ var SecA = function SecA() {
       marginTop: 4
     }
   }, "\uD83D\uDD12 Campo autom\xE1tico: toma la primera y \xFAltima fecha registradas en la Secci\xF3n B (personal y horas)."))), /*#__PURE__*/React.createElement(Sep, null), /*#__PURE__*/React.createElement(Gr, {
-    cols: 3
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Lbl, {
+    cols: 2
+  }, false && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Lbl, {
     c: "\xC1rea de Conservaci\xF3n"
   }), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -1526,6 +1526,13 @@ var fmtMin = function fmtMin(min) {
   var m = min % 60;
   return "".concat(h, ":").concat(String(m).padStart(2, '0'));
 };
+var calcParticipantMin = function calcParticipantMin(r) {
+  if (r && r.parcial) {
+    var horas = parseFloat(String(r.horasParciales || '').replace(',', '.'));
+    return isNaN(horas) || horas <= 0 ? 0 : Math.round(horas * 60);
+  }
+  return calcMin(r && r.ini, r && r.fin);
+};
 
 // ─── FUNCIONARIOS SINAC PNLQ (lista predefinida) ─────────────────────────────
 var SINAC_STAFF = [
@@ -1542,9 +1549,12 @@ var SecB = function SecB() {
       fecha: fecha || TODAY,
       nombre: '',
       tipo: 'funcionario',
-      ini: '08:00',
-      fin: '16:00',
-      nombreMode: 'select'
+      ini: jornadaIni || '08:00',
+      fin: jornadaFin || '16:00',
+      nombreMode: 'select',
+      parcial: false,
+      horasParciales: '',
+      encargado: false
     };
   };
   var _useState13 = useState(function () {
@@ -1561,6 +1571,14 @@ var SecB = function SecB() {
     _useStateFechaNueva2 = _slicedToArray(_useStateFechaNueva, 2),
     fechaNueva = _useStateFechaNueva2[0],
     setFechaNueva = _useStateFechaNueva2[1];
+  var _useStateJornadaIni = useState('08:00'),
+    _useStateJornadaIni2 = _slicedToArray(_useStateJornadaIni, 2),
+    jornadaIni = _useStateJornadaIni2[0],
+    setJornadaIni = _useStateJornadaIni2[1];
+  var _useStateJornadaFin = useState('16:00'),
+    _useStateJornadaFin2 = _slicedToArray(_useStateJornadaFin, 2),
+    jornadaFin = _useStateJornadaFin2[0],
+    setJornadaFin = _useStateJornadaFin2[1];
   var _useStateDiasCerrados = useState({}),
     _useStateDiasCerrados2 = _slicedToArray(_useStateDiasCerrados, 2),
     diasCerrados = _useStateDiasCerrados2[0],
@@ -1587,8 +1605,34 @@ var SecB = function SecB() {
   };
   var addRow = function addRow(fecha) {
     return setRows(function (rs) {
-      return [].concat(_toConsumableArray(rs), [mkRow(fecha)]);
+      return [].concat(_toConsumableArray(rs), [mkRow(fecha || fechaNueva)]);
     });
+  };
+  var updateJornada = function updateJornada(campo, valor) {
+    if (campo === 'fecha') setFechaNueva(valor);
+    if (campo === 'ini') setJornadaIni(valor);
+    if (campo === 'fin') setJornadaFin(valor);
+    setRows(function (rs) {
+      return rs.map(function (r) {
+        return _objectSpread(_objectSpread({}, r), {}, _defineProperty({}, campo, valor));
+      });
+    });
+  };
+  var setEncargado = function setEncargado(id) {
+    setRows(function (rs) {
+      return rs.map(function (r) {
+        return _objectSpread(_objectSpread({}, r), {}, {
+          encargado: r.id === id ? !r.encargado : false
+        });
+      });
+    });
+  };
+  var rowMinutes = function rowMinutes(r) {
+    if (r.parcial) {
+      var horas = parseFloat(String(r.horasParciales || '').replace(',', '.'));
+      return isNaN(horas) || horas <= 0 ? 0 : Math.round(horas * 60);
+    }
+    return calcMin(r.ini || jornadaIni, r.fin || jornadaFin);
   };
   var delRow = function delRow(id) {
     return setRows(function (rs) {
@@ -1688,7 +1732,7 @@ var SecB = function SecB() {
         totalMin: 0
       };
       if (r.fecha) map[nom].fechas.add(r.fecha);
-      map[nom].totalMin += calcMin(r.ini, r.fin);
+      map[nom].totalMin += rowMinutes(r);
     });
     return Object.values(map);
   }, [rows]);
@@ -1704,7 +1748,8 @@ var SecB = function SecB() {
         totalMin: 0
       };
       if (r.nombre.trim()) map[r.fecha].nombres.add(r.nombre.trim());
-      map[r.fecha].totalMin += calcMin(r.ini, r.fin);
+      map[r.fecha].totalMin += rowMinutes(r);
+      if (r.encargado && r.nombre.trim()) map[r.fecha].encargado = r.nombre.trim();
     });
     return Object.values(map).sort(function (a, b) {
       return a.fecha.localeCompare(b.fecha);
@@ -1747,7 +1792,31 @@ var SecB = function SecB() {
       return rowsRef.current;
     });
     registerRestorer('b_rows', function (saved) {
-      if (Array.isArray(saved)) setRows(saved);
+      if (Array.isArray(saved)) {
+        if (saved[0]) {
+          var restoredDate = saved[0].fecha || TODAY;
+          var restoredIni = saved[0].ini || '08:00';
+          var restoredFin = saved[0].fin || '16:00';
+          var restoredLeader = saved.find(function (r) {
+            return r.encargado;
+          });
+          setFechaNueva(restoredDate);
+          setJornadaIni(restoredIni);
+          setJornadaFin(restoredFin);
+          setRows(saved.map(function (r) {
+            return _objectSpread(_objectSpread({}, r), {}, {
+              fecha: restoredDate,
+              ini: restoredIni,
+              fin: restoredFin,
+              parcial: !!r.parcial,
+              horasParciales: r.horasParciales || '',
+              encargado: !!restoredLeader && r.id === restoredLeader.id
+            });
+          }));
+        } else {
+          setRows([]);
+        }
+      }
     });
     registerCollector('b_days', function () {
       return diasRef.current;
@@ -1879,6 +1948,197 @@ var SecB = function SecB() {
       return fecha;
     }
   };
+  var jornadaMin = calcMin(jornadaIni, jornadaFin);
+  var simpleB1UI = /*#__PURE__*/React.createElement("div", {
+    className: "b1-manager b1-simple-manager"
+  }, /*#__PURE__*/React.createElement("section", {
+    className: "b1-shift-card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "b1-shift-grid"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "b1-field"
+  }, /*#__PURE__*/React.createElement("label", {
+    htmlFor: "b1-fecha-jornada"
+  }, "Fecha"), /*#__PURE__*/React.createElement("input", {
+    id: "b1-fecha-jornada",
+    type: "date",
+    value: fechaNueva,
+    onChange: function onChange(e) {
+      return updateJornada('fecha', e.target.value);
+    },
+    style: b1ControlStyle
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "b1-field"
+  }, /*#__PURE__*/React.createElement("label", {
+    htmlFor: "b1-inicio-jornada"
+  }, "Hora de inicio"), /*#__PURE__*/React.createElement("input", {
+    id: "b1-inicio-jornada",
+    type: "time",
+    value: jornadaIni,
+    onChange: function onChange(e) {
+      return updateJornada('ini', e.target.value);
+    },
+    style: b1ControlStyle
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "b1-field"
+  }, /*#__PURE__*/React.createElement("label", {
+    htmlFor: "b1-fin-jornada"
+  }, "Hora final"), /*#__PURE__*/React.createElement("input", {
+    id: "b1-fin-jornada",
+    type: "time",
+    value: jornadaFin,
+    onChange: function onChange(e) {
+      return updateJornada('fin', e.target.value);
+    },
+    style: b1ControlStyle
+  }))), jornadaMin <= 0 && /*#__PURE__*/React.createElement("div", {
+    className: "b1-overlap-alert",
+    role: "alert"
+  }, "La hora final debe ser posterior a la hora de inicio."), /*#__PURE__*/React.createElement("div", {
+    className: "b1-shift-footer"
+  }, /*#__PURE__*/React.createElement("span", null, fechaNueva ? fmtDia(fechaNueva) : 'Seleccione la fecha'), /*#__PURE__*/React.createElement("strong", null, jornadaMin > 0 ? "Jornada de ".concat(fmtMin(jornadaMin), " h") : 'Horario pendiente'))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function onClick() {
+      return addRow(fechaNueva);
+    },
+    disabled: !fechaNueva || jornadaMin <= 0,
+    className: "b1-primary-button b1-add-participant-main"
+  }, "＋ Adicionar persona"), rows.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    className: "b1-empty-state"
+  }, /*#__PURE__*/React.createElement("div", {
+    "aria-hidden": "true"
+  }, "👥"), /*#__PURE__*/React.createElement("strong", null, "Aún no hay participantes"), /*#__PURE__*/React.createElement("span", null, "Defina la jornada y use «Adicionar persona» para iniciar el registro.")) : /*#__PURE__*/React.createElement("div", {
+    className: "b1-participant-list"
+  }, rows.map(function (r, idx) {
+    var cerrada = !!personasCerradas[r.id];
+    var manualConNombre = r.nombreMode === 'custom' && !!r.nombre.trim();
+    var min = rowMinutes(r);
+    return /*#__PURE__*/React.createElement("article", {
+      className: "b1-person-card".concat(r.encargado ? ' is-leader' : ''),
+      key: r.id
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "b1-person-header"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "b1-collapse-button",
+      onClick: function onClick() {
+        return togglePersona(r.id);
+      },
+      "aria-expanded": !cerrada,
+      "aria-label": "".concat(cerrada ? 'Expandir' : 'Contraer', " participante ").concat(idx + 1)
+    }, cerrada ? '▶' : '▼'), /*#__PURE__*/React.createElement("div", {
+      className: "b1-person-title"
+    }, /*#__PURE__*/React.createElement("strong", null, r.nombre || "Participante ".concat(idx + 1)), /*#__PURE__*/React.createElement("span", null, r.parcial ? "Participación parcial · ".concat(min ? fmtMin(min) : 'sin horas') : "Jornada completa · ".concat(min ? fmtMin(min) : '—'))), /*#__PURE__*/React.createElement("label", {
+      className: "b1-leader-chip".concat(r.encargado ? ' is-active' : '')
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "checkbox",
+      checked: !!r.encargado,
+      disabled: !r.nombre.trim(),
+      onChange: function onChange() {
+        return setEncargado(r.id);
+      }
+    }), /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, r.encargado ? '✓' : '○'), " Encargado de cuadrilla")), !cerrada && /*#__PURE__*/React.createElement("div", {
+      className: "b1-person-body"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "b1-person-fields"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "b1-field b1-name-field"
+    }, /*#__PURE__*/React.createElement("label", {
+      htmlFor: "b1-nombre-simple-".concat(r.id)
+    }, "Nombre completo"), /*#__PURE__*/React.createElement("select", {
+      id: "b1-nombre-simple-".concat(r.id),
+      value: r.nombreMode === 'custom' ? '__custom__' : SINAC_STAFF.includes(r.nombre) ? r.nombre : '',
+      onChange: function onChange(e) {
+        var v = e.target.value;
+        if (v === '__custom__') {
+          upd(r.id, 'nombreMode', 'custom');
+          upd(r.id, 'nombre', '');
+        } else {
+          upd(r.id, 'nombreMode', 'select');
+          upd(r.id, 'nombre', v);
+          if (v) upd(r.id, 'tipo', 'funcionario');
+        }
+      },
+      style: b1ControlStyle
+    }, /*#__PURE__*/React.createElement("option", {
+      value: ""
+    }, "— Seleccionar funcionario —"), SINAC_STAFF.map(function (n) {
+      return /*#__PURE__*/React.createElement("option", {
+        key: n,
+        value: n
+      }, n);
+    }), /*#__PURE__*/React.createElement("option", {
+      value: "__custom__"
+    }, "✎ Ingresar nombre manualmente")), r.nombreMode === 'custom' && /*#__PURE__*/React.createElement("input", {
+      type: "text",
+      value: r.nombre,
+      onChange: function onChange(e) {
+        var value = e.target.value;
+        upd(r.id, 'nombre', value);
+        var prev = rows.find(function (x) {
+          return x.id !== r.id && x.nombre.trim().toLocaleLowerCase('es') === value.trim().toLocaleLowerCase('es');
+        });
+        if (prev) upd(r.id, 'tipo', prev.tipo);
+      },
+      placeholder: "Escriba el nombre completo",
+      style: b1ControlStyle
+    })), manualConNombre && /*#__PURE__*/React.createElement("div", {
+      className: "b1-field b1-type-field"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "b1-field-label"
+    }, "Tipo de participante"), /*#__PURE__*/React.createElement("div", {
+      className: "b1-type-options"
+    }, [['funcionario', 'SINAC'], ['externo', 'Externo']].map(function (opt) {
+      return /*#__PURE__*/React.createElement("label", {
+        key: opt[0]
+      }, /*#__PURE__*/React.createElement("input", {
+        type: "radio",
+        name: "tipo_simple_".concat(r.id),
+        checked: r.tipo === opt[0],
+        onChange: function onChange() {
+          return upd(r.id, 'tipo', opt[0]);
+        }
+      }), opt[1]);
+    }))), /*#__PURE__*/React.createElement("label", {
+      className: "b1-partial-toggle"
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "checkbox",
+      checked: !!r.parcial,
+      onChange: function onChange(e) {
+        upd(r.id, 'parcial', e.target.checked);
+        if (!e.target.checked) upd(r.id, 'horasParciales', '');
+      }
+    }), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("strong", null, "Participó parcialmente"), /*#__PURE__*/React.createElement("small", null, "Marque solo si no completó toda la jornada"))), r.parcial && /*#__PURE__*/React.createElement("div", {
+      className: "b1-field b1-partial-hours"
+    }, /*#__PURE__*/React.createElement("label", {
+      htmlFor: "b1-horas-parciales-".concat(r.id)
+    }, "Cantidad de horas participadas"), /*#__PURE__*/React.createElement("input", {
+      id: "b1-horas-parciales-".concat(r.id),
+      type: "number",
+      min: "0.25",
+      max: jornadaMin > 0 ? String(jornadaMin / 60) : undefined,
+      step: "0.25",
+      inputMode: "decimal",
+      value: r.horasParciales || '',
+      onChange: function onChange(e) {
+        return upd(r.id, 'horasParciales', e.target.value);
+      },
+      placeholder: "Ej.: 4.5",
+      style: b1ControlStyle
+    }), /*#__PURE__*/React.createElement("small", null, "Máximo recomendado: ", jornadaMin > 0 ? jornadaMin / 60 : 0, " horas")), /*#__PURE__*/React.createElement("div", {
+      className: "b1-hours-box"
+    }, /*#__PURE__*/React.createElement("span", null, "Horas computadas"), /*#__PURE__*/React.createElement("strong", null, min > 0 ? fmtMin(min) : '—'))), /*#__PURE__*/React.createElement("div", {
+      className: "b1-person-actions"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "b1-delete-button",
+      onClick: function onClick() {
+        return delRow(r.id);
+      }
+    }, "🗑 Eliminar persona"))));
+  })));
   var b1UI = /*#__PURE__*/React.createElement("div", {
     className: "b1-manager"
   }, /*#__PURE__*/React.createElement("div", {
@@ -2092,10 +2352,10 @@ var SecB = function SecB() {
   }, "Se calcular\xE1 autom\xE1ticamente al ingresar datos en B.1.");
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(InfoBox, {
     t: "amber",
-    c: "Primero agregue la fecha de la jornada y luego las personas participantes. Las horas efectivas se calculan automáticamente. Bloquee cada registro terminado para evitar cambios accidentales."
+    c: "Defina la fecha y el horario general de esta jornada. Cada participante contará la jornada completa, salvo que marque participación parcial e indique sus horas."
   }), /*#__PURE__*/React.createElement(Sub, {
-    title: "B.1 \u2014 Registro diario de participantes"
-  }, b1UI, false && /*#__PURE__*/React.createElement("div", {
+    title: "B.1 \u2014 Registro de participantes"
+  }, simpleB1UI, false && /*#__PURE__*/React.createElement("div", {
     className: "mobile-card-table-wrap",
     style: {
       overflowX: 'auto'
@@ -2309,7 +2569,7 @@ var SecB = function SecB() {
       fontFamily: 'inherit',
       fontWeight: 700
     }
-  }, "\uFF0B Agregar fila")), /*#__PURE__*/React.createElement(Sub, {
+  }, "\uFF0B Agregar fila")), false && /*#__PURE__*/React.createElement(Sub, {
     title: "B.2 \u2014 Consolidado de horas por participante (autom\xE1tico)"
   }, b2.length === 0 ? emptyMsg : /*#__PURE__*/React.createElement("div", {
     className: "mobile-card-table-wrap",
@@ -2401,7 +2661,7 @@ var SecB = function SecB() {
     }
   }, fmtMin(b2.reduce(function (s, p) {
     return s + p.totalMin;
-  }, 0)))))))), /*#__PURE__*/React.createElement(Sub, {
+  }, 0)))))))), false && /*#__PURE__*/React.createElement(Sub, {
     title: "B.3 \u2014 Consolidado diario de cuadrilla (autom\xE1tico)"
   }, b3.length === 0 ? emptyMsg : /*#__PURE__*/React.createElement("div", {
     className: "mobile-card-table-wrap",
@@ -6337,7 +6597,7 @@ var buildDocx = /*#__PURE__*/function () {
               totalMin: 0
             };
             if (r.fecha) b2map[nom].fechas.add(r.fecha);
-            b2map[nom].totalMin += calcMin(r.ini, r.fin);
+            b2map[nom].totalMin += calcParticipantMin(r);
           });
           b2 = Object.values(b2map);
           b3map = {};
@@ -6349,7 +6609,8 @@ var buildDocx = /*#__PURE__*/function () {
               totalMin: 0
             };
             if ((r.nombre || '').trim()) b3map[r.fecha].nombres.add(r.nombre.trim());
-            b3map[r.fecha].totalMin += calcMin(r.ini, r.fin);
+            b3map[r.fecha].totalMin += calcParticipantMin(r);
+            if (r.encargado && (r.nombre || '').trim()) b3map[r.fecha].encargado = r.nombre.trim();
           });
           b3 = Object.values(b3map).sort(function (x, y) {
             return x.fecha.localeCompare(y.fecha);
@@ -6473,17 +6734,14 @@ var buildDocx = /*#__PURE__*/function () {
             sz: 20,
             bold: true,
             color: '2E6B4F'
-          }), docxPara("Per\xEDodo: ".concat(a.fechaIni || '—', " al ").concat(a.fechaFin || '—', "   |   Sendero: ").concat(sendero || '—'), {
+          }), docxPara("Fecha de jornada: ".concat(b[0] && b[0].fecha || '—', "   |   Sendero: ").concat(sendero || '—'), {
             sz: 20
           }), docxPara(' '),
           // A. Control
-          docxHeading('A. Control del reporte', 2), docxTable(['Campo', 'Valor'], [['Área de Conservación', 'ACC — Área de Conservación Central'], ['ASP', 'Parque Nacional Los Quetzales'], ['Sendero', sendero || '—'], ['Período', "".concat(a.fechaIni || '—', " al ").concat(a.fechaFin || '—')], ['Tipo de intervención', joinSet(a.tipoInterv)], ['Origen de la solicitud', joinSet(a.origen)], ['Condición climática', joinSet(a.clima)], ['Restricción uso público', (a.restriccion || 'No') + (a.restriccion && a.restriccion !== 'No' && a.restrDet ? " \u2014 ".concat(a.restrDet) : '')]]), docxPara(' '),
+          docxHeading('A. Control del reporte', 2), docxTable(['Campo', 'Valor'], [['ASP', 'Parque Nacional Los Quetzales'], ['Sendero', sendero || '—'], ['Tipo de intervención', joinSet(a.tipoInterv)], ['Origen de la solicitud', joinSet(a.origen)], ['Condición climática', joinSet(a.clima)], ['Restricción uso público', (a.restriccion || 'No') + (a.restriccion && a.restriccion !== 'No' && a.restrDet ? " \u2014 ".concat(a.restrDet) : '')]]), docxPara(' '),
           // B. Personal
-          docxHeading('B. Personal participante', 2), docxTable(['Fecha', 'Nombre', 'Tipo', 'Inicio', 'Fin', 'Hs efectivas'], b.map(function (r) {
-            return [r.fecha || '', r.nombre || '', r.tipo || '', r.ini || '', r.fin || '', function () {
-              var m = r.fin && r.ini ? parseInt(r.fin.split(':')[0]) * 60 + parseInt(r.fin.split(':')[1]) - (parseInt(r.ini.split(':')[0]) * 60 + parseInt(r.ini.split(':')[1])) : 0;
-              return m > 0 ? "".concat(Math.floor(m / 60), ":").concat(String(m % 60).padStart(2, '0')) : '—';
-            }()];
+          docxHeading('B. Registro de participantes', 2), docxTable(['Fecha', 'Nombre', 'Tipo', 'Participación', 'Horas', 'Encargado'], b.map(function (r) {
+            return [r.fecha || '', r.nombre || '', r.tipo === 'funcionario' ? 'SINAC' : 'Externo', r.parcial ? 'Parcial' : 'Completa', fmtM(calcParticipantMin(r)), r.encargado ? 'Sí' : ''];
           })), docxPara(' '),
           // B.2 — Consolidado por participante
           docxPara('B.2 — Consolidado de horas por participante', {
@@ -6502,8 +6760,8 @@ var buildDocx = /*#__PURE__*/function () {
             sz: 20,
             color: '2E6B4F',
             keepNext: true
-          }), docxTable(['Fecha', 'N.° personas', 'Horas-persona', 'Responsable de cuadrilla', 'Observaciones'], b3.length > 0 ? b3.map(function (d) {
-            return [d.fecha, String(d.nombres.size), fmtM(d.totalMin), (bx[d.fecha] || {}).resp || '', (bx[d.fecha] || {}).obs || ''];
+          }), docxTable(['Fecha', 'N.° personas', 'Horas-persona', 'Encargado de cuadrilla', 'Observaciones'], b3.length > 0 ? b3.map(function (d) {
+            return [d.fecha, String(d.nombres.size), fmtM(d.totalMin), d.encargado || (bx[d.fecha] || {}).resp || '', (bx[d.fecha] || {}).obs || ''];
           }).concat([['TOTAL', "".concat(b3.reduce(function (s, d) {
             return s + d.nombres.size;
           }, 0), " pers-d\xEDa"), fmtM(b3.reduce(function (s, d) {
@@ -6979,14 +7237,14 @@ var InformeModal = function InformeModal(_ref46) {
   }, "Parque Nacional Los Quetzales"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'grid',
-      gridTemplateColumns: 'repeat(3,1fr)',
+      gridTemplateColumns: 'repeat(2,1fr)',
       gap: 0,
       marginTop: 12,
       background: G.pale,
       borderRadius: 4,
       overflow: 'hidden'
     }
-  }, [['Sendero', sendero || '—'], ['Período', "".concat(a.fechaIni || '—', " al ").concat(a.fechaFin || '—')], ['Restricción', a.restriccion || 'No']].map(function (_ref48, i) {
+  }, [['Sendero', sendero || '—'], ['Fecha de jornada', b[0] && b[0].fecha || '—']].map(function (_ref48, i) {
     var _ref49 = _slicedToArray(_ref48, 2),
       l = _ref49[0],
       v = _ref49[1];
@@ -6994,7 +7252,7 @@ var InformeModal = function InformeModal(_ref46) {
       key: i,
       style: {
         padding: '7px 12px',
-        borderRight: i < 2 ? "1px solid ".concat(G.border) : 'none'
+        borderRight: i < 1 ? "1px solid ".concat(G.border) : 'none'
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
@@ -7027,13 +7285,9 @@ var InformeModal = function InformeModal(_ref46) {
     }
   }, "A. Control del reporte"), /*#__PURE__*/React.createElement("div", {
     style: rowStyle
-  }, lbl('Área de Conservación'), val('ACC — Área de Conservación Central')), /*#__PURE__*/React.createElement("div", {
-    style: rowStyle
   }, lbl('ASP'), val('Parque Nacional Los Quetzales')), /*#__PURE__*/React.createElement("div", {
     style: rowStyle
   }, lbl('Sendero'), val(sendero)), /*#__PURE__*/React.createElement("div", {
-    style: rowStyle
-  }, lbl('Período'), val("".concat(a.fechaIni || '—', " \u2014 ").concat(a.fechaFin || '—'))), /*#__PURE__*/React.createElement("div", {
     style: rowStyle
   }, lbl('Tipo de intervención'), val((a.tipoInterv || []).join(', '))), /*#__PURE__*/React.createElement("div", {
     style: rowStyle
@@ -7055,13 +7309,13 @@ var InformeModal = function InformeModal(_ref46) {
       paddingBottom: 4,
       borderBottom: "2px solid ".concat(G.pale)
     }
-  }, "B. Personal participante"), /*#__PURE__*/React.createElement("table", {
+  }, "B. Registro de participantes"), /*#__PURE__*/React.createElement("table", {
     style: {
       width: '100%',
       borderCollapse: 'collapse',
       fontSize: 12
     }
-  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, ['Fecha', 'Nombre', 'Tipo', 'Inicio', 'Fin', 'Hs efectivas'].map(function (h) {
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, ['Fecha', 'Nombre', 'Tipo', 'Participación', 'Horas', 'Encargado'].map(function (h) {
     return /*#__PURE__*/React.createElement("th", {
       key: h,
       style: {
@@ -7074,7 +7328,7 @@ var InformeModal = function InformeModal(_ref46) {
       }
     }, h);
   }))), /*#__PURE__*/React.createElement("tbody", null, b.map(function (r, i) {
-    var min = r.fin && r.ini ? parseInt(r.fin.split(':')[0]) * 60 + parseInt(r.fin.split(':')[1]) - (parseInt(r.ini.split(':')[0]) * 60 + parseInt(r.ini.split(':')[1])) : 0;
+    var min = calcParticipantMin(r);
     return /*#__PURE__*/React.createElement("tr", {
       key: i
     }, /*#__PURE__*/React.createElement("td", {
@@ -7101,13 +7355,13 @@ var InformeModal = function InformeModal(_ref46) {
         padding: '5px 8px',
         background: i % 2 === 0 ? 'white' : G.soft
       }
-    }, r.ini), /*#__PURE__*/React.createElement("td", {
+    }, r.parcial ? 'Parcial' : 'Completa'), /*#__PURE__*/React.createElement("td", {
       style: {
         border: '1px solid #E0DDD5',
         padding: '5px 8px',
         background: i % 2 === 0 ? 'white' : G.soft
       }
-    }, r.fin), /*#__PURE__*/React.createElement("td", {
+    }, min > 0 ? "".concat(Math.floor(min / 60), ":").concat(String(min % 60).padStart(2, '0')) : '—'), /*#__PURE__*/React.createElement("td", {
       style: {
         border: '1px solid #E0DDD5',
         padding: '5px 8px',
@@ -7115,7 +7369,7 @@ var InformeModal = function InformeModal(_ref46) {
         fontWeight: 700,
         color: G.mid
       }
-    }, min > 0 ? "".concat(Math.floor(min / 60), ":").concat(String(min % 60).padStart(2, '0')) : '—'));
+    }, r.encargado ? 'Sí' : ''));
   })))), c.length > 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 16
@@ -8499,7 +8753,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.18'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.19'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];

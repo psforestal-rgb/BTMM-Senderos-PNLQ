@@ -1,117 +1,87 @@
-# Continuidad para Perplexity — rediseño de B.1
+# Continuidad para Perplexity — formulario diario de participantes
 
 ## Proyecto
 
 - Repositorio: https://github.com/psforestal-rgb/BTMM-Senderos-PNLQ
-- Rama de publicación: main
+- Rama de publicación: `main`
 - Sitio: https://psforestal-rgb.github.io/BTMM-Senderos-PNLQ/
-- Carpeta local: C:\Users\psfor\OneDrive\Documents\SENDEROS
-- Versión preparada: 1.16; caché del service worker: senderos-pnlq-v6.
-- La aplicación es un React compilado y autocontenido dentro de index.html; no hay proceso npm ni archivos JSX fuente.
+- Carpeta local: `C:\Users\psfor\OneDrive\Documents\SENDEROS`
+- Punto de restauración anterior: tag `restore-v1.18`, commit `fd6ef68`.
+- Versión preparada: `1.19`; caché: `senderos-pnlq-v9`.
+- La aplicación es React compilado y autocontenido dentro de `index.html`; no hay fuentes JSX ni proceso npm.
 
-## Solicitud funcional
+## Modelo funcional vigente
 
-Rediseñar B.1, Registro diario de participantes, con esta jerarquía:
+Cada formulario corresponde a una única jornada:
 
-1. Selector de fecha sin registros iniciales, pero con la fecha actual preseleccionada.
-2. Botón **Adicionar día**.
-3. Una tarjeta colapsable por fecha.
-4. Dentro de cada día, botón **Adicionar persona**.
-5. Una subtarjeta colapsable por persona con nombre, tipo cuando corresponde, inicio, fin y horas.
-6. Opción para bloquear/desbloquear la edición de cada persona.
-7. Alerta si dos registros de la misma persona se traslapan total o parcialmente en la misma fecha.
+1. Fecha de jornada, con la fecha actual como valor inicial.
+2. Hora de inicio general, inicialmente `08:00`.
+3. Hora final general, inicialmente `16:00`.
+4. Botón **Adicionar persona**.
+5. Una tarjeta colapsable por participante.
+6. Nombre desde la lista SINAC o ingreso manual.
+7. El tipo **SINAC / Externo** aparece solo para un nombre ingresado manualmente.
+8. Cada persona cuenta la jornada completa de forma predeterminada.
+9. Al marcar **Participó parcialmente**, aparece un campo numérico para indicar sus horas.
+10. Una insignia seleccionable marca a una sola persona como **Encargado de cuadrilla**.
 
-## Implementación aplicada
+Ya no se muestran ni se usan en B.1:
 
-### Estado y compatibilidad
+- Adicionar o eliminar días.
+- Horas de inicio y fin por persona.
+- Bloquear/desbloquear edición.
+- Alertas de traslape entre intervalos personales.
+- Las vistas B.2 y B.3 ni sus filas de resumen.
 
-- rows continúa siendo el formato plano histórico consumido por B.2, B.3, borradores, vista previa y DOCX.
-- Los registros iniciales cambiaron de seis filas vacías a una lista vacía.
-- mkRow(fecha) asigna la fecha del día y conserva los valores iniciales 08:00–16:00.
-- Se agregó dias para conservar jornadas todavía sin personas.
-- Los días se guardan/restauran mediante el colector b_days.
-- Los bloqueos se guardan/restauran mediante b_locked.
-- Los borradores antiguos siguen funcionando porque las fechas también se derivan de b_rows.
-- App conserva restauraciones pendientes por sección y las aplica cuando el componente se monta. Esto corrige el caso en que se restaura el borrador desde A antes de abrir B.
+## Compatibilidad y cálculos
 
-### Traslapes
+- `b_rows` se conserva como formato de persistencia para no romper borradores, cálculos, vista previa ni DOCX.
+- Cada fila mantiene `fecha`, `ini` y `fin`, pero ahora estos valores provienen del horario general de la jornada.
+- Nuevos campos por persona: `parcial`, `horasParciales` y `encargado`.
+- `calcParticipantMin(r)` devuelve las horas parciales cuando corresponde; en los demás casos calcula la duración general.
+- B.2 y B.3 siguen calculándose internamente y se conservan en el DOCX final, aunque no se renderizan en la sección B.
+- El resumen diario del DOCX obtiene el encargado desde la persona marcada; mantiene compatibilidad con el antiguo campo `b_b3x` como respaldo.
+- Solo puede existir un encargado: marcar uno nuevo desmarca el anterior.
+- Al restaurar un borrador anterior, la primera fecha y horario se adoptan como jornada única y se aplican a sus participantes.
 
-- Se normaliza el nombre con trim y minúsculas en español.
-- Solo se comparan registros de igual nombre e igual fecha.
-- La condición es: inicioA < finB y inicioB < finA.
-- Detecta coincidencia total y traslape parcial.
-- Horarios contiguos, por ejemplo 08:00–12:00 y 12:00–16:00, no generan alerta.
-- Los dos registros implicados reciben borde rojo, insignia y mensaje con role=alert.
+## Sección A e informe
 
-### Nombre y tipo
+- Se retiraron de la interfaz **Período del mantenimiento** y **Área de Conservación**.
+- La vista previa y el DOCX tampoco muestran esas filas.
+- El encabezado del informe usa **Fecha de jornada**.
+- El detalle de participantes del informe muestra fecha, nombre, tipo, participación completa/parcial, horas y encargado.
 
-- El selector de nombre siempre aparece.
-- Si se escoge un funcionario predefinido, el tipo se fija automáticamente como funcionario y no se muestra el selector de tipo.
-- Si se elige ingreso manual, aparece el campo de texto.
-- Las opciones **SINAC / Externo** aparecen solamente después de escribir un nombre manual.
-- Ambas opciones se mantienen en una sola fila.
+## Responsive
 
-### Bloqueo
+- La jornada se apila en una columna en móvil y pasa a tres columnas en escritorio.
+- Los controles tienen altura táctil mínima de 44 px.
+- Las tarjetas no requieren desplazamiento horizontal.
+- La insignia de encargado es táctil y visualmente diferenciada.
+- La participación parcial y sus horas tienen jerarquía clara y mensajes de apoyo.
 
-- **Bloquear edición** deshabilita el fieldset de nombre, tipo y horas.
-- También deshabilita la eliminación de esa persona.
-- El botón queda fuera del fieldset para permitir **Desbloquear edición**.
-- La tarjeta muestra la insignia de bloqueo.
+## Verificación realizada
 
-### Responsive
+Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 
-- Las tarjetas funcionan en escritorio y móvil.
-- Bajo 780 px, encabezados y acciones se reorganizan a una columna legible.
-- Fecha, nombre y horas conservan controles táctiles de al menos 44 px.
-- Los campos Inicio y Fin se apilan en teléfono para impedir recortes.
+- Fecha actual, inicio `08:00` y final `16:00` correctos.
+- Sin desbordamiento horizontal.
+- Adición y edición de participantes correctas.
+- `4.5` horas parciales se computan como `4:30`.
+- Al marcar dos encargados sucesivamente queda exactamente uno.
+- B.2 y B.3 no aparecen en la sección B.
+- La vista previa usa el nuevo detalle y no muestra Área de Conservación ni Período.
+- Sin errores de JavaScript en ejecución.
 
-## Archivos modificados
+## Para finalizar o continuar
 
-- index.html
-  - Estado y lógica de B.1.
-  - Detección de traslapes.
-  - Nueva interfaz día → persona.
-  - Persistencia de días y bloqueos.
-- responsive.css
-  - Estilos b1-* para tarjetas, alertas, bloqueo y layouts móviles.
-- sw.js
-  - Debe incrementarse el nombre de caché si hay cambios posteriores.
-
-## Verificación ya realizada
-
-En 375 px:
-
-- B.1 inicia con cero días y cero personas.
-- El selector muestra la fecha local actual.
-- **Adicionar día** crea una tarjeta de jornada.
-- **Adicionar persona** crea una subtarjeta.
-- Inicio y Fin miden aproximadamente 47 px de alto y no se recortan.
-- El tipo no aparece antes del nombre manual.
-- Después de escribir un nombre manual aparecen SINAC y Externo en una fila, con 44 px de alto.
-- Dos registros 08:00–16:00 con el mismo nombre generan dos alertas y dos insignias.
-- Bloquear edición deshabilita el fieldset y el botón de eliminar, y permite desbloquear.
-- Un borrador restaurado desde A recuperó al abrir B: un día, una persona y su estado bloqueado.
-- No se observaron errores de consola.
-
-## Comandos de comprobación
-
-    node -e 'const fs=require("fs"),s=fs.readFileSync("index.html","utf8"),a=s.indexOf("<body><div id=\"root\"></div><script>")+42,b=s.indexOf("</script>",a); new Function(s.slice(a,b)); console.log("JavaScript principal: sintaxis válida")'
-    git diff --check
-    python -m http.server 8765 --bind 127.0.0.1
-
-## Si falta finalizar
-
-1. Confirmar visualmente 390, 430, 768 y escritorio.
-2. Probar horarios contiguos para confirmar que no alertan.
-3. Repetir guardar/restaurar un borrador con un día vacío y una persona bloqueada si se modifica la infraestructura de borradores.
-4. Si realiza cambios adicionales, actualizar la versión visible y CACHE_NAME en sw.js.
-5. Ejecutar validación de sintaxis y git diff --check.
-6. Hacer commit, push a main y esperar el workflow pages build and deployment.
-7. Verificar en la URL pública usando un parámetro de caché.
+1. Ejecutar validación de sintaxis del script principal y `git diff --check`.
+2. Si hay más cambios, incrementar la versión visible y `CACHE_NAME`.
+3. Hacer commit y push a `main`.
+4. Esperar `pages build and deployment` y comprobar la URL pública con un parámetro de caché.
+5. Si es necesario volver al estado anterior, usar el tag `restore-v1.18`.
 
 ## Precauciones
 
-- No convertir index.html a un proyecto npm durante esta tarea.
-- No cambiar el esquema plano de b_rows; B.2, B.3 y el DOCX dependen de él.
-- No eliminar compatibilidad con borradores previos.
-- No resolver traslapes sumando horas: la validación debe usar intervalos reales.
+- No convertir `index.html` a un proyecto npm durante esta etapa.
+- No eliminar `b_rows`, B.2 o B.3 de la generación DOCX: deben permanecer como resultados internos del informe final.
+- Mantener una sola fecha y un solo horario general por formulario.
