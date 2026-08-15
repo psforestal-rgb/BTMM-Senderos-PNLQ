@@ -151,6 +151,12 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - Las imágenes se cargan de forma diferida, mantienen proporción y aumentan a 92 px en móvil y 100 px en pantallas amplias.
 - Los 39 recursos se incluyen en el `APP_SHELL` del service worker para conservar el funcionamiento sin conexión.
 
+## Compatibilidad del informe Word (versión 1.30)
+
+- La interfaz mantiene oculto el control de MyOffice, pero el informe Word recupera la fila **Número de oficio** en A. Control del reporte.
+- Si no existe un número guardado, la celda de valor queda vacía y editable para completarla en Word antes de firmar el PDF.
+- El documento no aplica protección de edición; la celda y el resto del informe continúan siendo editables.
+
 ## Precauciones
 
 - No convertir `index.html` a un proyecto npm durante esta etapa.

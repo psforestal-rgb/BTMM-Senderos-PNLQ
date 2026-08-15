@@ -7386,7 +7386,8 @@ var buildDocx = /*#__PURE__*/function () {
             sz: 20
           }), docxPara(' '),
           // A. Control
-          docxHeading('A. Control del reporte', 2), docxTable(['Campo', 'Valor'], [['ASP', 'Parque Nacional Los Quetzales'], ['Sendero', sendero || '—'], ['Tipo de intervención', joinSet(a.tipoInterv)], ['Origen de la solicitud', joinSet(a.origen)], ['Condición climática', joinSet(a.clima)], ['Restricción uso público', (a.restriccion || 'No') + (a.restriccion && a.restriccion !== 'No' && a.restrDet ? " \u2014 ".concat(a.restrDet) : '')]]), docxPara(' '),
+          // El oficio permanece como celda editable del Word aunque no se capture en la interfaz.
+          docxHeading('A. Control del reporte', 2), docxTable(['Campo', 'Valor'], [['Número de oficio', a.oficio || ''], ['ASP', 'Parque Nacional Los Quetzales'], ['Sendero', sendero || '—'], ['Tipo de intervención', joinSet(a.tipoInterv)], ['Origen de la solicitud', joinSet(a.origen)], ['Condición climática', joinSet(a.clima)], ['Restricción uso público', (a.restriccion || 'No') + (a.restriccion && a.restriccion !== 'No' && a.restrDet ? " \u2014 ".concat(a.restrDet) : '')]]), docxPara(' '),
           // B. Personal
           docxHeading('B. Registro de participantes', 2), docxTable(['Fecha', 'Nombre', 'Tipo', 'Participación', 'Horas', 'Encargado'], b.map(function (r) {
             return [r.fecha || '', r.nombre || '', r.tipo === 'funcionario' ? 'SINAC' : 'Externo', r.parcial ? 'Parcial' : 'Completa', fmtM(calcParticipantMin(r)), r.encargado ? 'Sí' : ''];
@@ -9389,7 +9390,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.29'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.30'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];
