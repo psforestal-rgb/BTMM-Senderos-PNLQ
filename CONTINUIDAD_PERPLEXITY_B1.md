@@ -7,7 +7,7 @@
 - Sitio: https://psforestal-rgb.github.io/BTMM-Senderos-PNLQ/
 - Carpeta local: `C:\Users\psfor\OneDrive\Documents\SENDEROS`
 - Punto de restauración anterior: tag `restore-v1.18`, commit `fd6ef68`.
-- Versión preparada: `1.19`; caché: `senderos-pnlq-v9`.
+- Versión preparada: `1.20`; caché: `senderos-pnlq-v10`.
 - La aplicación es React compilado y autocontenido dentro de `index.html`; no hay fuentes JSX ni proceso npm.
 
 ## Modelo funcional vigente
@@ -15,8 +15,8 @@
 Cada formulario corresponde a una única jornada:
 
 1. Fecha de jornada, con la fecha actual como valor inicial.
-2. Hora de inicio general, inicialmente `08:00`.
-3. Hora final general, inicialmente `16:00`.
+2. Barra de horario de doble marcador entre `08:00` y `16:00`.
+3. Los marcadores de inicio y final avanzan en pasos exactos de 30 minutos y actualizan la duración en vivo.
 4. Botón **Adicionar persona**.
 5. Una tarjeta colapsable por participante.
 6. Nombre desde la lista SINAC o ingreso manual.
@@ -53,7 +53,8 @@ Ya no se muestran ni se usan en B.1:
 
 ## Responsive
 
-- La jornada se apila en una columna en móvil y pasa a tres columnas en escritorio.
+- La fecha y la barra horaria se distribuyen sin comprimir los controles tanto en móvil como en escritorio.
+- El horario usa una barra táctil con tramo seleccionado y marcadores diferenciados para inicio y final.
 - Los controles tienen altura táctil mínima de 44 px.
 - Las tarjetas no requieren desplazamiento horizontal.
 - La insignia de encargado es táctil y visualmente diferenciada.
@@ -64,6 +65,8 @@ Ya no se muestran ni se usan en B.1:
 Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 
 - Fecha actual, inicio `08:00` y final `16:00` correctos.
+- Ambos marcadores se pueden arrastrar y también operar con teclado; cada movimiento queda redondeado a pasos de 30 minutos.
+- Los marcadores no pueden cruzarse y mantienen al menos 30 minutos de duración.
 - Sin desbordamiento horizontal.
 - Adición y edición de participantes correctas.
 - `4.5` horas parciales se computan como `4:30`.

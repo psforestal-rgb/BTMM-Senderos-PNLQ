@@ -1526,6 +1526,17 @@ var fmtMin = function fmtMin(min) {
   var m = min % 60;
   return "".concat(h, ":").concat(String(m).padStart(2, '0'));
 };
+var clockToMinutes = function clockToMinutes(value) {
+  var fallback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 480;
+  if (!value || !String(value).includes(':')) return fallback;
+  var parts = String(value).split(':').map(Number);
+  var minutes = parts[0] * 60 + parts[1];
+  return Math.max(480, Math.min(960, Math.round(minutes / 30) * 30));
+};
+var minutesToClock = function minutesToClock(minutes) {
+  var safe = Math.max(480, Math.min(960, Math.round(Number(minutes) / 30) * 30));
+  return "".concat(String(Math.floor(safe / 60)).padStart(2, '0'), ":").concat(String(safe % 60).padStart(2, '0'));
+};
 var calcParticipantMin = function calcParticipantMin(r) {
   if (r && r.parcial) {
     var horas = parseFloat(String(r.horasParciales || '').replace(',', '.'));
@@ -1795,8 +1806,10 @@ var SecB = function SecB() {
       if (Array.isArray(saved)) {
         if (saved[0]) {
           var restoredDate = saved[0].fecha || TODAY;
-          var restoredIni = saved[0].ini || '08:00';
-          var restoredFin = saved[0].fin || '16:00';
+          var restoredIniMin = Math.min(930, clockToMinutes(saved[0].ini, 480));
+          var restoredFinMin = Math.max(restoredIniMin + 30, clockToMinutes(saved[0].fin, 960));
+          var restoredIni = minutesToClock(restoredIniMin);
+          var restoredFin = minutesToClock(restoredFinMin);
           var restoredLeader = saved.find(function (r) {
             return r.encargado;
           });
@@ -1948,7 +1961,23 @@ var SecB = function SecB() {
       return fecha;
     }
   };
-  var jornadaMin = calcMin(jornadaIni, jornadaFin);
+  var jornadaIniRange = Math.min(930, clockToMinutes(jornadaIni, 480));
+  var jornadaFinRange = Math.max(jornadaIniRange + 30, clockToMinutes(jornadaFin, 960));
+  var jornadaMin = jornadaFinRange - jornadaIniRange;
+  var jornadaStartPct = (jornadaIniRange - 480) / 480 * 100;
+  var jornadaEndPct = (jornadaFinRange - 480) / 480 * 100;
+  var jornadaSpanPct = jornadaEndPct - jornadaStartPct;
+  var rangeMarkerPos = function rangeMarkerPos(percent) {
+    return "calc(".concat(percent, "% + ").concat(22 - percent * 0.44, "px)");
+  };
+  var moveJornadaStart = function moveJornadaStart(raw) {
+    var next = Math.min(Number(raw), jornadaFinRange - 30);
+    updateJornada('ini', minutesToClock(next));
+  };
+  var moveJornadaEnd = function moveJornadaEnd(raw) {
+    var next = Math.max(Number(raw), jornadaIniRange + 30);
+    updateJornada('fin', minutesToClock(next));
+  };
   var simpleB1UI = /*#__PURE__*/React.createElement("div", {
     className: "b1-manager b1-simple-manager"
   }, /*#__PURE__*/React.createElement("section", {
@@ -1967,34 +1996,75 @@ var SecB = function SecB() {
       return updateJornada('fecha', e.target.value);
     },
     style: b1ControlStyle
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "b1-field"
-  }, /*#__PURE__*/React.createElement("label", {
-    htmlFor: "b1-inicio-jornada"
-  }, "Hora de inicio"), /*#__PURE__*/React.createElement("input", {
-    id: "b1-inicio-jornada",
-    type: "time",
-    value: jornadaIni,
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "b1-time-slider-section"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "b1-time-readout",
+    "aria-live": "polite"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "b1-time-value is-start"
+  }, /*#__PURE__*/React.createElement("span", null, "Inicio"), /*#__PURE__*/React.createElement("strong", null, minutesToClock(jornadaIniRange))), /*#__PURE__*/React.createElement("div", {
+    className: "b1-time-value is-duration"
+  }, /*#__PURE__*/React.createElement("span", null, "Duración"), /*#__PURE__*/React.createElement("strong", null, fmtMin(jornadaMin), " h")), /*#__PURE__*/React.createElement("div", {
+    className: "b1-time-value is-end"
+  }, /*#__PURE__*/React.createElement("span", null, "Final"), /*#__PURE__*/React.createElement("strong", null, minutesToClock(jornadaFinRange)))), /*#__PURE__*/React.createElement("div", {
+    className: "b1-dual-range"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "b1-range-track",
+    "aria-hidden": "true"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "b1-range-selected",
+    "aria-hidden": "true",
+    style: {
+      left: rangeMarkerPos(jornadaStartPct),
+      width: "calc(".concat(jornadaSpanPct, "% - ").concat(jornadaSpanPct * 0.44, "px)")
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "b1-range-marker b1-range-marker-start",
+    "aria-hidden": "true",
+    style: {
+      left: rangeMarkerPos(jornadaStartPct)
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "b1-range-marker b1-range-marker-end",
+    "aria-hidden": "true",
+    style: {
+      left: rangeMarkerPos(jornadaEndPct)
+    }
+  }), /*#__PURE__*/React.createElement("input", {
+    className: "b1-range-input b1-range-start",
+    type: "range",
+    min: "480",
+    max: "960",
+    step: "30",
+    value: jornadaIniRange,
     onChange: function onChange(e) {
-      return updateJornada('ini', e.target.value);
+      return moveJornadaStart(e.target.value);
     },
-    style: b1ControlStyle
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "b1-field"
-  }, /*#__PURE__*/React.createElement("label", {
-    htmlFor: "b1-fin-jornada"
-  }, "Hora final"), /*#__PURE__*/React.createElement("input", {
-    id: "b1-fin-jornada",
-    type: "time",
-    value: jornadaFin,
+    "aria-label": "Hora de inicio de la jornada",
+    "aria-valuetext": minutesToClock(jornadaIniRange)
+  }), /*#__PURE__*/React.createElement("input", {
+    className: "b1-range-input b1-range-end",
+    type: "range",
+    min: "480",
+    max: "960",
+    step: "30",
+    value: jornadaFinRange,
     onChange: function onChange(e) {
-      return updateJornada('fin', e.target.value);
+      return moveJornadaEnd(e.target.value);
     },
-    style: b1ControlStyle
-  }))), jornadaMin <= 0 && /*#__PURE__*/React.createElement("div", {
-    className: "b1-overlap-alert",
-    role: "alert"
-  }, "La hora final debe ser posterior a la hora de inicio."), /*#__PURE__*/React.createElement("div", {
+    "aria-label": "Hora final de la jornada",
+    "aria-valuetext": minutesToClock(jornadaFinRange)
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "b1-range-scale",
+    "aria-hidden": "true"
+  }, [8, 10, 12, 14, 16].map(function (hour) {
+    return /*#__PURE__*/React.createElement("span", {
+      key: hour
+    }, String(hour).padStart(2, '0'), ":00");
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "b1-range-help"
+  }, "Deslice los marcadores. Cada paso equivale a 30 minutos.")), /*#__PURE__*/React.createElement("div", {
     className: "b1-shift-footer"
   }, /*#__PURE__*/React.createElement("span", null, fechaNueva ? fmtDia(fechaNueva) : 'Seleccione la fecha'), /*#__PURE__*/React.createElement("strong", null, jornadaMin > 0 ? "Jornada de ".concat(fmtMin(jornadaMin), " h") : 'Horario pendiente'))), /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -2350,10 +2420,7 @@ var SecB = function SecB() {
       padding: '8px 0'
     }
   }, "Se calcular\xE1 autom\xE1ticamente al ingresar datos en B.1.");
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(InfoBox, {
-    t: "amber",
-    c: "Defina la fecha y el horario general de esta jornada. Cada participante contará la jornada completa, salvo que marque participación parcial e indique sus horas."
-  }), /*#__PURE__*/React.createElement(Sub, {
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Sub, {
     title: "B.1 \u2014 Registro de participantes"
   }, simpleB1UI, false && /*#__PURE__*/React.createElement("div", {
     className: "mobile-card-table-wrap",
@@ -8753,7 +8820,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.19'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.20'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];
