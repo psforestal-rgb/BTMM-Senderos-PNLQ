@@ -3287,7 +3287,10 @@ var TrailMap = function TrailMap(_ref13) {
     }
     if (segmentMode && onToggleSegment) onToggleSegment(segmentId);
   };
-  var statusText = !activeSendero ? 'Seleccione un sendero en la Sección A para mostrar el mapa.' : segmentMode ? 'Toque las secciones del sendero para seleccionarlas o quitarlas.' : selecting ? "Haga clic en el trazado \u2192 ".concat(selecting.field === 'ini' ? '▶ INICIO' : '⏹ FIN', " del tramo") : showAutoSegments ? 'Las secciones resaltadas forman los tramos de mantenimiento.' : 'Haga clic en 📍 de una fila para seleccionar inicio o fin en el mapa.';
+  var hasCompleteTrail = tramos.some(function (t) {
+    return !t.autoSegment && t.estIni !== '' && t.estFin !== '';
+  });
+  var statusText = !activeSendero ? 'Seleccione un sendero en la Sección A para mostrar el mapa.' : segmentMode ? 'Toque las secciones del sendero para seleccionarlas o quitarlas.' : selecting ? "Haga clic en el trazado \u2192 ".concat(selecting.field === 'ini' ? '▶ INICIO' : '⏹ FIN', " del tramo") : showAutoSegments ? 'Las secciones resaltadas forman los tramos de mantenimiento.' : hasCompleteTrail ? 'Sendero completo seleccionado para mantenimiento.' : 'Elija sendero completo o seleccione secciones en el mapa.';
   return /*#__PURE__*/React.createElement("div", {
     className: "trail-map-module",
     style: {
@@ -3672,7 +3675,7 @@ var SecC_sec = function SecC_sec() {
       estFin: '',
       coordIni: '',
       coordFin: '',
-      sup: 'Tierra',
+      sup: '',
       pend: '',
       idxIni: undefined,
       idxFin: undefined,
@@ -3685,7 +3688,7 @@ var SecC_sec = function SecC_sec() {
     };
   };
   var _useState25 = useState(function () {
-      return [mkTr()];
+      return [];
     }),
     _useState26 = _slicedToArray(_useState25, 2),
     tramos = _useState26[0],
@@ -3726,6 +3729,9 @@ var SecC_sec = function SecC_sec() {
     return t.id;
   });
   var showAutoSegments = segmentMode || selectedAutoTramos.length > 0;
+  var fullTrailSelected = tramos.some(function (t) {
+    return !t.autoSegment && t.estIni !== '' && t.estFin !== '';
+  });
   var previousSenderoRef = useRef(sendero);
   useEffect(function () {
     var previous = previousSenderoRef.current;
@@ -3733,7 +3739,7 @@ var SecC_sec = function SecC_sec() {
       setSelecting(null);
       setSegmentMode(false);
       setActiveTramoGroup(1);
-      setTramos([mkTr()]);
+      setTramos([]);
     }
     previousSenderoRef.current = sendero;
   }, [sendero]);
@@ -4248,7 +4254,7 @@ var SecC_sec = function SecC_sec() {
       fontWeight: 700,
       cursor: 'pointer'
     }
-  }, "\uD83D\uDDFA Agregar sendero completo"), /*#__PURE__*/React.createElement("button", {
+  }, fullTrailSelected ? '✓ Sendero completo seleccionado' : '\uD83D\uDDFA Agregar sendero completo'), /*#__PURE__*/React.createElement("button", {
     onClick: toggleSegmentMode,
     className: "trail-mode-button trail-segment-mode-button",
     "aria-pressed": segmentMode,
@@ -4313,9 +4319,9 @@ var SecC_sec = function SecC_sec() {
     }, "×"));
   })) : /*#__PURE__*/React.createElement("div", {
     className: "trail-selected-empty"
-  }, "Toque una o varias secciones en el mapa para formar los tramos."), /*#__PURE__*/React.createElement("div", {
+  }, "Toque una o varias secciones en el mapa para formar los tramos."), false && /*#__PURE__*/React.createElement("div", {
     className: "trail-selected-total"
-  }, /*#__PURE__*/React.createElement("span", null, "Distancia total de mantenimiento"), /*#__PURE__*/React.createElement("strong", null, totalM, " m"))), sendero && TRAIL_DATA[sendero] && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", null, "Distancia total de mantenimiento"), /*#__PURE__*/React.createElement("strong", null, totalM, " m"))), false && sendero && TRAIL_DATA[sendero] && /*#__PURE__*/React.createElement("div", {
     style: {
       display: showAutoSegments ? 'none' : 'block',
       background: G.pale,
@@ -4339,7 +4345,7 @@ var SecC_sec = function SecC_sec() {
     style: {
       whiteSpace: 'nowrap'
     }
-  }, "\uD83D\uDCCF ", /*#__PURE__*/React.createElement("strong", null, "Inicio + distancia"), ": fija el inicio y escribe la longitud; el fin se calcula sobre la l\xEDnea."), ' · ', /*#__PURE__*/React.createElement("strong", null, "Estaci\xF3n (m)"), ": escribe los metros desde el inicio del sendero.", ' · ', /*#__PURE__*/React.createElement("strong", null, "Coordenada GPS"), ": pega \xABx, y\xBB y se ajusta autom\xE1ticamente al punto m\xE1s cercano sobre la l\xEDnea.", ' ', "Tambi\xE9n puedes usar ", /*#__PURE__*/React.createElement("strong", null, "\uD83D\uDDFA sendero completo"), "."), /*#__PURE__*/React.createElement("div", {
+  }, "\uD83D\uDCCF ", /*#__PURE__*/React.createElement("strong", null, "Inicio + distancia"), ": fija el inicio y escribe la longitud; el fin se calcula sobre la l\xEDnea."), ' · ', /*#__PURE__*/React.createElement("strong", null, "Estaci\xF3n (m)"), ": escribe los metros desde el inicio del sendero.", ' · ', /*#__PURE__*/React.createElement("strong", null, "Coordenada GPS"), ": pega \xABx, y\xBB y se ajusta autom\xE1ticamente al punto m\xE1s cercano sobre la l\xEDnea.", ' ', "Tambi\xE9n puedes usar ", /*#__PURE__*/React.createElement("strong", null, "\uD83D\uDDFA sendero completo"), "."), false && /*#__PURE__*/React.createElement("div", {
     style: {
       overflowX: 'auto'
     }
@@ -4578,7 +4584,7 @@ var SecC_sec = function SecC_sec() {
       border: '1px solid #E0DDD5',
       background: G.pale
     }
-  }))))), !showAutoSegments && /*#__PURE__*/React.createElement("button", {
+  }))))), false && !showAutoSegments && /*#__PURE__*/React.createElement("button", {
     onClick: addTr,
     style: {
       display: 'flex',
@@ -7393,14 +7399,14 @@ var buildDocx = /*#__PURE__*/function () {
             return s + d.totalMin;
           }, 0)), '', '']]) : []), docxPara(' '),
           // C. Tramos
-          docxHeading('C. Ubicación — Tramos intervenidos', 2), docxTable(['Tramo', 'Est. inicio (m)', 'Est. fin (m)', 'Longitud (m)', 'Coord. inicio', 'Coord. fin', 'Superficie', 'Pendiente'], c.filter(function (t) {
+          docxHeading('C. Ubicación — Tramos intervenidos', 2), docxTable(['Tramo', 'Est. inicio (m)', 'Est. fin (m)', 'Longitud (m)', 'Coord. inicio', 'Coord. fin'], c.filter(function (t) {
             return t.estIni || t.estFin;
           }).map(function (t) {
             return [t.nombre || '', String(t.estIni || ''), String(t.estFin || ''), function () {
               var i = parseFloat(t.estIni),
                 f = parseFloat(t.estFin);
               return !isNaN(i) && !isNaN(f) ? String(Math.round(Math.abs(f - i))) : '—';
-            }(), t.coordIni || '', t.coordFin || '', t.sup || '', t.pend || ''];
+            }(), t.coordIni || '', t.coordFin || ''];
           }))].concat(_toConsumableArray(c.filter(function (t) {
             return t.estIni || t.estFin;
           }).length > 0 ? [docxPara("Longitud total intervenida: ".concat(calc.totalMetros || 0, " m"), {
@@ -8015,7 +8021,7 @@ var InformeModal = function InformeModal(_ref46) {
       borderCollapse: 'collapse',
       fontSize: 12
     }
-  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, ['Tramo', 'Est. inicio (m)', 'Est. fin (m)', 'Long. (m)', 'Coord. inicio (CRTM05)', 'Coord. fin (CRTM05)', 'Sup.', 'Pendiente'].map(function (h) {
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, ['Tramo', 'Est. inicio (m)', 'Est. fin (m)', 'Long. (m)', 'Coord. inicio (CRTM05)', 'Coord. fin (CRTM05)'].map(function (h) {
     return /*#__PURE__*/React.createElement("th", {
       key: h,
       style: {
@@ -8074,19 +8080,7 @@ var InformeModal = function InformeModal(_ref46) {
         fontFamily: 'monospace',
         fontSize: 11
       }
-    }, t.coordFin), /*#__PURE__*/React.createElement("td", {
-      style: {
-        border: '1px solid #E0DDD5',
-        padding: '5px 8px',
-        background: i % 2 === 0 ? 'white' : G.soft
-      }
-    }, t.sup), /*#__PURE__*/React.createElement("td", {
-      style: {
-        border: '1px solid #E0DDD5',
-        padding: '5px 8px',
-        background: i % 2 === 0 ? 'white' : G.soft
-      }
-    }, t.pend));
+    }, t.coordFin));
   }))), /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 6,
@@ -9378,7 +9372,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.25'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.26'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];

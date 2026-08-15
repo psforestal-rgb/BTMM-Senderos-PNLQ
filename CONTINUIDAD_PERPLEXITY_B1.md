@@ -7,7 +7,7 @@
 - Sitio: https://psforestal-rgb.github.io/BTMM-Senderos-PNLQ/
 - Carpeta local: `C:\Users\psfor\OneDrive\Documents\SENDEROS`
 - Punto de restauración anterior: tag `restore-v1.18`, commit `fd6ef68`.
-- Versión preparada: `1.25`; caché: `senderos-pnlq-v15`.
+- Versión preparada: `1.26`; caché: `senderos-pnlq-v16`.
 - La aplicación es React compilado y autocontenido dentro de `index.html`; no hay fuentes JSX ni proceso npm.
 
 ## Modelo funcional vigente
@@ -119,6 +119,15 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - E amplía `e_data` con `sevs`; las labores seleccionadas incorporan la severidad en la vista previa y el informe.
 - El panel usa 2 columnas en móvil, 3 en tableta y 4 en escritorio, sin desplazamiento horizontal.
 - El prompt para generar los SVG y PNG definitivos está en `PROMPT_PAQUETE_ICONOS_D_E.md`.
+
+## Simplificación de la Sección C (versión 1.26)
+
+- El mapa queda como única vía de captura: **sendero completo** o **seleccionar secciones**.
+- Se retiraron de la interfaz la tabla y los ingresos manuales por estación, coordenadas, superficie y pendiente.
+- También se retiraron el bloque de instrucciones de captura manual, el botón **Agregar tramo** y el resumen visible de longitud.
+- Las estaciones, coordenadas y distancias se continúan calculando internamente desde la geometría del mapa.
+- La vista previa y el DOCX conservan tramo, estaciones, longitud, coordenadas y total intervenido.
+- Superficie y pendiente se retiraron también de las tablas del informe porque ya no existe captura para esos campos.
 
 ## Precauciones
 
