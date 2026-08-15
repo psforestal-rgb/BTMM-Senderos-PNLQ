@@ -1311,7 +1311,9 @@ var SecA = function SecA() {
 
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Gr, {
     cols: 2
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Lbl, {
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "office-field is-removed"
+  }, /*#__PURE__*/React.createElement(Lbl, {
     c: "N\xFAmero de oficio",
     htmlFor: "oficio-numero"
   }), /*#__PURE__*/React.createElement("div", {
@@ -6475,7 +6477,7 @@ var buildDocx = /*#__PURE__*/function () {
             sz: 20
           }), docxPara(' '),
           // A. Control
-          docxHeading('A. Control del reporte', 2), docxTable(['Campo', 'Valor'], [['Número de oficio', a.oficio || '—'], ['Área de Conservación', 'ACC — Área de Conservación Central'], ['ASP', 'Parque Nacional Los Quetzales'], ['Sendero', sendero || '—'], ['Período', "".concat(a.fechaIni || '—', " al ").concat(a.fechaFin || '—')], ['Tipo de intervención', joinSet(a.tipoInterv)], ['Origen de la solicitud', joinSet(a.origen)], ['Condición climática', joinSet(a.clima)], ['Restricción uso público', (a.restriccion || 'No') + (a.restriccion && a.restriccion !== 'No' && a.restrDet ? " \u2014 ".concat(a.restrDet) : '')]]), docxPara(' '),
+          docxHeading('A. Control del reporte', 2), docxTable(['Campo', 'Valor'], [['Área de Conservación', 'ACC — Área de Conservación Central'], ['ASP', 'Parque Nacional Los Quetzales'], ['Sendero', sendero || '—'], ['Período', "".concat(a.fechaIni || '—', " al ").concat(a.fechaFin || '—')], ['Tipo de intervención', joinSet(a.tipoInterv)], ['Origen de la solicitud', joinSet(a.origen)], ['Condición climática', joinSet(a.clima)], ['Restricción uso público', (a.restriccion || 'No') + (a.restriccion && a.restriccion !== 'No' && a.restrDet ? " \u2014 ".concat(a.restrDet) : '')]]), docxPara(' '),
           // B. Personal
           docxHeading('B. Personal participante', 2), docxTable(['Fecha', 'Nombre', 'Tipo', 'Inicio', 'Fin', 'Hs efectivas'], b.map(function (r) {
             return [r.fecha || '', r.nombre || '', r.tipo || '', r.ini || '', r.fin || '', function () {
@@ -7024,8 +7026,6 @@ var InformeModal = function InformeModal(_ref46) {
       borderBottom: "2px solid ".concat(G.pale)
     }
   }, "A. Control del reporte"), /*#__PURE__*/React.createElement("div", {
-    style: rowStyle
-  }, lbl('Número de oficio'), val(a.oficio)), /*#__PURE__*/React.createElement("div", {
     style: rowStyle
   }, lbl('Área de Conservación'), val('ACC — Área de Conservación Central')), /*#__PURE__*/React.createElement("div", {
     style: rowStyle
@@ -8499,7 +8499,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.17'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.18'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];
