@@ -7,7 +7,7 @@
 - Sitio: https://psforestal-rgb.github.io/BTMM-Senderos-PNLQ/
 - Carpeta local: `C:\Users\psfor\OneDrive\Documents\SENDEROS`
 - Punto de restauración anterior: tag `restore-v1.18`, commit `fd6ef68`.
-- Versión preparada: `1.26`; caché: `senderos-pnlq-v16`.
+- Versión preparada: `1.27`; caché: `senderos-pnlq-v17`.
 - La aplicación es React compilado y autocontenido dentro de `index.html`; no hay fuentes JSX ni proceso npm.
 
 ## Modelo funcional vigente
@@ -128,6 +128,14 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - Las estaciones, coordenadas y distancias se continúan calculando internamente desde la geometría del mapa.
 - La vista previa y el DOCX conservan tramo, estaciones, longitud, coordenadas y total intervenido.
 - Superficie y pendiente se retiraron también de las tablas del informe porque ya no existe captura para esos campos.
+
+## Resaltado y barras de nivel en D/E (versión 1.27)
+
+- Se eliminaron las casillas **Observado/Ejecutado** y los selectores desplegables de severidad.
+- El icono y el nombre funcionan como un botón accesible con `aria-pressed`; al tocarlo, toda la tarjeta se resalta en amarillo.
+- Cada tarjeta incorpora una barra segmentada táctil **Baja · Media · Alta**.
+- La barra permanece deshabilitada hasta seleccionar la tarjeta y usa verde, naranja o rojo para el nivel activo.
+- La estructura de datos sigue usando los mismos conjuntos y valores `Baja`, `Media` y `Alta`, conservando compatibilidad con borradores e informes.
 
 ## Precauciones
 
