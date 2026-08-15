@@ -7,7 +7,7 @@
 - Sitio: https://psforestal-rgb.github.io/BTMM-Senderos-PNLQ/
 - Carpeta local: `C:\Users\psfor\OneDrive\Documents\SENDEROS`
 - Punto de restauración anterior: tag `restore-v1.18`, commit `fd6ef68`.
-- Versión preparada: `1.22`; caché: `senderos-pnlq-v12`.
+- Versión preparada: `1.23`; caché: `senderos-pnlq-v13`.
 - La aplicación es React compilado y autocontenido dentro de `index.html`; no hay fuentes JSX ni proceso npm.
 
 ## Modelo funcional vigente
@@ -86,6 +86,20 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 3. Hacer commit y push a `main`.
 4. Esperar `pages build and deployment` y comprobar la URL pública con un parámetro de caché.
 5. Si es necesario volver al estado anterior, usar el tag `restore-v1.18`.
+
+## Sección C — selección cartográfica por tramos (versión 1.23)
+
+- Se eliminó del mapa la escala numérica `1:N`.
+- La flecha norte conserva su función, pero usa un recuadro pequeño, translúcido y sin sombra.
+- Bajo **Agregar sendero completo** se añadió **Seleccionar tramos**.
+- El sendero activo se divide con `round(total_m / 100)`; así todos los tramos tienen exactamente la misma longitud geométrica y quedan aproximadamente en 100 m.
+- Los límites se interpolan sobre la polilínea mediante `stationRangePts`, aunque no coincidan con un vértice original.
+- Al tocar un tramo se agrega o retira un registro `c_tramos` con `autoSegment`, estaciones, coordenadas e índices; el informe final continúa consumiendo el mismo colector.
+- Los tramos elegidos se resaltan en dorado, se muestran en tarjetas numeradas bajo el mapa y alimentan un total destacado.
+- La esquina inferior derecha del mapa muestra `Cada tramo ≈ N m`, sin decimales.
+- Cambiar de sendero limpia la selección anterior para impedir mezclar geometrías distintas.
+- **Agregar sendero completo** sustituye cualquier selección parcial y conserva el flujo manual existente.
+- Verificado en 375, 390, 430, 768 y 1280 px: toque real sobre el trazado, eliminación desde tarjeta, ausencia de escala numérica, cero desbordamiento horizontal y cero errores de JavaScript.
 
 ## Precauciones
 

@@ -663,6 +663,22 @@ var pointAtStation = function pointAtStation(trail, station) {
     station: total
   };
 };
+
+// Trazo SVG exacto entre dos estaciones, incluyendo los vértices interiores.
+// Así los límites de los tramos equivalentes no dependen de los vértices fuente.
+var stationRangePts = function stationRangePts(trail, start, end) {
+  if (!trail) return '';
+  var lo = Math.max(0, Math.min(start, end));
+  var hi = Math.min(trail.total_m, Math.max(start, end));
+  var points = [pointAtStation(trail, lo).pt];
+  trail.pts.forEach(function (p, i) {
+    if (trail.dist[i] > lo && trail.dist[i] < hi) points.push(p);
+  });
+  points.push(pointAtStation(trail, hi).pt);
+  return points.map(function (p) {
+    return p2s(p.x, p.y);
+  }).join(' ');
+};
 var SCHEMA = [{
   group: 'FORMULARIO',
   sections: [{
@@ -3002,7 +3018,13 @@ var TrailMap = function TrailMap(_ref13) {
   var activeSendero = _ref13.activeSendero,
     tramos = _ref13.tramos,
     selecting = _ref13.selecting,
-    onMapClick = _ref13.onMapClick;
+    onMapClick = _ref13.onMapClick,
+    segmentMode = _ref13.segmentMode,
+    showAutoSegments = _ref13.showAutoSegments,
+    autoSegments = _ref13.autoSegments,
+    selectedSegmentIds = _ref13.selectedSegmentIds,
+    onToggleSegment = _ref13.onToggleSegment,
+    segmentLength = _ref13.segmentLength;
   var svgRef = useRef(null);
 
   // Trails principales (sin mirador spur)
@@ -3040,10 +3062,6 @@ var TrailMap = function TrailMap(_ref13) {
     _useState22 = _slicedToArray(_useState21, 2),
     dragging = _useState22[0],
     setDragging = _useState22[1];
-  var _useState23 = useState(0),
-    _useState24 = _slicedToArray(_useState23, 2),
-    svgPxW = _useState24[0],
-    setSvgPxW = _useState24[1]; // ancho renderizado del SVG (px) para la escala
   var dragRef = useRef(null); // {startX,startY,panX,panY} mientras se arrastra
   var movedRef = useRef(false); // distingue arrastre de clic
 
@@ -3094,27 +3112,10 @@ var TrailMap = function TrailMap(_ref13) {
     });
   };
 
-  // Escala numérica aproximada (1:N). Un metro CRTM05 ocupa (svgPxW/effW) px en pantalla;
-  // a ~96 dpi, 1 px de pantalla ≈ 0.0002646 m reales.
-  var METERS_PER_CSS_PX = 0.0254 / 96;
-  var scaleDenom = svgPxW > 0 && effW > 0 ? Math.round(effW / svgPxW / METERS_PER_CSS_PX) : 0;
-  var scaleLabel = scaleDenom > 0 ? "\u2248 1:".concat(String(scaleDenom).replace(/\B(?=(\d{3})+(?!\d))/g, '.')) : '';
-
-  // Medición del ancho renderizado + zoom con rueda SIN scroll de la página (listener no pasivo)
+  // Zoom con rueda SIN scroll de la página (listener no pasivo)
   useEffect(function () {
     var svg = svgRef.current;
     if (!svg) return;
-    var measure = function measure() {
-      return setSvgPxW(svg.getBoundingClientRect().width);
-    };
-    measure();
-    var ro;
-    if (typeof ResizeObserver !== 'undefined') {
-      ro = new ResizeObserver(measure);
-      ro.observe(svg);
-    } else {
-      window.addEventListener('resize', measure);
-    }
     var wheel = function wheel(e) {
       if (!activeSendero) return;
       e.preventDefault(); // evita que la página suba/baje al hacer zoom
@@ -3124,7 +3125,6 @@ var TrailMap = function TrailMap(_ref13) {
       passive: false
     });
     return function () {
-      if (ro) ro.disconnect();else window.removeEventListener('resize', measure);
       svg.removeEventListener('wheel', wheel);
     };
   }, [activeSendero]); // eslint-disable-line
@@ -3182,7 +3182,7 @@ var TrailMap = function TrailMap(_ref13) {
       movedRef.current = false;
       return;
     }
-    if (!selecting || !activeSendero || !TRAIL_DATA[activeSendero]) return;
+    if (!activeSendero || !TRAIL_DATA[activeSendero]) return;
     var svg = svgRef.current;
     var sp = svg.createSVGPoint();
     sp.x = e.clientX;
@@ -3193,13 +3193,31 @@ var TrailMap = function TrailMap(_ref13) {
       cy = -p.y;
     var trail = TRAIL_DATA[activeSendero];
     var near = nearestOnPolyline(trail, cx, cy);
+    if (segmentMode) {
+      // La captura del puntero queda en el SVG para permitir arrastre; por eso
+      // resolvemos aquí el tramo tocado usando su estación sobre la polilínea.
+      if (near.off <= u(28) && autoSegments.length) {
+        var segmentIndex = Math.min(autoSegments.length - 1, Math.floor(near.station / segmentLength));
+        onToggleSegment(autoSegments[segmentIndex].id);
+      }
+      return;
+    }
+    if (!selecting) return;
     onMapClick({
       pt: near.pt,
       idx: near.idx,
       dist: near.station
     });
   };
-  var statusText = !activeSendero ? 'Seleccione un sendero en la Sección A para mostrar el mapa.' : selecting ? "Haga clic en el trazado \u2192 ".concat(selecting.field === 'ini' ? '▶ INICIO' : '⏹ FIN', " del tramo") : 'Haga clic en 📍 de una fila para seleccionar inicio o fin en el mapa.';
+  var handleSegmentClick = function handleSegmentClick(e, segmentId) {
+    e.stopPropagation();
+    if (movedRef.current) {
+      movedRef.current = false;
+      return;
+    }
+    if (segmentMode && onToggleSegment) onToggleSegment(segmentId);
+  };
+  var statusText = !activeSendero ? 'Seleccione un sendero en la Sección A para mostrar el mapa.' : segmentMode ? 'Toque los tramos del sendero para seleccionarlos o quitarlos.' : selecting ? "Haga clic en el trazado \u2192 ".concat(selecting.field === 'ini' ? '▶ INICIO' : '⏹ FIN', " del tramo") : showAutoSegments ? 'Los tramos resaltados corresponden al mantenimiento seleccionado.' : 'Haga clic en 📍 de una fila para seleccionar inicio o fin en el mapa.';
   return /*#__PURE__*/React.createElement("div", {
     className: "trail-map-module",
     style: {
@@ -3228,16 +3246,17 @@ var TrailMap = function TrailMap(_ref13) {
       top: 8,
       left: 8,
       zIndex: 2,
-      background: 'rgba(255,255,255,0.9)',
-      border: "1px solid ".concat(G.border),
-      borderRadius: 5,
-      padding: '3px 5px',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+      background: 'rgba(255,255,255,0.62)',
+      border: '1px solid rgba(2,46,122,0.18)',
+      borderRadius: 4,
+      padding: '1px 3px',
+      boxShadow: 'none',
+      opacity: 0.78,
       lineHeight: 0
     }
   }, /*#__PURE__*/React.createElement("svg", {
-    width: "22",
-    height: "30",
+    width: "17",
+    height: "24",
     viewBox: "0 0 22 30",
     "aria-label": "Norte"
   }, /*#__PURE__*/React.createElement("polygon", {
@@ -3293,21 +3312,22 @@ var TrailMap = function TrailMap(_ref13) {
         boxShadow: '0 1px 3px rgba(0,0,0,0.15)'
       }
     }, lbl);
-  })), scaleLabel && /*#__PURE__*/React.createElement("div", {
+  })), showAutoSegments && segmentLength > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "trail-segment-distance",
     style: {
       position: 'absolute',
       bottom: 8,
-      left: 8,
+      right: 8,
       zIndex: 2,
-      fontSize: 10.5,
+      fontSize: 11,
       fontWeight: 700,
-      background: 'rgba(255,255,255,0.88)',
+      background: 'rgba(255,255,255,0.92)',
       color: G.mid,
-      padding: '2px 7px',
+      padding: '4px 8px',
       borderRadius: 4,
       border: "1px solid ".concat(G.border)
     }
-  }, "Escala ", scaleLabel, zoom > 1 ? ' · arrastre para desplazar' : ''), /*#__PURE__*/React.createElement("svg", {
+  }, "Cada tramo ≈ ", Math.round(segmentLength), " m"), /*#__PURE__*/React.createElement("svg", {
     className: "trail-map",
     ref: svgRef,
     id: "trail-map-svg",
@@ -3325,7 +3345,7 @@ var TrailMap = function TrailMap(_ref13) {
       display: 'block',
       border: "1px solid ".concat(selecting ? G.amber : G.border),
       borderRadius: '0 0 6px 6px',
-      cursor: dragging ? 'grabbing' : selecting ? 'crosshair' : 'grab',
+      cursor: dragging ? 'grabbing' : segmentMode ? 'pointer' : selecting ? 'crosshair' : 'grab',
       touchAction: 'none',
       background: '#EEF2EE'
     }
@@ -3356,7 +3376,39 @@ var TrailMap = function TrailMap(_ref13) {
     strokeDasharray: "".concat(u(8), ",").concat(u(6)),
     strokeLinecap: "round",
     opacity: 0.8
-  }), activeSendero && TRAIL_DATA[activeSendero] && tramos.map(function (t) {
+  }), activeSendero && TRAIL_DATA[activeSendero] && showAutoSegments && autoSegments.map(function (seg, idx) {
+    var selected = selectedSegmentIds.indexOf(seg.id) !== -1;
+    var points = stationRangePts(TRAIL_DATA[activeSendero], seg.start, seg.end);
+    return /*#__PURE__*/React.createElement("g", {
+      key: seg.id
+    }, /*#__PURE__*/React.createElement("polyline", {
+      points: stationRangePts(TRAIL_DATA[activeSendero], seg.start, seg.end),
+      fill: "none",
+      stroke: selected ? G.amber : idx % 2 === 0 ? '#66876b' : '#9ab49d',
+      strokeWidth: selected ? u(8) : u(5.5),
+      strokeLinecap: "butt",
+      strokeLinejoin: "round",
+      opacity: selected ? 1 : 0.82,
+      pointerEvents: "none"
+    }), /*#__PURE__*/React.createElement("polyline", {
+      "data-segment-id": seg.id,
+      points: points,
+      fill: "none",
+      stroke: "transparent",
+      strokeWidth: u(30),
+      strokeLinecap: "butt",
+      strokeLinejoin: "round",
+      pointerEvents: "stroke",
+      onClick: function onClick(e) {
+        return handleSegmentClick(e, seg.id);
+      },
+      style: {
+        cursor: segmentMode ? 'pointer' : 'grab'
+      }
+    }, /*#__PURE__*/React.createElement("title", null, "Tramo ", seg.number, " · ", Math.round(seg.end - seg.start), " m")));
+  }), activeSendero && TRAIL_DATA[activeSendero] && tramos.filter(function (t) {
+    return !t.autoSegment;
+  }).map(function (t) {
     var seg = sPts(TRAIL_DATA[activeSendero], t.idxIni, t.idxFin);
     if (!seg) return null;
     return /*#__PURE__*/React.createElement("polyline", {
@@ -3368,7 +3420,9 @@ var TrailMap = function TrailMap(_ref13) {
       strokeLinecap: "round",
       opacity: 0.75
     });
-  }), activeSendero && TRAIL_DATA[activeSendero] && tramos.map(function (t) {
+  }), activeSendero && TRAIL_DATA[activeSendero] && tramos.filter(function (t) {
+    return !t.autoSegment;
+  }).map(function (t) {
     var trail = TRAIL_DATA[activeSendero];
     return /*#__PURE__*/React.createElement("g", {
       key: t.id + '_m'
@@ -3393,7 +3447,9 @@ var TrailMap = function TrailMap(_ref13) {
         strokeWidth: u(2)
       });
     }());
-  }), activeSendero && TRAIL_DATA[activeSendero] && tramos.map(function (t, idx) {
+  }), activeSendero && TRAIL_DATA[activeSendero] && tramos.filter(function (t) {
+    return !t.autoSegment;
+  }).map(function (t, idx) {
     if (t.idxIni === undefined || t.idxFin === undefined) return null;
     var trail = TRAIL_DATA[activeSendero];
     var lo = Math.min(t.idxIni, t.idxFin),
@@ -3560,20 +3616,62 @@ var SecC_sec = function SecC_sec() {
     selecting = _useState28[0],
     setSelecting = _useState28[1]; // { tramoId, field:'ini'|'fin' }
 
+  var _useState29 = useState(false),
+    _useState30 = _slicedToArray(_useState29, 2),
+    segmentMode = _useState30[0],
+    setSegmentMode = _useState30[1];
+  var activeTrail = TRAIL_DATA[sendero];
+  var segmentCount = activeTrail ? Math.max(1, Math.round(activeTrail.total_m / 100)) : 0;
+  var segmentLength = activeTrail && segmentCount ? activeTrail.total_m / segmentCount : 0;
+  var autoSegments = activeTrail ? Array.from({
+    length: segmentCount
+  }, function (_, i) {
+    return {
+      id: "auto-segment-".concat(sendero, "-").concat(i + 1),
+      number: i + 1,
+      start: i * segmentLength,
+      end: i === segmentCount - 1 ? activeTrail.total_m : (i + 1) * segmentLength
+    };
+  }) : [];
+  var selectedAutoTramos = tramos.filter(function (t) {
+    return t.autoSegment;
+  }).sort(function (a, b) {
+    return a.segmentNumber - b.segmentNumber;
+  });
+  var selectedSegmentIds = selectedAutoTramos.map(function (t) {
+    return t.id;
+  });
+  var showAutoSegments = segmentMode || selectedAutoTramos.length > 0;
+  var previousSenderoRef = useRef(sendero);
+  useEffect(function () {
+    var previous = previousSenderoRef.current;
+    if (previous && sendero && previous !== sendero) {
+      setSelecting(null);
+      setSegmentMode(false);
+      setTramos([mkTr()]);
+    }
+    previousSenderoRef.current = sendero;
+  }, [sendero]);
+
   var tramosRef = useRef(tramos);
   tramosRef.current = tramos;
   useEffect(function () {
     rcC('c_tramos', function () {
       return tramosRef.current.map(function (t, i) {
         return _objectSpread(_objectSpread({}, t), {}, {
-          nombre: "Tramo ".concat(i + 1)
+          nombre: t.autoSegment ? "Tramo ".concat(t.segmentNumber) : "Tramo ".concat(i + 1)
         });
       });
     });
     rrC('c_tramos', function (saved) {
-      if (Array.isArray(saved) && saved.length) setTramos(saved.map(function (s) {
-        return _objectSpread(_objectSpread({}, mkTr()), s);
-      }));
+      if (Array.isArray(saved) && saved.length) {
+        setTramos(saved.map(function (s) {
+          return _objectSpread(_objectSpread({}, mkTr()), s);
+        }));
+        if (saved.some(function (s) {
+          return s.autoSegment;
+        })) setSegmentMode(true);
+      }
     });
   }, []); // eslint-disable-line
 
@@ -3596,16 +3694,20 @@ var SecC_sec = function SecC_sec() {
       });
     });
   };
-  var longitud = function longitud(ini, fin) {
+  var longitudExacta = function longitudExacta(ini, fin) {
     var i = parseFloat(ini),
       f = parseFloat(fin);
     if (isNaN(i) || isNaN(f)) return null;
-    var d = Math.round(Math.abs(f - i));
+    var d = Math.abs(f - i);
     return d > 0 ? d : null;
   };
-  var totalM = tramos.reduce(function (s, t) {
-    return s + (longitud(t.estIni, t.estFin) || 0);
-  }, 0);
+  var longitud = function longitud(ini, fin) {
+    var d = longitudExacta(ini, fin);
+    return d === null ? null : Math.round(d);
+  };
+  var totalM = Math.round(tramos.reduce(function (s, t) {
+    return s + (longitudExacta(t.estIni, t.estFin) || 0);
+  }, 0));
   useEffect(function () {
     updCalcC({
       totalMetros: totalM
@@ -3795,7 +3897,55 @@ var SecC_sec = function SecC_sec() {
     }
   };
 
-  // Sendero completo: add a new tramo with full trail extent
+  // Convierte una división automática en el mismo registro usado por el informe.
+  var makeAutoTramo = function makeAutoTramo(seg) {
+    var startPoint = pointAtStation(activeTrail, seg.start);
+    var endPoint = pointAtStation(activeTrail, seg.end);
+    var newTr = mkTr();
+    newTr.id = seg.id;
+    newTr.nombre = "Tramo ".concat(seg.number);
+    newTr.autoSegment = true;
+    newTr.segmentNumber = seg.number;
+    newTr.segmentLength = segmentLength;
+    newTr.estIni = seg.start.toFixed(2);
+    newTr.estFin = seg.end.toFixed(2);
+    newTr.coordIni = fmtCRTM(startPoint.pt);
+    newTr.coordFin = fmtCRTM(endPoint.pt);
+    newTr.idxIni = startPoint.idx;
+    newTr.idxFin = endPoint.idx;
+    newTr.ptIni = startPoint.pt;
+    newTr.ptFin = endPoint.pt;
+    return newTr;
+  };
+  var toggleAutoSegment = function toggleAutoSegment(segmentId) {
+    var seg = autoSegments.find(function (item) {
+      return item.id === segmentId;
+    });
+    if (!seg || !activeTrail) return;
+    setTramos(function (ts) {
+      if (ts.some(function (t) {
+        return t.id === segmentId;
+      })) return ts.filter(function (t) {
+        return t.id !== segmentId;
+      });
+      return [].concat(_toConsumableArray(ts), [makeAutoTramo(seg)]).sort(function (a, b) {
+        return (a.segmentNumber || 0) - (b.segmentNumber || 0);
+      });
+    });
+  };
+  var toggleSegmentMode = function toggleSegmentMode() {
+    if (!activeTrail) return;
+    if (!segmentMode) {
+      setSelecting(null);
+      // La selección gráfica es una alternativa a la captura manual.
+      if (!selectedAutoTramos.length) setTramos([]);
+      setSegmentMode(true);
+    } else {
+      setSegmentMode(false);
+    }
+  };
+
+  // Sendero completo: reemplaza la selección anterior por toda la extensión.
   var handleSenderoCompleto = function handleSenderoCompleto() {
     var trail = TRAIL_DATA[sendero];
     if (!trail) return;
@@ -3811,9 +3961,9 @@ var SecC_sec = function SecC_sec() {
     newTr.idxFin = trail.pts.length - 1;
     newTr.ptIni = _objectSpread({}, first);
     newTr.ptFin = _objectSpread({}, last);
-    setTramos(function (ts) {
-      return [].concat(_toConsumableArray(ts), [newTr]);
-    });
+    setSelecting(null);
+    setSegmentMode(false);
+    setTramos([newTr]);
   };
   var TH = function TH(_ref34) {
     var c = _ref34.c,
@@ -3941,18 +4091,26 @@ var SecC_sec = function SecC_sec() {
     activeSendero: sendero,
     tramos: tramos,
     selecting: selecting,
-    onMapClick: handleMapClick
+    onMapClick: handleMapClick,
+    segmentMode: segmentMode,
+    showAutoSegments: showAutoSegments,
+    autoSegments: autoSegments,
+    selectedSegmentIds: selectedSegmentIds,
+    onToggleSegment: toggleAutoSegment,
+    segmentLength: segmentLength
   }), sendero && TRAIL_DATA[sendero] && /*#__PURE__*/React.createElement("div", {
+    className: "trail-mode-actions",
     style: {
-      display: 'flex',
+      display: 'grid',
       gap: 8,
       marginBottom: 10,
-      flexWrap: 'wrap'
+      gridTemplateColumns: 'minmax(0, 1fr)'
     }
   }, /*#__PURE__*/React.createElement("button", {
     onClick: handleSenderoCompleto,
+    className: "trail-mode-button",
     style: {
-      padding: '6px 14px',
+      padding: '10px 14px',
       background: G.mid,
       border: 'none',
       borderRadius: 4,
@@ -3962,7 +4120,22 @@ var SecC_sec = function SecC_sec() {
       fontWeight: 700,
       cursor: 'pointer'
     }
-  }, "\uD83D\uDDFA Agregar sendero completo"), selecting && /*#__PURE__*/React.createElement("button", {
+  }, "\uD83D\uDDFA Agregar sendero completo"), /*#__PURE__*/React.createElement("button", {
+    onClick: toggleSegmentMode,
+    className: "trail-mode-button trail-segment-mode-button",
+    "aria-pressed": segmentMode,
+    style: {
+      padding: '10px 14px',
+      background: segmentMode ? G.amber : G.pale,
+      border: "1px solid ".concat(segmentMode ? G.amber : G.mid),
+      borderRadius: 4,
+      color: segmentMode ? 'white' : G.mid,
+      fontSize: 12,
+      fontFamily: 'inherit',
+      fontWeight: 700,
+      cursor: 'pointer'
+    }
+  }, segmentMode ? '✓ Finalizar selección de tramos' : '▦ Seleccionar tramos'), selecting && /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
       return setSelecting(null);
     },
@@ -3977,8 +4150,34 @@ var SecC_sec = function SecC_sec() {
       fontWeight: 700,
       cursor: 'pointer'
     }
-  }, "\u2715 Cancelar selecci\xF3n")), sendero && TRAIL_DATA[sendero] && /*#__PURE__*/React.createElement("div", {
+  }, "\u2715 Cancelar selecci\xF3n")), showAutoSegments && /*#__PURE__*/React.createElement("section", {
+    className: "trail-selected-panel",
+    "aria-live": "polite"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "trail-selected-heading"
+  }, /*#__PURE__*/React.createElement("strong", null, "Tramos de sendero seleccionados"), /*#__PURE__*/React.createElement("span", null, selectedAutoTramos.length, " de ", segmentCount)), selectedAutoTramos.length ? /*#__PURE__*/React.createElement("div", {
+    className: "trail-selected-grid"
+  }, selectedAutoTramos.map(function (t) {
+    return /*#__PURE__*/React.createElement("article", {
+      className: "trail-selected-card",
+      key: t.id
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("strong", null, "Tramo ", t.segmentNumber), /*#__PURE__*/React.createElement("small", null, "Est. ", Math.round(parseFloat(t.estIni)), "–", Math.round(parseFloat(t.estFin)), " m")), /*#__PURE__*/React.createElement("span", {
+      className: "trail-selected-length"
+    }, Math.round(longitudExacta(t.estIni, t.estFin)), " m"), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: function onClick() {
+        return toggleAutoSegment(t.id);
+      },
+      "aria-label": "Quitar tramo ".concat(t.segmentNumber),
+      title: "Quitar de la selección"
+    }, "×"));
+  })) : /*#__PURE__*/React.createElement("div", {
+    className: "trail-selected-empty"
+  }, "Toque uno o varios tramos en el mapa para agregarlos."), /*#__PURE__*/React.createElement("div", {
+    className: "trail-selected-total"
+  }, /*#__PURE__*/React.createElement("span", null, "Distancia total de mantenimiento"), /*#__PURE__*/React.createElement("strong", null, totalM, " m"))), sendero && TRAIL_DATA[sendero] && /*#__PURE__*/React.createElement("div", {
     style: {
+      display: showAutoSegments ? 'none' : 'block',
       background: G.pale,
       border: "1px solid ".concat(G.border),
       borderRadius: 6,
@@ -4005,7 +4204,7 @@ var SecC_sec = function SecC_sec() {
       overflowX: 'auto'
     }
   }, /*#__PURE__*/React.createElement("table", {
-    className: "mobile-card-table trail-segments-table",
+    className: "mobile-card-table trail-segments-table".concat(showAutoSegments ? ' trail-segments-table-hidden' : ''),
     style: {
       width: '100%',
       borderCollapse: 'collapse',
@@ -4239,7 +4438,7 @@ var SecC_sec = function SecC_sec() {
       border: '1px solid #E0DDD5',
       background: G.pale
     }
-  }))))), /*#__PURE__*/React.createElement("button", {
+  }))))), !showAutoSegments && /*#__PURE__*/React.createElement("button", {
     onClick: addTr,
     style: {
       display: 'flex',
@@ -8943,7 +9142,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.22'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.23'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];
