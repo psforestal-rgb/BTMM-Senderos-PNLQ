@@ -7,7 +7,7 @@
 - Sitio: https://psforestal-rgb.github.io/BTMM-Senderos-PNLQ/
 - Carpeta local: `C:\Users\psfor\OneDrive\Documents\SENDEROS`
 - Punto de restauración anterior: tag `restore-v1.18`, commit `fd6ef68`.
-- Versión preparada: `1.24`; caché: `senderos-pnlq-v14`.
+- Versión preparada: `1.25`; caché: `senderos-pnlq-v15`.
 - La aplicación es React compilado y autocontenido dentro de `index.html`; no hay fuentes JSX ni proceso npm.
 
 ## Modelo funcional vigente
@@ -109,6 +109,16 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - **Iniciar otro tramo** permite separar dos tramos aunque sus secciones sean contiguas (por ejemplo, Tramo 1 = secciones 1–4 y Tramo 2 = sección 5).
 - Las tarjetas y los informes enumeran los tramos y detallan las secciones que los componen.
 - El resaltado cartográfico usa amarillo fluorescente con contorno azul oscuro para mantener contraste sobre el mapa.
+
+## Paneles ilustrados D y E (versión 1.25)
+
+- Los checklists visibles de D.1, E.1, E.2 y E.3 se sustituyeron por paneles de tarjetas ilustradas.
+- La implementación temporal usa emojis definidos en `ITEM_VISUALS`; cada entrada ya tiene un identificador estable para sustituirlo posteriormente por un SVG.
+- Cada tarjeta presenta icono, nombre corto, casilla **Observado** (D) o **Ejecutado** (E) y selector de severidad.
+- D conserva su estructura `d_data.activeProbs` y `d_data.sevs`, por lo que no se altera el informe existente.
+- E amplía `e_data` con `sevs`; las labores seleccionadas incorporan la severidad en la vista previa y el informe.
+- El panel usa 2 columnas en móvil, 3 en tableta y 4 en escritorio, sin desplazamiento horizontal.
+- El prompt para generar los SVG y PNG definitivos está en `PROMPT_PAQUETE_ICONOS_D_E.md`.
 
 ## Precauciones
 

@@ -4602,6 +4602,50 @@ var SecC_sec = function SecC_sec() {
 // Musgo/líquenes ahora es ítem independiente; "Basura" separado
 var PROB_LIST = ['Vegetación invade el sendero', 'Árbol caído o ramas bloquean paso', 'Raíces / piedras expuestas con riesgo de caída', 'Huella erosionada o acanalada', 'Cárcavas o pérdida acelerada de suelo', 'Drenaje obstruido, encharcamiento o cuneta colmatada', 'Talud inestable / deslizamiento', 'Puente, pasarela, baranda o escalón dañado', 'Señalización dañada, ausente o confusa', 'Basura, grafiti, residuos o vandalismo', 'Crecimiento de musgo o líquenes en losas y estructuras', 'Evidencia de atajos / ampliación de huella', 'Riesgo por fauna, enjambres u otro factor biológico', 'Daño por evento climático reciente', 'Otro'];
 var SEV_OPTS = ['Alta', 'Media', 'Baja'];
+var ITEM_VISUALS = {
+  'Vegetación invade el sendero': ['🌿', 'Vegetación invasora', 'd01-vegetacion-invasora'],
+  'Árbol caído o ramas bloquean paso': ['🪵', 'Árbol o ramas caídas', 'd02-arbol-caido'],
+  'Raíces / piedras expuestas con riesgo de caída': ['🪨', 'Raíces o piedras', 'd03-raices-piedras'],
+  'Huella erosionada o acanalada': ['🥾', 'Huella erosionada', 'd04-huella-erosionada'],
+  'Cárcavas o pérdida acelerada de suelo': ['〽️', 'Cárcavas', 'd05-carcavas'],
+  'Drenaje obstruido, encharcamiento o cuneta colmatada': ['💧', 'Drenaje obstruido', 'd06-drenaje-obstruido'],
+  'Talud inestable / deslizamiento': ['⛰️', 'Talud inestable', 'd07-talud-inestable'],
+  'Puente, pasarela, baranda o escalón dañado': ['🌉', 'Estructura dañada', 'd08-estructura-danada'],
+  'Señalización dañada, ausente o confusa': ['🪧', 'Señalización deficiente', 'd09-senalizacion'],
+  'Basura, grafiti, residuos o vandalismo': ['🗑️', 'Basura o vandalismo', 'd10-basura-vandalismo'],
+  'Crecimiento de musgo o líquenes en losas y estructuras': ['🟢', 'Musgo o líquenes', 'd11-musgo-liquenes'],
+  'Evidencia de atajos / ampliación de huella': ['↗️', 'Atajos', 'd12-atajos'],
+  'Riesgo por fauna, enjambres u otro factor biológico': ['🐝', 'Riesgo biológico', 'd13-riesgo-biologico'],
+  'Daño por evento climático reciente': ['⛈️', 'Daño climático', 'd14-dano-climatico'],
+  'Otro': ['➕', 'Otro problema', 'd15-otro'],
+  'Roza o limpieza lateral de vegetación': ['🌱', 'Roza lateral', 'e01-roza-lateral'],
+  'Poda selectiva de ramas bajas': ['✂️', 'Poda selectiva', 'e02-poda-selectiva'],
+  'Remoción de árboles/ramas caídas': ['🪵', 'Retiro de árboles caídos', 'e03-retiro-caidos'],
+  'Remoción de árboles/ramas riesgosas': ['⚠️', 'Retiro de árboles riesgosos', 'e04-retiro-riesgosos'],
+  'Retiro de obstáculos sueltos': ['🧹', 'Retiro de obstáculos', 'e05-retiro-obstaculos'],
+  'Recolección de residuos': ['♻️', 'Recolección de residuos', 'e06-residuos'],
+  'Limpieza de mirador, descanso o área de espera': ['🧼', 'Limpieza de áreas', 'e07-limpieza-areas'],
+  'Otro (E.1)': ['➕', 'Otra labor E.1', 'e08-otro-e1'],
+  'Limpieza de cunetas o salidas de agua': ['💦', 'Limpieza de drenajes', 'e09-limpieza-drenajes'],
+  'Reconformación menor de huella': ['🥾', 'Reconformar huella', 'e10-reconformar-huella'],
+  'Retiro de sedimentos/slough/derrumbes menores': ['⛏️', 'Retiro de sedimentos', 'e11-retiro-sedimentos'],
+  'Mejora de pendiente transversal / evacuación de agua': ['↘️', 'Pendiente transversal', 'e12-pendiente-transversal'],
+  'Establecimiento o reparación menor de drenaje superficial': ['🛠️', 'Drenaje superficial', 'e13-drenaje-superficial'],
+  'Colocación puntual de material estabilizante autorizado': ['🪨', 'Material estabilizante', 'e14-material-estabilizante'],
+  'Cierre de atajo': ['🚫', 'Cierre de atajo', 'e15-cierre-atajo'],
+  'Otro (E.2)': ['➕', 'Otra labor E.2', 'e16-otro-e2'],
+  'Reparación menor de escalón': ['🪜', 'Reparar escalón', 'e17-reparar-escalon'],
+  'Reparación menor de baranda': ['🔧', 'Reparar baranda', 'e18-reparar-baranda'],
+  'Reparación menor de puente/pasarela': ['🌉', 'Reparar puente', 'e19-reparar-puente'],
+  'Ajuste o reposición de señal temporal': ['🚧', 'Señal temporal', 'e20-senal-temporal'],
+  'Limpieza o enderezado de rótulo existente': ['🪧', 'Limpieza de rótulo', 'e21-limpieza-rotulo'],
+  'Colocación de cinta / aviso preventivo': ['⚠️', 'Aviso preventivo', 'e22-aviso-preventivo'],
+  'Cierre temporal de punto inseguro': ['⛔', 'Cierre de punto inseguro', 'e23-cierre-inseguro'],
+  'Otro (E.3)': ['➕', 'Otra labor E.3', 'e24-otro-e3']
+};
+var severityColor = function severityColor(s) {
+  return s === 'Alta' ? '#B91C1C' : s === 'Media' ? '#C2410C' : s === 'Baja' ? '#237A3B' : G.muted;
+};
 var SecD = function SecD() {
   var _useState29 = useState(function () {
       return new Set();
@@ -4716,6 +4760,22 @@ var SecD = function SecD() {
       background: ev ? G.white : G.soft
     }, extra);
   };
+  return /*#__PURE__*/React.createElement(Sub, {
+    title: "D.1 — Problemas observados antes de intervenir"
+  }, /*#__PURE__*/React.createElement(CbSec, {
+    items: PROB_LIST,
+    checked: checked,
+    onToggle: toggle,
+    sevs: sevs,
+    onSeverity: setSev,
+    checkLabel: "Observado",
+    otherTexts: {
+      Otro: otroText
+    },
+    onOtherText: function onOtherText(item, value) {
+      return setOtroText(value);
+    }
+  }));
   return /*#__PURE__*/React.createElement(Sub, {
     title: "D.1 \u2014 Problemas observados antes de intervenir"
   }, /*#__PURE__*/React.createElement("div", {
@@ -4874,20 +4934,33 @@ var SecE = function SecE() {
     _useState38 = _slicedToArray(_useState37, 2),
     otroE = _useState38[0],
     setOtroE = _useState38[1]; // { 'Otro (E.1)': 'texto...', ... }
+  var _useStateESevs = useState({}),
+    _useStateESevs2 = _slicedToArray(_useStateESevs, 2),
+    sevsE = _useStateESevs2[0],
+    setSevsE = _useStateESevs2[1];
+  var setSevE = function setSevE(item, value) {
+    return setSevsE(function (s) {
+      return _objectSpread(_objectSpread({}, s), {}, _defineProperty({}, item, value));
+    });
+  };
   var checkedRef = useRef(checked);
   checkedRef.current = checked;
   var otroERef = useRef(otroE);
   otroERef.current = otroE;
+  var sevsERef = useRef(sevsE);
+  sevsERef.current = sevsE;
   useEffect(function () {
     registerCollector('e_data', function () {
       return {
         checked: _toConsumableArray(checkedRef.current),
-        otroTexts: otroERef.current
+        otroTexts: otroERef.current,
+        sevs: sevsERef.current
       };
     });
     registerRestorer('e_data', function (d) {
       if (d.checked) setChecked(new Set(d.checked));
       if (d.otroTexts) setOtroE(d.otroTexts);
+      if (d.sevs) setSevsE(d.sevs);
     });
   }, []); // eslint-disable-line
   // Push lista de labores marcadas (con texto de Otro) a FormCtx
@@ -4897,9 +4970,10 @@ var SecE = function SecE() {
       return checked.has(item);
     }).map(function (item) {
       var _otroE$item;
-      return item.startsWith('Otro') && (_otroE$item = otroE[item]) !== null && _otroE$item !== void 0 && _otroE$item.trim() ? "".concat(item, ": ").concat(otroE[item].trim()) : item;
+      var label = item.startsWith('Otro') && (_otroE$item = otroE[item]) !== null && _otroE$item !== void 0 && _otroE$item.trim() ? "".concat(item, ": ").concat(otroE[item].trim()) : item;
+      return sevsE[item] ? "".concat(label, " — Severidad ").concat(sevsE[item]) : label;
     }));
-  }, [checked, otroE]); // eslint-disable-line
+  }, [checked, otroE, sevsE]); // eslint-disable-line
 
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Sub, {
     title: "E.1 \u2014 Mantenimiento de vegetaci\xF3n y limpieza"
@@ -4907,24 +4981,45 @@ var SecE = function SecE() {
     items: E_ITEMS.E1,
     checked: checked,
     onToggle: toggle,
-    otroTexts: otroE,
-    setOtroTexts: setOtroE
+    sevs: sevsE,
+    onSeverity: setSevE,
+    checkLabel: "Ejecutado",
+    otherTexts: otroE,
+    onOtherText: function onOtherText(item, value) {
+      return setOtroE(function (p) {
+        return _objectSpread(_objectSpread({}, p), {}, _defineProperty({}, item, value));
+      });
+    }
   })), /*#__PURE__*/React.createElement(Sub, {
     title: "E.2 \u2014 Huella, drenaje y control de erosi\xF3n"
   }, /*#__PURE__*/React.createElement(CbSec, {
     items: E_ITEMS.E2,
     checked: checked,
     onToggle: toggle,
-    otroTexts: otroE,
-    setOtroTexts: setOtroE
+    sevs: sevsE,
+    onSeverity: setSevE,
+    checkLabel: "Ejecutado",
+    otherTexts: otroE,
+    onOtherText: function onOtherText(item, value) {
+      return setOtroE(function (p) {
+        return _objectSpread(_objectSpread({}, p), {}, _defineProperty({}, item, value));
+      });
+    }
   })), /*#__PURE__*/React.createElement(Sub, {
     title: "E.3 \u2014 Infraestructura, seguridad y se\xF1alizaci\xF3n"
   }, /*#__PURE__*/React.createElement(CbSec, {
     items: E_ITEMS.E3,
     checked: checked,
     onToggle: toggle,
-    otroTexts: otroE,
-    setOtroTexts: setOtroE
+    sevs: sevsE,
+    onSeverity: setSevE,
+    checkLabel: "Ejecutado",
+    otherTexts: otroE,
+    onOtherText: function onOtherText(item, value) {
+      return setOtroE(function (p) {
+        return _objectSpread(_objectSpread({}, p), {}, _defineProperty({}, item, value));
+      });
+    }
   })));
 };
 
@@ -4933,63 +5028,64 @@ var CbSec = function CbSec(_ref36) {
   var items = _ref36.items,
     checked = _ref36.checked,
     onToggle = _ref36.onToggle,
-    otroTexts = _ref36.otroTexts,
-    setOtroTexts = _ref36.setOtroTexts;
+    sevs = _ref36.sevs,
+    onSeverity = _ref36.onSeverity,
+    checkLabel = _ref36.checkLabel,
+    otherTexts = _ref36.otherTexts,
+    onOtherText = _ref36.onOtherText;
   return /*#__PURE__*/React.createElement("div", {
-    className: "mobile-option-grid",
-    style: {
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr',
-      gap: '8px 20px'
-    }
+    className: "icon-choice-grid"
   }, items.map(function (item) {
     var isOtro = item.startsWith('Otro');
-    return /*#__PURE__*/React.createElement("div", {
-      key: item
-    }, /*#__PURE__*/React.createElement("label", {
-      style: {
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: 8,
-        fontSize: 13,
-        lineHeight: 1.4,
-        cursor: 'pointer',
-        userSelect: 'none',
-        color: checked.has(item) ? G.mid : G.text,
-        fontWeight: checked.has(item) ? 700 : 400
-      }
+    var selected = checked.has(item);
+    var meta = ITEM_VISUALS[item] || ['•', item, 'item'];
+    var severity = sevs[item] || '';
+    return /*#__PURE__*/React.createElement("article", {
+      className: "icon-choice-card".concat(selected ? ' icon-choice-card-selected' : ''),
+      key: item,
+      title: item
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "icon-choice-symbol",
+      "data-icon-key": meta[2],
+      "aria-hidden": "true"
+    }, meta[0]), /*#__PURE__*/React.createElement("div", {
+      className: "icon-choice-name"
+    }, meta[1]), /*#__PURE__*/React.createElement("label", {
+      className: "icon-choice-check"
     }, /*#__PURE__*/React.createElement("input", {
       type: "checkbox",
-      checked: checked.has(item),
+      checked: selected,
       onChange: function onChange() {
         return onToggle(item);
+      }
+    }), /*#__PURE__*/React.createElement("span", null, checkLabel)), /*#__PURE__*/React.createElement("select", {
+      className: "icon-choice-severity",
+      value: severity,
+      disabled: !selected,
+      "aria-label": "Severidad de ".concat(meta[1]),
+      onChange: function onChange(e) {
+        return onSeverity(item, e.target.value);
       },
       style: {
-        marginTop: 2,
-        accentColor: G.mid,
-        flexShrink: 0
+        color: severity ? severityColor(severity) : G.muted,
+        fontWeight: severity ? 800 : 600
       }
-    }), item), isOtro && checked.has(item) && /*#__PURE__*/React.createElement("input", {
+    }, /*#__PURE__*/React.createElement("option", {
+      value: ""
+    }, selected ? 'Severidad' : 'Sin marcar'), SEV_OPTS.map(function (option) {
+      return /*#__PURE__*/React.createElement("option", {
+        key: option,
+        value: option
+      }, option);
+    })), isOtro && selected && /*#__PURE__*/React.createElement("input", {
+      className: "icon-choice-other",
       type: "text",
-      value: otroTexts[item] || '',
+      value: otherTexts[item] || '',
       onChange: function onChange(e) {
-        return setOtroTexts(function (p) {
-          return _objectSpread(_objectSpread({}, p), {}, _defineProperty({}, item, e.target.value));
-        });
+        return onOtherText(item, e.target.value);
       },
       placeholder: "Especifique el detalle\u2026",
-      style: {
-        marginTop: 5,
-        marginLeft: 22,
-        width: 'calc(100% - 22px)',
-        border: "1px solid ".concat(G.light),
-        borderRadius: 4,
-        padding: '5px 9px',
-        fontSize: 12.5,
-        fontFamily: 'inherit',
-        outline: 'none',
-        background: G.pale
-      }
+      "aria-label": "Detalle de ".concat(meta[1])
     }));
   }));
 };
@@ -9282,7 +9378,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.24'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.25'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];
