@@ -2456,7 +2456,7 @@ table.mobile-card-table.trail-segments-table-hidden {
 .icon-choice-card {
   display: flex;
   min-width: 0;
-  min-height: 210px;
+  min-height: 246px;
   padding: 12px 9px 10px;
   border: 1px solid #b8c2cf;
   border-radius: 11px;
@@ -2478,7 +2478,7 @@ table.mobile-card-table.trail-segments-table-hidden {
 .icon-choice-toggle {
   display: flex;
   width: 100%;
-  min-height: 100px;
+  min-height: 136px;
   padding: 0;
   border: 0;
   border-radius: 8px;
@@ -2499,23 +2499,43 @@ table.mobile-card-table.trail-segments-table-hidden {
 }
 
 .icon-choice-symbol {
+  position: relative;
   display: flex;
-  width: 54px;
-  height: 54px;
+  width: 92px;
+  height: 92px;
   margin: 0 auto;
   border: 1px solid #c7d1dc;
-  border-radius: 14px;
-  background: #eef3f7;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #f7faf8, #e7efe9);
   align-items: center;
   justify-content: center;
   font-family: "Segoe UI Emoji", "Apple Color Emoji", sans-serif;
   font-size: 31px;
   line-height: 1;
+  overflow: hidden;
 }
 
 .icon-choice-card-selected .icon-choice-symbol {
   border-color: #b88b00;
-  background: #ffea00;
+  background: #fff3a3;
+  box-shadow: 0 0 0 3px rgba(255, 210, 0, 0.38);
+}
+
+.icon-choice-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-choice-image {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .icon-choice-name {
@@ -2627,8 +2647,13 @@ table.mobile-card-table.trail-segments-table-hidden {
   }
 
   .icon-choice-card {
-    min-height: 218px;
+    min-height: 254px;
     padding: 14px 11px 11px;
+  }
+
+  .icon-choice-symbol {
+    width: 100px;
+    height: 100px;
   }
 }
 

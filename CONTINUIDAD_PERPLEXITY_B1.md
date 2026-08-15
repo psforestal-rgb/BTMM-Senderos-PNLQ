@@ -143,6 +143,14 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - **Visitantes informados de restricciones o desvíos** se reemplazó por **Rotulación o información al visitante**.
 - Al restaurar borradores anteriores, el texto antiguo se migra al nuevo y los dos controles eliminados se descartan.
 
+## Ilustraciones definitivas de D/E (versión 1.29)
+
+- Los 39 emojis temporales se sustituyeron por las ilustraciones finales generadas en Recraft.
+- Los archivos locales están optimizados como WebP transparente de 200 × 200 px en `assets/icons-d-e/` y pesan aproximadamente 832 KB en conjunto.
+- `ITEM_VISUALS` conserva los identificadores estables y `CbSec` construye la ruta local correspondiente; el emoji permanece solamente como respaldo si una imagen no puede cargarse.
+- Las imágenes se cargan de forma diferida, mantienen proporción y aumentan a 92 px en móvil y 100 px en pantallas amplias.
+- Los 39 recursos se incluyen en el `APP_SHELL` del service worker para conservar el funcionamiento sin conexión.
+
 ## Precauciones
 
 - No convertir `index.html` a un proyecto npm durante esta etapa.
