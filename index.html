@@ -840,61 +840,73 @@ var ALL_SECS = SCHEMA.flatMap(function (g) {
 var CLOSING_GUIDE = {
   A: {
     icon: '📋',
+    asset: 'ui-a-datos-jornada',
     phase: 'Preparar el cierre',
     prompt: 'Identifique el sendero y el motivo de la jornada.'
   },
   B: {
     icon: '👥',
+    asset: 'ui-b-equipo-horario',
     phase: 'Preparar el cierre',
     prompt: 'Confirme la fecha, el horario y el equipo participante.'
   },
   C: {
     icon: '🗺️',
+    asset: 'ui-c-tramos-atendidos',
     phase: 'Reconstruir la jornada',
     prompt: 'Señale en el mapa los tramos que recibieron mantenimiento.'
   },
   D: {
     icon: '🔎',
+    asset: 'ui-d-condicion-encontrada',
     phase: 'Reconstruir la jornada',
     prompt: 'Marque las condiciones encontradas antes de intervenir.'
   },
   E: {
     icon: '🛠️',
+    asset: 'ui-e-trabajo-realizado',
     phase: 'Reconstruir la jornada',
     prompt: 'Registre visualmente las labores ejecutadas.'
   },
   G: {
     icon: '🦺',
+    asset: 'ui-g-seguridad-visitantes',
     phase: 'Verificar el trabajo',
     prompt: 'Revise seguridad, ambiente e información al visitante.'
   },
   H: {
     icon: '🎒',
+    asset: 'ui-h-recursos-usados',
     phase: 'Verificar el trabajo',
     prompt: 'Anote los recursos y materiales utilizados.'
   },
   I: {
     icon: '📊',
+    asset: 'ui-i-resultados-jornada',
     phase: 'Revisar resultados',
     prompt: 'Compruebe los indicadores calculados por la herramienta.'
   },
   J: {
     icon: '📷',
+    asset: 'ui-j-evidencia-fotografica',
     phase: 'Documentar la jornada',
     prompt: 'Seleccione y organice la evidencia tomada durante el trabajo.'
   },
   K: {
     icon: '⚠️',
+    asset: 'ui-k-pendientes-seguimiento',
     phase: 'Documentar la jornada',
     prompt: 'Deje claras las tareas pendientes y recomendaciones.'
   },
   L: {
     icon: '✅',
+    asset: 'ui-l-conclusion-jornada',
     phase: 'Cerrar el reporte',
     prompt: 'Resuma el resultado y la condición final del sendero.'
   },
   M: {
     icon: '✍️',
+    asset: 'ui-m-responsable-firma',
     phase: 'Cerrar el reporte',
     prompt: 'Confirme al responsable y revise el informe antes de generarlo.'
   }
@@ -923,6 +935,29 @@ var OPTION_ICONS = {
   'Media': '🟠',
   'Baja': '🟢'
 };
+var UI_ICON_ASSET_BASE = './assets/icons-ui/';
+var OPTION_ICON_ASSETS = {
+  'Preventiva': 'opt-preventiva',
+  'Correctiva': 'opt-correctiva',
+  'Emergencia': 'opt-emergencia',
+  'Seguimiento': 'opt-seguimiento',
+  'Programación anual': 'opt-programacion-anual',
+  'Reporte visitante': 'opt-reporte-visitante',
+  'Iniciativa del funcionario': 'opt-iniciativa-funcionario',
+  'Evento climático': 'opt-evento-climatico',
+  'Orden superior': 'opt-orden-superior',
+  'Seco': 'clima-seco',
+  'Lluvia': 'clima-lluvia',
+  'Neblina': 'clima-neblina',
+  'Viento': 'clima-viento',
+  'Tormenta previa': 'clima-tormenta-previa',
+  'Variable': 'clima-variable'
+};
+var RESTRICTION_ICON_ASSETS = {
+  'No': 'restriccion-no',
+  'Parcial': 'restriccion-parcial',
+  'Total': 'restriccion-total'
+};
 var optionIcon = function optionIcon(label) {
   return OPTION_ICONS[label] || '✓';
 };
@@ -935,6 +970,58 @@ var resourceIcon = function resourceIcon(label) {
   if (value.includes('señal') || value.includes('cinta')) return '🚧';
   if (value.includes('protección') || value.includes('casco') || value.includes('guante')) return '🦺';
   return '🧰';
+};
+var RESOURCE_ICON_ASSETS = {
+  'Machete': 'res-machete',
+  'Pala': 'res-pala',
+  'Palín': 'res-palin',
+  'Pico': 'res-pico',
+  'Vehículo institucional': 'res-vehiculo-institucional',
+  'GPS': 'res-gps',
+  'Motosierra': 'res-motosierra',
+  'Carretillo': 'res-carretillo',
+  'Cuerda': 'res-cuerda',
+  'Cinta métrica': 'res-cinta-metrica',
+  'Combustible': 'res-combustible',
+  'Lubricante': 'res-lubricante',
+  'Mangueras de incendios': 'res-mangueras-incendio',
+  'Bomba de incendios': 'res-bomba-incendio',
+  'Motobomba': 'res-motobomba',
+  'Reservorio de incendios': 'res-reservorio-incendio',
+  'Accesorios de incendios': 'res-accesorios-incendio',
+  'Cloro u otros limpiadores': 'res-limpiadores',
+  'Escobones': 'res-escobones',
+  'Cepillo de acero': 'res-cepillo-acero',
+  'Espátulas': 'res-espatulas'
+};
+
+var UiIcon = function UiIcon(_refUiIcon) {
+  var asset = _refUiIcon.asset,
+    fallback = _refUiIcon.fallback,
+    _refUiIcon$className = _refUiIcon.className,
+    className = _refUiIcon$className === void 0 ? '' : _refUiIcon$className;
+  if (!asset) return /*#__PURE__*/React.createElement("span", {
+    className: "ui-illustration is-fallback ".concat(className).trim(),
+    "aria-hidden": "true"
+  }, fallback || '•');
+  return /*#__PURE__*/React.createElement("span", {
+    className: "ui-illustration ".concat(className).trim(),
+    "aria-hidden": "true"
+  }, /*#__PURE__*/React.createElement("img", {
+    className: "ui-illustration-image",
+    src: "".concat(UI_ICON_ASSET_BASE).concat(asset, ".webp"),
+    alt: "",
+    width: "200",
+    height: "200",
+    loading: "lazy",
+    decoding: "async",
+    onError: function onError(e) {
+      e.currentTarget.style.display = 'none';
+      if (e.currentTarget.nextElementSibling) e.currentTarget.nextElementSibling.style.display = 'grid';
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "ui-illustration-fallback"
+  }, fallback || '•'));
 };
 
 // ─── PRIMITIVOS UI ───────────────────────────────────────────────────────────
@@ -1044,7 +1131,9 @@ var Radios = function Radios(_ref6) {
   var name = _ref6.name,
     opts = _ref6.opts,
     value = _ref6.value,
-    _onChange2 = _ref6.onChange;
+    _onChange2 = _ref6.onChange,
+    _ref6$assetMap = _ref6.assetMap,
+    assetMap = _ref6$assetMap === void 0 ? OPTION_ICON_ASSETS : _ref6$assetMap;
   return /*#__PURE__*/React.createElement("fieldset", {
     className: "option-group radio-group",
     style: {
@@ -1083,10 +1172,11 @@ var Radios = function Radios(_ref6) {
       style: {
         accentColor: G.mid
       }
-    })), /*#__PURE__*/React.createElement("span", {
+    })), /*#__PURE__*/React.createElement(UiIcon, {
       className: "visual-option-icon",
-      "aria-hidden": "true"
-    }, optionIcon(o)), /*#__PURE__*/React.createElement("span", {
+      asset: assetMap[o],
+      fallback: optionIcon(o)
+    }), /*#__PURE__*/React.createElement("span", {
       className: "visual-option-text"
     }, o));
   }));
@@ -1138,10 +1228,11 @@ var CbsCtrl = function CbsCtrl(_ref7) {
         accentColor: G.mid,
         flexShrink: 0
       }
-    }), /*#__PURE__*/React.createElement("span", {
+    }), /*#__PURE__*/React.createElement(UiIcon, {
       className: "visual-option-icon",
-      "aria-hidden": "true"
-    }, optionIcon(o)), /*#__PURE__*/React.createElement("span", {
+      asset: OPTION_ICON_ASSETS[o],
+      fallback: optionIcon(o)
+    }), /*#__PURE__*/React.createElement("span", {
       className: "visual-option-text"
     }, o));
   }));
@@ -1695,6 +1786,7 @@ var SecA = function SecA() {
   }), /*#__PURE__*/React.createElement(Radios, {
     name: "restriccion",
     opts: ['No', 'Parcial', 'Total'],
+    assetMap: RESTRICTION_ICON_ASSETS,
     value: restriccion,
     onChange: setRestriccion
   }), restriccion !== 'No' && /*#__PURE__*/React.createElement("div", {
@@ -5247,6 +5339,16 @@ var CbSec = function CbSec(_ref36) {
 };
 var G1_VISITOR_INFO = 'Rotulación o información al visitante';
 var G1_ITEMS = ['Medio de comunicación disponible', 'Herramientas revisadas antes de uso', 'Al menos una persona con primeros auxilios', G1_VISITOR_INFO, 'Zona de trabajo delimitada cuando corresponde', 'Residuos retirados o dispuestos correctamente', 'Se evitó afectación innecesaria de vegetación, suelo o fauna', 'Otro'];
+var G1_ICON_ASSETS = {
+  'Medio de comunicación disponible': 'g1-comunicacion',
+  'Herramientas revisadas antes de uso': 'g1-herramientas-revisadas',
+  'Al menos una persona con primeros auxilios': 'g1-primeros-auxilios',
+  'Rotulación o información al visitante': 'g1-informacion-visitante',
+  'Zona de trabajo delimitada cuando corresponde': 'g1-zona-delimitada',
+  'Residuos retirados o dispuestos correctamente': 'g1-residuos-retirados',
+  'Se evitó afectación innecesaria de vegetación, suelo o fauna': 'g1-proteccion-ambiente',
+  'Otro': 'g1-otro'
+};
 var SecG = function SecG() {
   // G.1: todos pre-marcados por defecto — el funcionario desmarca los que NO se cumplieron
   var _useState39 = useState(function () {
@@ -5401,10 +5503,11 @@ var SecG = function SecG() {
         accentColor: G.mid,
         flexShrink: 0
       }
-    }), /*#__PURE__*/React.createElement("span", {
+    }), /*#__PURE__*/React.createElement(UiIcon, {
       className: "visual-option-icon",
-      "aria-hidden": "true"
-    }, g1.has(item) ? '✓' : '!'), /*#__PURE__*/React.createElement("span", {
+      asset: G1_ICON_ASSETS[item],
+      fallback: g1.has(item) ? '✓' : '!'
+    }), /*#__PURE__*/React.createElement("span", {
       className: "visual-option-text"
     }, item), !g1.has(item) && /*#__PURE__*/React.createElement("span", {
       style: {
@@ -5736,10 +5839,11 @@ var SecH = function SecH() {
         accentColor: G.mid,
         flexShrink: 0
       }
-    }), /*#__PURE__*/React.createElement("span", {
+    }), /*#__PURE__*/React.createElement(UiIcon, {
       className: "visual-option-icon",
-      "aria-hidden": "true"
-    }, resourceIcon(r)), /*#__PURE__*/React.createElement("span", {
+      asset: RESOURCE_ICON_ASSETS[r],
+      fallback: resourceIcon(r)
+    }), /*#__PURE__*/React.createElement("span", {
       className: "visual-option-text"
     }, r));
   }))), activeRecs.length === 0 && customRecs.length === 0 ? /*#__PURE__*/React.createElement("div", {
@@ -6223,18 +6327,22 @@ var SecI = function SecI() {
 var PHOTO_CATEGORIES = [{
   id: 'general',
   icon: '🏞️',
+  asset: 'foto-vista-general',
   label: 'Vista general'
 }, {
   id: 'problema',
   icon: '🔎',
+  asset: 'foto-problema',
   label: 'Problema'
 }, {
   id: 'trabajo',
   icon: '🛠️',
+  asset: 'foto-trabajo-realizado',
   label: 'Trabajo realizado'
 }, {
   id: 'resultado',
   icon: '✅',
+  asset: 'foto-resultado-final',
   label: 'Resultado final'
 }];
 var SecJ = function SecJ() {
@@ -6379,9 +6487,11 @@ var SecJ = function SecJ() {
   }, PHOTO_CATEGORIES.map(function (category) {
     return /*#__PURE__*/React.createElement("span", {
       key: category.id
-    }, /*#__PURE__*/React.createElement("b", {
-      "aria-hidden": "true"
-    }, category.icon), category.label);
+    }, /*#__PURE__*/React.createElement(UiIcon, {
+      className: "photo-category-art",
+      asset: category.asset,
+      fallback: category.icon
+    }), category.label);
   }))), /*#__PURE__*/React.createElement("div", {
     className: "photo-actions",
     style: {
@@ -6526,9 +6636,11 @@ var SecJ = function SecJ() {
         },
         "aria-pressed": activeCategory,
         title: category.label
-      }, /*#__PURE__*/React.createElement("span", {
-        "aria-hidden": "true"
-      }, category.icon), /*#__PURE__*/React.createElement("span", null, category.label));
+      }, /*#__PURE__*/React.createElement(UiIcon, {
+        className: "photo-category-art",
+        asset: category.asset,
+        fallback: category.icon
+      }), /*#__PURE__*/React.createElement("span", null, category.label));
     })), /*#__PURE__*/React.createElement("label", {
       htmlFor: "foto-desc-".concat(f.id),
       style: {
@@ -9009,30 +9121,35 @@ var ClosingReview = function ClosingReview(_refClosing) {
   var essentials = [{
     id: 'A',
     icon: '🧭',
+    asset: 'ui-a-datos-jornada',
     label: 'Sendero identificado',
     detail: sendero || 'Seleccione el sendero de la jornada',
     ready: !!sendero
   }, {
     id: 'B',
     icon: '👥',
+    asset: 'ui-b-equipo-horario',
     label: 'Equipo y horario',
     detail: people.length ? "".concat(people.length, " persona(s)").concat(leader ? " · Encargado: ".concat(leader.nombre) : ' · Falta encargado') : 'Agregue a las personas participantes',
     ready: people.length > 0 && !!leader
   }, {
     id: 'C',
     icon: '🗺️',
+    asset: 'ui-c-tramos-atendidos',
     label: 'Tramos atendidos',
     detail: tramos.length ? "".concat(tramos.length, " tramo(s) · ").concat(Math.round(distance), " m") : 'Seleccione el sendero completo o sus secciones',
     ready: tramos.length > 0
   }, {
     id: 'E',
     icon: '🛠️',
+    asset: 'ui-e-trabajo-realizado',
     label: 'Trabajo realizado',
     detail: labors.length ? "".concat(labors.length, " labor(es) registradas") : 'Marque al menos una labor ejecutada',
     ready: labors.length > 0
   }, {
     id: 'M',
     icon: '✍️',
+    asset: 'ui-m-responsable-firma',
     label: 'Responsable del informe',
     detail: responsible || 'Seleccione a la persona responsable',
     ready: !!responsible
@@ -9043,18 +9160,22 @@ var ClosingReview = function ClosingReview(_refClosing) {
   var allReady = readyCount === essentials.length;
   var metrics = [{
     icon: '📅',
+    asset: 'ui-a-datos-jornada',
     value: people[0] && people[0].fecha || '—',
     label: 'Fecha'
   }, {
     icon: '👥',
+    asset: 'ui-b-equipo-horario',
     value: people.length,
     label: 'Personas'
   }, {
     icon: '📏',
+    asset: 'ui-c-tramos-atendidos',
     value: "".concat(Math.round(distance), " m"),
     label: 'Distancia'
   }, {
     icon: '📷',
+    asset: 'ui-j-evidencia-fotografica',
     value: photos.length,
     label: 'Fotos'
   }];
@@ -9074,19 +9195,22 @@ var ClosingReview = function ClosingReview(_refClosing) {
     "aria-label": "Cerrar revisión"
   }, "×"), /*#__PURE__*/React.createElement("span", {
     className: "closing-review-kicker"
-  }, "Estación final"), /*#__PURE__*/React.createElement("div", {
+  }, "Estación final"), /*#__PURE__*/React.createElement(UiIcon, {
     className: "closing-review-icon",
-    "aria-hidden": "true"
-  }, allReady ? '✅' : '📋'), /*#__PURE__*/React.createElement("h2", {
+    asset: allReady ? 'ui-l-conclusion-jornada' : 'ui-a-datos-jornada',
+    fallback: allReady ? '✅' : '📋'
+  }), /*#__PURE__*/React.createElement("h2", {
     id: "closing-review-title"
   }, allReady ? 'Reporte listo para revisar' : 'Faltan algunos datos importantes'), /*#__PURE__*/React.createElement("p", null, allReady ? 'La jornada quedó documentada. Revise el resumen antes de generar el Word.' : "Complete ".concat(essentials.length - readyCount, " punto(s) para dejar el reporte listo."))), /*#__PURE__*/React.createElement("div", {
     className: "closing-review-metrics"
   }, metrics.map(function (metric) {
     return /*#__PURE__*/React.createElement("div", {
       key: metric.label
-    }, /*#__PURE__*/React.createElement("span", {
-      "aria-hidden": "true"
-    }, metric.icon), /*#__PURE__*/React.createElement("strong", null, metric.value), /*#__PURE__*/React.createElement("small", null, metric.label));
+    }, /*#__PURE__*/React.createElement(UiIcon, {
+      className: "closing-review-metric-icon",
+      asset: metric.asset,
+      fallback: metric.icon
+    }), /*#__PURE__*/React.createElement("strong", null, metric.value), /*#__PURE__*/React.createElement("small", null, metric.label));
   })), /*#__PURE__*/React.createElement("div", {
     className: "closing-review-list"
   }, essentials.map(function (item) {
@@ -9097,10 +9221,11 @@ var ClosingReview = function ClosingReview(_refClosing) {
       onClick: function onClick() {
         return onGo(item.id);
       }
-    }, /*#__PURE__*/React.createElement("span", {
+    }, /*#__PURE__*/React.createElement(UiIcon, {
       className: "closing-review-item-icon",
-      "aria-hidden": "true"
-    }, item.icon), /*#__PURE__*/React.createElement("span", {
+      asset: item.asset,
+      fallback: item.icon
+    }), /*#__PURE__*/React.createElement("span", {
       className: "closing-review-item-copy"
     }, /*#__PURE__*/React.createElement("strong", null, item.label), /*#__PURE__*/React.createElement("small", null, item.detail)), /*#__PURE__*/React.createElement("span", {
       className: "closing-review-state"
@@ -9540,9 +9665,13 @@ function App() {
       onClick: function onClick() {
         return go(section.id);
       }
-    }, /*#__PURE__*/React.createElement("span", {
+    }, done ? /*#__PURE__*/React.createElement("span", {
       className: "journey-route-marker"
-    }, done ? '✓' : routeGuide.icon), /*#__PURE__*/React.createElement("span", {
+    }, "✓") : /*#__PURE__*/React.createElement(UiIcon, {
+      className: "journey-route-marker",
+      asset: routeGuide.asset,
+      fallback: routeGuide.icon
+    }), /*#__PURE__*/React.createElement("span", {
       className: "journey-route-copy"
     }, /*#__PURE__*/React.createElement("small", null, "Paso ", routeIndex + 1), /*#__PURE__*/React.createElement("strong", null, section.title)), /*#__PURE__*/React.createElement("span", {
       className: "journey-route-arrow",
@@ -9825,10 +9954,11 @@ function App() {
       return setShowRoute(true);
     },
     "aria-label": "Abrir ruta del reporte"
-  }, "☰"), /*#__PURE__*/React.createElement("div", {
+  }, "☰"), /*#__PURE__*/React.createElement(UiIcon, {
     className: "journey-current-icon",
-    "aria-hidden": "true"
-  }, activeGuide.icon), /*#__PURE__*/React.createElement("div", {
+    asset: activeGuide.asset,
+    fallback: activeGuide.icon
+  }), /*#__PURE__*/React.createElement("div", {
     className: "journey-current-copy"
   }, /*#__PURE__*/React.createElement("span", null, activeGuide.phase, " · ", idx + 1, "/", ALL_IDS.length), /*#__PURE__*/React.createElement("strong", null, activeSec === null || activeSec === void 0 ? void 0 : activeSec.title), /*#__PURE__*/React.createElement("small", null, activeGuide.prompt)), /*#__PURE__*/React.createElement("div", {
     className: "journey-header-progress",
@@ -9875,7 +10005,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.31'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.32'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];

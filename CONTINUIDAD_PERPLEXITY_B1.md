@@ -165,6 +165,13 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - J permite clasificar fotografías como vista general, problema, trabajo realizado o resultado final. La categoría se conserva en el borrador exportado, pero no altera la sección J del Word.
 - La mesa final es exclusivamente una vista de control: el generador DOCX y el machote institucional permanecen intactos.
 
+## Familia visual ilustrada (versión 1.32)
+
+- Se sustituyeron los emojis ilustrativos por 63 imágenes Recraft coherentes con los paneles D y E.
+- El paquete cubre navegación, intervención, origen, clima, restricciones, G.1, recursos H.1 y categorías fotográficas J.
+- Los símbolos funcionales mínimos (flechas, guardar, eliminar y estados) continúan simples para preservar claridad táctil.
+- Los valores internos, recolectores y el generador DOCX no fueron modificados por este cambio visual.
+
 ## Precauciones
 
 - No convertir `index.html` a un proyecto npm durante esta etapa.
