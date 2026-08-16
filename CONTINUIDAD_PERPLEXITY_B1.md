@@ -178,6 +178,14 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - Navegación, revisión y fotografías usan escalas compactas diferenciadas, pero coherentes entre sí.
 - El icono de bienvenida también utiliza la familia Recraft; los símbolos funcionales conservan tamaño reducido.
 
+## Legibilidad móvil híbrida (versión 1.34)
+
+- A y G presentan las opciones ilustradas como filas amplias con texto de 16 px.
+- D y E conservan el mosaico de dos columnas; una tarjeta seleccionada se expande y entonces muestra la escala de nivel.
+- H conserva dos columnas para evitar una lista excesivamente larga, con nombres operativos mayores.
+- Se corrigieron cuatro abreviaturas `font` inválidas, el límite inclusivo de 700 px y varios objetivos táctiles inferiores a 44 px.
+- Se consolidaron las reglas ilustradas móviles en consultas de contenedor; los datos y el DOCX permanecen sin cambios.
+
 ## Precauciones
 
 - No convertir `index.html` a un proyecto npm durante esta etapa.

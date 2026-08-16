@@ -396,7 +396,10 @@ textarea {
 .b1-collapse-button {
   min-height: 44px;
   border-radius: 7px;
-  font: 700 13px/1.2 inherit;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
   cursor: pointer;
 }
 
@@ -2320,7 +2323,10 @@ table.mobile-card-table.trail-segments-table-hidden {
   border-radius: 7px;
   background: #eef4fb;
   color: var(--brand-blue);
-  font: 800 12px/1.2 inherit;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
   cursor: pointer;
   touch-action: manipulation;
 }
@@ -2434,7 +2440,7 @@ table.mobile-card-table.trail-segments-table-hidden {
   pointer-events: none;
 }
 
-@container (min-width: 700px) {
+@container (min-width: 701px) {
   .trail-selected-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2638,10 +2644,13 @@ table.mobile-card-table.trail-segments-table-hidden {
   border-radius: 7px;
   background: #fff;
   color: var(--brand-navy);
-  font: 400 16px/1.25 inherit;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.25;
 }
 
-@container (min-width: 700px) {
+@container (min-width: 701px) {
   .icon-choice-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -2904,7 +2913,10 @@ table.mobile-card-table.trail-segments-table-hidden {
   border-radius: 9px;
   background: #f7f9fb;
   color: #465268;
-  font: 750 10px/1.15 inherit;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.15;
   text-align: left;
   align-items: center;
   gap: 5px;
@@ -3326,8 +3338,8 @@ table.mobile-card-table.trail-segments-table-hidden {
     top: 0;
     z-index: 450;
     display: grid;
-    grid-template-columns: 42px 44px minmax(0, 1fr);
-    min-height: 102px;
+    grid-template-columns: 46px 46px minmax(0, 1fr);
+    min-height: 108px;
     padding: 10px 12px 13px;
     border-bottom: 3px solid var(--brand-gold);
     background: linear-gradient(135deg, #03205b, #063f88);
@@ -3339,8 +3351,8 @@ table.mobile-card-table.trail-segments-table-hidden {
 
   .journey-route-button {
     display: grid;
-    width: 42px;
-    height: 42px;
+    width: 46px;
+    height: 46px;
     padding: 0;
     border: 1px solid rgba(255, 255, 255, 0.36);
     border-radius: 12px;
@@ -3352,8 +3364,8 @@ table.mobile-card-table.trail-segments-table-hidden {
 
   .journey-current-icon {
     display: grid;
-    width: 44px;
-    height: 44px;
+    width: 46px;
+    height: 46px;
     border-radius: 13px;
     background: #fff4cf;
     color: var(--brand-navy);
@@ -3374,20 +3386,20 @@ table.mobile-card-table.trail-segments-table-hidden {
   .journey-current-copy > span {
     margin-bottom: 2px;
     color: #d8e4f7;
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 850;
     letter-spacing: 0.05em;
     text-transform: uppercase;
   }
 
   .journey-current-copy > strong {
-    font: 700 16px/1.1 Baskerville, Georgia, serif;
+    font: 700 18px/1.1 Baskerville, Georgia, serif;
   }
 
   .journey-current-copy > small {
     margin-top: 3px;
     color: rgba(255, 255, 255, 0.76);
-    font-size: 10px;
+    font-size: 12px;
     line-height: 1.2;
   }
 
@@ -3402,7 +3414,7 @@ table.mobile-card-table.trail-segments-table-hidden {
   .app-content {
     width: 100% !important;
     max-width: none !important;
-    min-height: calc(100svh - 102px);
+    min-height: calc(100svh - 108px);
     padding: 12px 12px 96px !important;
     display: flex;
     flex-direction: column;
@@ -3420,7 +3432,7 @@ table.mobile-card-table.trail-segments-table-hidden {
   }
 
   .closing-welcome-card {
-    grid-template-columns: 48px minmax(0, 1fr);
+    grid-template-columns: 80px minmax(0, 1fr);
     padding: 13px;
   }
 
@@ -3458,14 +3470,14 @@ table.mobile-card-table.trail-segments-table-hidden {
   }
 
   .visual-option {
-    min-height: 72px;
+    min-height: 126px;
     padding: 8px !important;
     flex-direction: column;
     align-items: center !important;
     justify-content: center;
     gap: 5px !important;
     text-align: center;
-    font-size: 11px !important;
+    font-size: 15px !important;
     line-height: 1.2 !important;
   }
 
@@ -3484,7 +3496,7 @@ table.mobile-card-table.trail-segments-table-hidden {
   .g1-visual-option,
   .resource-visual-option {
     width: 100%;
-    min-height: 88px;
+    min-height: 142px;
   }
 
   .photo-guide {
@@ -3513,7 +3525,7 @@ table.mobile-card-table.trail-segments-table-hidden {
   }
 
   .photo-category-button {
-    min-height: 48px;
+    min-height: 52px;
   }
 
   .section-navigation {
@@ -3538,10 +3550,10 @@ table.mobile-card-table.trail-segments-table-hidden {
   .section-navigation > button {
     width: 100%;
     min-width: 0 !important;
-    min-height: 50px;
+    min-height: 54px;
     padding: 8px 10px !important;
     justify-content: center;
-    font-size: 12px !important;
+    font-size: 15px !important;
   }
 
   .draft-banner {
@@ -3555,7 +3567,7 @@ table.mobile-card-table.trail-segments-table-hidden {
   }
 
   .draft-banner button {
-    min-height: 40px;
+    min-height: 44px;
     padding: 6px 10px !important;
   }
 
@@ -3621,8 +3633,126 @@ table.mobile-card-table.trail-segments-table-hidden {
 
   .closing-review-actions button {
     min-width: 0;
+    min-height: 52px;
     padding: 8px 7px;
-    font-size: 11px;
+    font-size: 14px;
+  }
+
+  /* Jerarquía móvil híbrida: listas legibles en A/G y mosaico gráfico en D/E/H. */
+  .option-group:has(.ui-illustration-image),
+  .mobile-option-grid:has(.g1-visual-option) {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .option-group:has(.ui-illustration-image) .visual-option,
+  .mobile-option-grid:has(.g1-visual-option) .visual-option {
+    flex-direction: row;
+    align-items: center !important;
+    justify-content: flex-start;
+    min-height: 104px;
+    padding: 10px !important;
+    gap: 12px !important;
+    font-size: 16px !important;
+    line-height: 1.28 !important;
+    text-align: left;
+  }
+
+  .option-group:has(.ui-illustration-image) .visual-option-text,
+  .mobile-option-grid:has(.g1-visual-option) .visual-option-text {
+    flex: 1 1 auto;
+    font-weight: 750;
+    text-align: left;
+  }
+
+  .resources-option-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .resource-visual-option {
+    font-size: 14px !important;
+  }
+
+  /* D/E conservan dos columnas; al seleccionar, la tarjeta se amplía. */
+  .icon-choice-card {
+    min-height: 0;
+  }
+
+  .icon-choice-card:not(.icon-choice-card-selected) .icon-choice-level-wrap {
+    display: none;
+  }
+
+  .icon-choice-card-selected {
+    grid-column: 1 / -1;
+  }
+
+  .icon-choice-card-selected .icon-choice-toggle {
+    min-height: 100px;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+  }
+
+  .icon-choice-card-selected .icon-choice-symbol {
+    flex: 0 0 var(--illustration-card-size);
+    margin: 0;
+  }
+
+  .icon-choice-name {
+    min-height: 42px;
+    font-size: 15px;
+    line-height: 1.28;
+    overflow-wrap: break-word;
+    word-break: normal;
+    -webkit-hyphens: auto;
+    hyphens: auto;
+  }
+
+  .icon-choice-card-selected .icon-choice-name {
+    flex: 1 1 auto;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .icon-choice-level-title {
+    min-height: 0;
+    font-size: 13px;
+  }
+
+  .icon-choice-level {
+    min-height: 54px !important;
+    font-size: 15px;
+  }
+
+  .b1-leader-chip {
+    min-height: 44px;
+    font-size: 13px;
+  }
+
+  .photo-guide-types > span,
+  .closing-summary-chips > span,
+  .closing-review-note {
+    font-size: 13px;
+  }
+
+  .closing-review-state,
+  .closing-review-secondary span,
+  .closing-review-metrics small,
+  .journey-route-copy small,
+  .journey-route-progress > span {
+    font-size: 12px;
+  }
+
+  .visual-option-text,
+  .field-label,
+  .photo-guide-types > span,
+  .closing-review-item-copy strong {
+    overflow-wrap: break-word;
+    word-break: normal;
+    -webkit-hyphens: auto;
+    hyphens: auto;
   }
 
   #viewport-toggle {
@@ -3738,7 +3868,7 @@ table.mobile-card-table.trail-segments-table-hidden {
   height: var(--illustration-compact-size);
 }
 
-@media (max-width: 700px) {
+@container (max-width: 700px) {
   .closing-welcome-card {
     grid-template-columns: 80px minmax(0, 1fr);
   }
@@ -3763,23 +3893,9 @@ table.mobile-card-table.trail-segments-table-hidden {
   }
 }
 
-body.preview-mobile .visual-option {
-  min-height: 126px;
-}
-
-body.preview-mobile .closing-welcome-card {
-  grid-template-columns: 80px minmax(0, 1fr);
-}
-
-body.preview-mobile .visual-option-icon.ui-illustration {
-  width: var(--illustration-card-size);
-  height: var(--illustration-card-size);
-  flex-basis: var(--illustration-card-size);
-}
-
-body.preview-mobile .g1-visual-option,
-body.preview-mobile .resource-visual-option {
-  min-height: 142px;
+/* El simulador mantiene un viewport de escritorio y limita #root a 390 px. */
+body.preview-mobile .resources-option-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
 }
 
 body.preview-mobile .journey-notice {
