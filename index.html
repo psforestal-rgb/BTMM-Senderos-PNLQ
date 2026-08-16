@@ -1604,10 +1604,11 @@ var SecA = function SecA() {
     className: "closing-start"
   }, /*#__PURE__*/React.createElement("div", {
     className: "closing-welcome-card"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(UiIcon, {
     className: "closing-welcome-illustration",
-    "aria-hidden": "true"
-  }, "🏡"), /*#__PURE__*/React.createElement("div", {
+    asset: "ui-l-conclusion-jornada",
+    fallback: "🏡"
+  }), /*#__PURE__*/React.createElement("div", {
     className: "closing-welcome-copy"
   }, /*#__PURE__*/React.createElement("span", null, "Cierre de jornada"), /*#__PURE__*/React.createElement("strong", null, "Convirtamos el trabajo de hoy en un reporte claro"), /*#__PURE__*/React.createElement("p", null, "Complete el recorrido con calma al regresar a la infraestructura. La herramienta guardará el avance en este dispositivo.")), /*#__PURE__*/React.createElement("div", {
     className: "closing-summary-chips",
@@ -10005,7 +10006,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.32'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.33'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];

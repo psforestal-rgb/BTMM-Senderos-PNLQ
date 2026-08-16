@@ -172,6 +172,12 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - Los símbolos funcionales mínimos (flechas, guardar, eliminar y estados) continúan simples para preservar claridad táctil.
 - Los valores internos, recolectores y el generador DOCX no fueron modificados por este cambio visual.
 
+## Escala homogénea de iconos (versión 1.33)
+
+- Las ilustraciones principales de las tarjetas usan una medida estándar de 84 px en A, G, H, D y E.
+- Navegación, revisión y fotografías usan escalas compactas diferenciadas, pero coherentes entre sí.
+- El icono de bienvenida también utiliza la familia Recraft; los símbolos funcionales conservan tamaño reducido.
+
 ## Precauciones
 
 - No convertir `index.html` a un proyecto npm durante esta etapa.

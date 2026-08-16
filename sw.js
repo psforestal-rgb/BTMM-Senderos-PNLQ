@@ -1,4 +1,4 @@
-const CACHE_NAME = 'senderos-pnlq-v22';
+const CACHE_NAME = 'senderos-pnlq-v23';
 const APP_SHELL = [
   './',
   './index.html',
