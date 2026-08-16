@@ -131,7 +131,11 @@ var FormCtx = createContext({
     dProblemas: [],
     kAlertCount: 0,
     periodIni: '',
-    periodFin: ''
+    periodFin: '',
+    jornadaIni: '08:00',
+    jornadaFin: '16:00',
+    crewLeader: '',
+    participantCount: 0
   },
   updateShared: function updateShared() {},
   participants: [],
@@ -754,73 +758,73 @@ var SCHEMA = [{
   sections: [{
     id: 'A',
     badge: 'A',
-    title: 'Control del reporte',
+    title: 'Datos de la jornada',
     heading: 'A. Control del reporte',
     subs: []
   }, {
     id: 'B',
     badge: 'B',
-    title: 'Participantes',
+    title: 'Equipo y horario',
     heading: 'B. Registro de participantes',
     subs: ['B.1 Registro de participantes']
   }, {
     id: 'C',
     badge: 'C',
-    title: 'Ubicación',
+    title: 'Tramos atendidos',
     heading: 'C. Ubicación y caracterización del tramo intervenido',
     subs: []
   }, {
     id: 'D',
     badge: 'D',
-    title: 'Diagnóstico inicial',
+    title: 'Condición encontrada',
     heading: 'D. Diagnóstico rápido de condición inicial',
     subs: ['D.1 Problemas observados antes de intervenir']
   }, {
     id: 'E',
     badge: 'E',
-    title: 'Labores realizadas',
+    title: 'Trabajo realizado',
     heading: 'E. Labores realizadas',
     subs: ['E.1 Mantenimiento de vegetación y limpieza', 'E.2 Huella, drenaje y control de erosión', 'E.3 Infraestructura, seguridad y señalización']
   }, {
     id: 'G',
     badge: 'G',
-    title: 'Seguridad ocupacional',
+    title: 'Seguridad y visitantes',
     heading: 'G. Seguridad ocupacional, ambiente y manejo de visitantes',
     subs: ['G.1 Verificación previa y durante la jornada', 'G.2 Incidentes, accidentes o condiciones inseguras']
   }, {
     id: 'H',
     badge: 'H',
-    title: 'Recursos utilizados',
+    title: 'Recursos usados',
     heading: 'H. Recursos utilizados',
     subs: ['H.1 Tipo de recursos utilizados']
   }, {
     id: 'I',
     badge: 'I',
-    title: 'Resultados',
+    title: 'Resultados de la jornada',
     heading: 'I. Resultados e indicadores del mantenimiento',
     subs: []
   }, {
     id: 'J',
     badge: 'J',
-    title: 'Evidencia fotográfica',
+    title: 'Evidencia y fotografías',
     heading: 'J. Evidencia fotográfica y geográfica',
     subs: []
   }, {
     id: 'K',
     badge: 'K',
-    title: 'Pendientes',
+    title: 'Pendientes y seguimiento',
     heading: 'K. Pendientes, recomendaciones y seguimiento',
     subs: ['K.1 Recomendación de gestión']
   }, {
     id: 'L',
     badge: 'L',
-    title: 'Conclusión',
+    title: 'Conclusión de la jornada',
     heading: 'L. Conclusión del reporte',
     subs: []
   }, {
     id: 'M',
     badge: 'M',
-    title: 'Firmas',
+    title: 'Responsable y firma',
     heading: 'M. Firmas y visto bueno',
     subs: []
   }]
@@ -833,6 +837,105 @@ var ALL_IDS = SCHEMA.flatMap(function (g) {
 var ALL_SECS = SCHEMA.flatMap(function (g) {
   return g.sections;
 });
+var CLOSING_GUIDE = {
+  A: {
+    icon: '📋',
+    phase: 'Preparar el cierre',
+    prompt: 'Identifique el sendero y el motivo de la jornada.'
+  },
+  B: {
+    icon: '👥',
+    phase: 'Preparar el cierre',
+    prompt: 'Confirme la fecha, el horario y el equipo participante.'
+  },
+  C: {
+    icon: '🗺️',
+    phase: 'Reconstruir la jornada',
+    prompt: 'Señale en el mapa los tramos que recibieron mantenimiento.'
+  },
+  D: {
+    icon: '🔎',
+    phase: 'Reconstruir la jornada',
+    prompt: 'Marque las condiciones encontradas antes de intervenir.'
+  },
+  E: {
+    icon: '🛠️',
+    phase: 'Reconstruir la jornada',
+    prompt: 'Registre visualmente las labores ejecutadas.'
+  },
+  G: {
+    icon: '🦺',
+    phase: 'Verificar el trabajo',
+    prompt: 'Revise seguridad, ambiente e información al visitante.'
+  },
+  H: {
+    icon: '🎒',
+    phase: 'Verificar el trabajo',
+    prompt: 'Anote los recursos y materiales utilizados.'
+  },
+  I: {
+    icon: '📊',
+    phase: 'Revisar resultados',
+    prompt: 'Compruebe los indicadores calculados por la herramienta.'
+  },
+  J: {
+    icon: '📷',
+    phase: 'Documentar la jornada',
+    prompt: 'Seleccione y organice la evidencia tomada durante el trabajo.'
+  },
+  K: {
+    icon: '⚠️',
+    phase: 'Documentar la jornada',
+    prompt: 'Deje claras las tareas pendientes y recomendaciones.'
+  },
+  L: {
+    icon: '✅',
+    phase: 'Cerrar el reporte',
+    prompt: 'Resuma el resultado y la condición final del sendero.'
+  },
+  M: {
+    icon: '✍️',
+    phase: 'Cerrar el reporte',
+    prompt: 'Confirme al responsable y revise el informe antes de generarlo.'
+  }
+};
+var OPTION_ICONS = {
+  'Preventiva': '🛡️',
+  'Correctiva': '🔧',
+  'Emergencia': '🚨',
+  'Seguimiento': '👁️',
+  'Programación anual': '📅',
+  'Reporte visitante': '🗣️',
+  'Iniciativa del funcionario': '💡',
+  'Evento climático': '🌧️',
+  'Orden superior': '📄',
+  'Seco': '☀️',
+  'Lluvia': '🌧️',
+  'Neblina': '🌫️',
+  'Viento': '💨',
+  'Tormenta previa': '⛈️',
+  'Variable': '🌤️',
+  'No': '✓',
+  'Sí': '✓',
+  'Parcial': '◐',
+  'Total': '●',
+  'Alta': '🔴',
+  'Media': '🟠',
+  'Baja': '🟢'
+};
+var optionIcon = function optionIcon(label) {
+  return OPTION_ICONS[label] || '✓';
+};
+var resourceIcon = function resourceIcon(label) {
+  var value = String(label || '').toLocaleLowerCase('es');
+  if (value.includes('vehículo') || value.includes('combustible')) return '🚙';
+  if (value.includes('motosierra') || value.includes('motoguadaña') || value.includes('motobomba')) return '⚙️';
+  if (value.includes('incendio') || value.includes('extintor')) return '🧯';
+  if (value.includes('limpiador') || value.includes('cloro')) return '🧴';
+  if (value.includes('señal') || value.includes('cinta')) return '🚧';
+  if (value.includes('protección') || value.includes('casco') || value.includes('guante')) return '🦺';
+  return '🧰';
+};
 
 // ─── PRIMITIVOS UI ───────────────────────────────────────────────────────────
 var Sep = function Sep() {
@@ -957,7 +1060,7 @@ var Radios = function Radios(_ref6) {
     className: "sr-only"
   }, name || "Opciones"), opts.map(function (o) {
     return /*#__PURE__*/React.createElement("label", {
-      className: "option-label",
+      className: "option-label visual-option".concat(value === o ? ' is-selected' : ''),
       key: o,
       style: {
         display: 'flex',
@@ -980,7 +1083,12 @@ var Radios = function Radios(_ref6) {
       style: {
         accentColor: G.mid
       }
-    })), " ", o);
+    })), /*#__PURE__*/React.createElement("span", {
+      className: "visual-option-icon",
+      "aria-hidden": "true"
+    }, optionIcon(o)), /*#__PURE__*/React.createElement("span", {
+      className: "visual-option-text"
+    }, o));
   }));
 };
 
@@ -1006,7 +1114,7 @@ var CbsCtrl = function CbsCtrl(_ref7) {
     className: "sr-only"
   }, "Opciones disponibles"), opts.map(function (o, i) {
     return /*#__PURE__*/React.createElement("label", {
-      className: "option-label",
+      className: "option-label visual-option".concat(checked.has(o) ? ' is-selected' : ''),
       key: i,
       style: {
         display: 'flex',
@@ -1030,7 +1138,12 @@ var CbsCtrl = function CbsCtrl(_ref7) {
         accentColor: G.mid,
         flexShrink: 0
       }
-    }), " ", o);
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "visual-option-icon",
+      "aria-hidden": "true"
+    }, optionIcon(o)), /*#__PURE__*/React.createElement("span", {
+      className: "visual-option-text"
+    }, o));
   }));
 };
 
@@ -1311,7 +1424,8 @@ var SecA = function SecA() {
   var _useContext = useContext(FormCtx),
     sendero = _useContext.sendero,
     setSendero = _useContext.setSendero,
-    sharedA = _useContext.shared;
+    sharedA = _useContext.shared,
+    participantsA = _useContext.participants;
   var _useState3 = useState('No'),
     _useState4 = _slicedToArray(_useState3, 2),
     restriccion = _useState4[0],
@@ -1395,7 +1509,25 @@ var SecA = function SecA() {
     });
   }, [restriccion]); // eslint-disable-line
 
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Gr, {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "closing-start"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "closing-welcome-card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "closing-welcome-illustration",
+    "aria-hidden": "true"
+  }, "🏡"), /*#__PURE__*/React.createElement("div", {
+    className: "closing-welcome-copy"
+  }, /*#__PURE__*/React.createElement("span", null, "Cierre de jornada"), /*#__PURE__*/React.createElement("strong", null, "Convirtamos el trabajo de hoy en un reporte claro"), /*#__PURE__*/React.createElement("p", null, "Complete el recorrido con calma al regresar a la infraestructura. La herramienta guardará el avance en este dispositivo.")), /*#__PURE__*/React.createElement("div", {
+    className: "closing-summary-chips",
+    "aria-label": "Resumen inicial de la jornada"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: sendero ? 'is-ready' : ''
+  }, "🧭 ", sendero || 'Sendero pendiente'), /*#__PURE__*/React.createElement("span", {
+    className: fechaIni || fechaFin ? 'is-ready' : ''
+  }, "📅 ", fechaIni || fechaFin || TODAY, " · ", (sharedA === null || sharedA === void 0 ? void 0 : sharedA.jornadaIni) || '08:00', "–", (sharedA === null || sharedA === void 0 ? void 0 : sharedA.jornadaFin) || '16:00'), /*#__PURE__*/React.createElement("span", {
+    className: (participantsA || []).length ? 'is-ready' : ''
+  }, "👥 ", (sharedA === null || sharedA === void 0 ? void 0 : sharedA.crewLeader) ? "".concat(sharedA.crewLeader, " · ").concat((participantsA || []).length, " persona(s)") : (participantsA || []).length ? "".concat((participantsA || []).length, " persona(s) · Falta encargado") : 'Equipo en el paso B'))), /*#__PURE__*/React.createElement(Gr, {
     cols: 2
   }, /*#__PURE__*/React.createElement("div", {
     className: "office-field is-removed"
@@ -1930,12 +2062,21 @@ var SecB = function SecB() {
       fin: ds[ds.length - 1] || ''
     };
   }, [rows]);
+  var leaderB = rows.find(function (row) {
+    return row.encargado && row.nombre;
+  });
   useEffect(function () {
     updSharedB({
       periodIni: periodB.ini,
-      periodFin: periodB.fin
+      periodFin: periodB.fin,
+      jornadaIni: jornadaIni,
+      jornadaFin: jornadaFin,
+      crewLeader: leaderB ? leaderB.nombre : '',
+      participantCount: rows.filter(function (row) {
+        return row.nombre;
+      }).length
     });
-  }, [periodB.ini, periodB.fin]); // eslint-disable-line
+  }, [periodB.ini, periodB.fin, jornadaIni, jornadaFin, rows]); // eslint-disable-line
   var rowsRef = useRef(rows);
   rowsRef.current = rows;
   var diasRef = useRef(dias);
@@ -5237,6 +5378,7 @@ var SecG = function SecG() {
     return /*#__PURE__*/React.createElement("div", {
       key: item
     }, /*#__PURE__*/React.createElement("label", {
+      className: "visual-option g1-visual-option".concat(g1.has(item) ? ' is-selected' : ' is-alert'),
       style: {
         display: 'flex',
         alignItems: 'flex-start',
@@ -5259,7 +5401,12 @@ var SecG = function SecG() {
         accentColor: G.mid,
         flexShrink: 0
       }
-    }), item, !g1.has(item) && /*#__PURE__*/React.createElement("span", {
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "visual-option-icon",
+      "aria-hidden": "true"
+    }, g1.has(item) ? '✓' : '!'), /*#__PURE__*/React.createElement("span", {
+      className: "visual-option-text"
+    }, item), !g1.has(item) && /*#__PURE__*/React.createElement("span", {
       style: {
         fontSize: 10,
         color: '#CC4444',
@@ -5568,6 +5715,7 @@ var SecH = function SecH() {
   }, RECURSOS_LIST.map(function (r) {
     return /*#__PURE__*/React.createElement("label", {
       key: r,
+      className: "visual-option resource-visual-option".concat(checked.has(r) ? ' is-selected' : ''),
       style: {
         display: 'flex',
         alignItems: 'center',
@@ -5588,7 +5736,12 @@ var SecH = function SecH() {
         accentColor: G.mid,
         flexShrink: 0
       }
-    }), r);
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "visual-option-icon",
+      "aria-hidden": "true"
+    }, resourceIcon(r)), /*#__PURE__*/React.createElement("span", {
+      className: "visual-option-text"
+    }, r));
   }))), activeRecs.length === 0 && customRecs.length === 0 ? /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 12.5,
@@ -6067,6 +6220,23 @@ var SecI = function SecI() {
     onChange: setSeguimiento
   })));
 };
+var PHOTO_CATEGORIES = [{
+  id: 'general',
+  icon: '🏞️',
+  label: 'Vista general'
+}, {
+  id: 'problema',
+  icon: '🔎',
+  label: 'Problema'
+}, {
+  id: 'trabajo',
+  icon: '🛠️',
+  label: 'Trabajo realizado'
+}, {
+  id: 'resultado',
+  icon: '✅',
+  label: 'Resultado final'
+}];
 var SecJ = function SecJ() {
   var fileRef = useRef(null);
   var _useState57 = useState([]),
@@ -6085,7 +6255,8 @@ var SecJ = function SecJ() {
         return {
           url: f.url,
           nombre: f.nombre,
-          desc: f.desc
+          desc: f.desc,
+          categoria: f.categoria || ''
         };
       });
     });
@@ -6094,7 +6265,8 @@ var SecJ = function SecJ() {
         return f.url;
       }).map(function (f) {
         return _objectSpread(_objectSpread({}, f), {}, {
-          id: Math.random()
+          id: Math.random(),
+          categoria: f.categoria || ''
         });
       }));
     });
@@ -6138,7 +6310,8 @@ var SecJ = function SecJ() {
               id: Math.random(),
               url: dataUrl,
               nombre: file.name,
-              desc: ''
+              desc: '',
+              categoria: ''
             }]);
           });
         };
@@ -6149,7 +6322,8 @@ var SecJ = function SecJ() {
               id: Math.random(),
               url: ev.target.result,
               nombre: file.name,
-              desc: ''
+              desc: '',
+              categoria: ''
             }]);
           });
         };
@@ -6164,6 +6338,15 @@ var SecJ = function SecJ() {
       return fs.map(function (f) {
         return f.id === id ? _objectSpread(_objectSpread({}, f), {}, {
           desc: v
+        }) : f;
+      });
+    });
+  };
+  var updCategory = function updCategory(id, v) {
+    return setFotos(function (fs) {
+      return fs.map(function (f) {
+        return f.id === id ? _objectSpread(_objectSpread({}, f), {}, {
+          categoria: v
         }) : f;
       });
     });
@@ -6187,6 +6370,19 @@ var SecJ = function SecJ() {
       display: 'none'
     }
   }), /*#__PURE__*/React.createElement("div", {
+    className: "photo-guide"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "photo-guide-copy"
+  }, /*#__PURE__*/React.createElement("span", null, "Galería guiada"), /*#__PURE__*/React.createElement("strong", null, "Seleccione las fotos tomadas durante la jornada"), /*#__PURE__*/React.createElement("p", null, "Puede cargar varias a la vez y clasificarlas después. Las categorías ayudan a revisar; el formato del Word no cambia.")), /*#__PURE__*/React.createElement("div", {
+    className: "photo-guide-types",
+    "aria-label": "Tipos de evidencia sugeridos"
+  }, PHOTO_CATEGORIES.map(function (category) {
+    return /*#__PURE__*/React.createElement("span", {
+      key: category.id
+    }, /*#__PURE__*/React.createElement("b", {
+      "aria-hidden": "true"
+    }, category.icon), category.label);
+  }))), /*#__PURE__*/React.createElement("div", {
     className: "photo-actions",
     style: {
       display: 'flex',
@@ -6213,7 +6409,7 @@ var SecJ = function SecJ() {
       fontWeight: 700,
       cursor: 'pointer'
     }
-  }, "\uD83D\uDCF7 Agregar foto"), fotos.length > 0 && /*#__PURE__*/React.createElement("span", {
+  }, "\uD83D\uDDBC\uFE0F Seleccionar de la galer\xEDa"), fotos.length > 0 && /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: 12.5,
       color: G.muted
@@ -6233,7 +6429,7 @@ var SecJ = function SecJ() {
       fontSize: 32,
       marginBottom: 10
     }
-  }, "\uD83D\uDCF7"), /*#__PURE__*/React.createElement("div", null, "Haga clic en ", /*#__PURE__*/React.createElement("strong", null, "Agregar foto"), " para subir im\xE1genes."), /*#__PURE__*/React.createElement("div", {
+  }, "\uD83D\uDDBC\uFE0F"), /*#__PURE__*/React.createElement("div", null, "Use ", /*#__PURE__*/React.createElement("strong", null, "Seleccionar de la galer\xEDa"), " para agregar la evidencia de la jornada."), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 12,
       marginTop: 6,
@@ -6315,7 +6511,25 @@ var SecJ = function SecJ() {
         display: 'flex',
         flexDirection: 'column'
       }
-    }, /*#__PURE__*/React.createElement("label", {
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "photo-category-picker",
+      role: "group",
+      "aria-label": "Clasificar foto ".concat(idx + 1)
+    }, PHOTO_CATEGORIES.map(function (category) {
+      var activeCategory = f.categoria === category.id;
+      return /*#__PURE__*/React.createElement("button", {
+        key: category.id,
+        type: "button",
+        className: "photo-category-button".concat(activeCategory ? ' is-active' : ''),
+        onClick: function onClick() {
+          return updCategory(f.id, activeCategory ? '' : category.id);
+        },
+        "aria-pressed": activeCategory,
+        title: category.label
+      }, /*#__PURE__*/React.createElement("span", {
+        "aria-hidden": "true"
+      }, category.icon), /*#__PURE__*/React.createElement("span", null, category.label));
+    })), /*#__PURE__*/React.createElement("label", {
       htmlFor: "foto-desc-".concat(f.id),
       style: {
         fontSize: 10.5,
@@ -8766,16 +8980,160 @@ var InformeModal = function InformeModal(_ref46) {
 };
 
 // ─── COMPONENTE BOTÓN DE NAV ─────────────────────────────────────────────────
+var ClosingReview = function ClosingReview(_refClosing) {
+  var data = _refClosing.data,
+    sendero = _refClosing.sendero,
+    onClose = _refClosing.onClose,
+    onGo = _refClosing.onGo,
+    onGenerate = _refClosing.onGenerate;
+  var report = data || {};
+  var people = Array.isArray(report.b_rows) ? report.b_rows.filter(function (row) {
+    return row && row.nombre;
+  }) : [];
+  var leader = people.find(function (row) {
+    return row.encargado;
+  });
+  var tramos = Array.isArray(report.c_tramos) ? report.c_tramos : [];
+  var distance = tramos.reduce(function (sum, tramo) {
+    var start = parseFloat(tramo.estIni);
+    var end = parseFloat(tramo.estFin);
+    return sum + (!isNaN(start) && !isNaN(end) ? Math.abs(end - start) : 0);
+  }, 0);
+  var diagnostics = report.d_data && Array.isArray(report.d_data.activeProbs) ? report.d_data.activeProbs : [];
+  var labors = report.e_data && Array.isArray(report.e_data.checked) ? report.e_data.checked : [];
+  var photos = Array.isArray(report.j_fotos) ? report.j_fotos : [];
+  var pending = report.k_data && Array.isArray(report.k_data.rows) ? report.k_data.rows.filter(function (row) {
+    return row && (row.situacion || row.accion || row.sev);
+  }) : [];
+  var responsible = report.m_data && report.m_data.nombre ? report.m_data.nombre : '';
+  var essentials = [{
+    id: 'A',
+    icon: '🧭',
+    label: 'Sendero identificado',
+    detail: sendero || 'Seleccione el sendero de la jornada',
+    ready: !!sendero
+  }, {
+    id: 'B',
+    icon: '👥',
+    label: 'Equipo y horario',
+    detail: people.length ? "".concat(people.length, " persona(s)").concat(leader ? " · Encargado: ".concat(leader.nombre) : ' · Falta encargado') : 'Agregue a las personas participantes',
+    ready: people.length > 0 && !!leader
+  }, {
+    id: 'C',
+    icon: '🗺️',
+    label: 'Tramos atendidos',
+    detail: tramos.length ? "".concat(tramos.length, " tramo(s) · ").concat(Math.round(distance), " m") : 'Seleccione el sendero completo o sus secciones',
+    ready: tramos.length > 0
+  }, {
+    id: 'E',
+    icon: '🛠️',
+    label: 'Trabajo realizado',
+    detail: labors.length ? "".concat(labors.length, " labor(es) registradas") : 'Marque al menos una labor ejecutada',
+    ready: labors.length > 0
+  }, {
+    id: 'M',
+    icon: '✍️',
+    label: 'Responsable del informe',
+    detail: responsible || 'Seleccione a la persona responsable',
+    ready: !!responsible
+  }];
+  var readyCount = essentials.filter(function (item) {
+    return item.ready;
+  }).length;
+  var allReady = readyCount === essentials.length;
+  var metrics = [{
+    icon: '📅',
+    value: people[0] && people[0].fecha || '—',
+    label: 'Fecha'
+  }, {
+    icon: '👥',
+    value: people.length,
+    label: 'Personas'
+  }, {
+    icon: '📏',
+    value: "".concat(Math.round(distance), " m"),
+    label: 'Distancia'
+  }, {
+    icon: '📷',
+    value: photos.length,
+    label: 'Fotos'
+  }];
+  return /*#__PURE__*/React.createElement("div", {
+    className: "closing-review-overlay",
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-labelledby": "closing-review-title"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "closing-review-panel"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "closing-review-hero"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "closing-review-close",
+    onClick: onClose,
+    "aria-label": "Cerrar revisión"
+  }, "×"), /*#__PURE__*/React.createElement("span", {
+    className: "closing-review-kicker"
+  }, "Estación final"), /*#__PURE__*/React.createElement("div", {
+    className: "closing-review-icon",
+    "aria-hidden": "true"
+  }, allReady ? '✅' : '📋'), /*#__PURE__*/React.createElement("h2", {
+    id: "closing-review-title"
+  }, allReady ? 'Reporte listo para revisar' : 'Faltan algunos datos importantes'), /*#__PURE__*/React.createElement("p", null, allReady ? 'La jornada quedó documentada. Revise el resumen antes de generar el Word.' : "Complete ".concat(essentials.length - readyCount, " punto(s) para dejar el reporte listo."))), /*#__PURE__*/React.createElement("div", {
+    className: "closing-review-metrics"
+  }, metrics.map(function (metric) {
+    return /*#__PURE__*/React.createElement("div", {
+      key: metric.label
+    }, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, metric.icon), /*#__PURE__*/React.createElement("strong", null, metric.value), /*#__PURE__*/React.createElement("small", null, metric.label));
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "closing-review-list"
+  }, essentials.map(function (item) {
+    return /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      key: item.id,
+      className: "closing-review-item".concat(item.ready ? ' is-ready' : ' needs-attention'),
+      onClick: function onClick() {
+        return onGo(item.id);
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "closing-review-item-icon",
+      "aria-hidden": "true"
+    }, item.icon), /*#__PURE__*/React.createElement("span", {
+      className: "closing-review-item-copy"
+    }, /*#__PURE__*/React.createElement("strong", null, item.label), /*#__PURE__*/React.createElement("small", null, item.detail)), /*#__PURE__*/React.createElement("span", {
+      className: "closing-review-state"
+    }, item.ready ? '✓ Listo' : 'Corregir ›'));
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "closing-review-secondary"
+  }, /*#__PURE__*/React.createElement("span", null, "🔎 ", diagnostics.length, " condición(es)"), /*#__PURE__*/React.createElement("span", null, "🛠️ ", labors.length, " labor(es)"), /*#__PURE__*/React.createElement("span", null, "⚠️ ", pending.length, " pendiente(s)")), /*#__PURE__*/React.createElement("div", {
+    className: "closing-review-note"
+  }, "El Word conservará el machote institucional y la celda editable para el número de oficio."), /*#__PURE__*/React.createElement("div", {
+    className: "closing-review-actions"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "closing-review-back",
+    onClick: onClose
+  }, "Seguir revisando"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "closing-review-generate",
+    onClick: onGenerate,
+    disabled: !sendero
+  }, "📄 Generar informe Word"))));
+};
+
 function NavBtn(_ref58) {
   var sec = _ref58.sec,
     isActive = _ref58.isActive,
+    isDone = _ref58.isDone,
     onClick = _ref58.onClick;
   var _useState83 = useState(false),
     _useState84 = _slicedToArray(_useState83, 2),
     hov = _useState84[0],
     setHov = _useState84[1];
   return /*#__PURE__*/React.createElement("div", {
-    className: "nav-button",
+    className: "nav-button".concat(isActive ? ' is-active' : '').concat(isDone ? ' is-done' : ''),
     onMouseEnter: function onMouseEnter() {
       return setHov(true);
     },
@@ -8832,6 +9190,24 @@ function App() {
     _useState90 = _slicedToArray(_useState89, 2),
     showModal = _useState90[0],
     setShowModal = _useState90[1];
+  var _useStateReview = useState(false),
+    _useStateReview2 = _slicedToArray(_useStateReview, 2),
+    showReview = _useStateReview2[0],
+    setShowReview = _useStateReview2[1];
+  var _useStateRoute = useState(false),
+    _useStateRoute2 = _slicedToArray(_useStateRoute, 2),
+    showRoute = _useStateRoute2[0],
+    setShowRoute = _useStateRoute2[1];
+  var _useStateVisited = useState(function () {
+      return new Set(['A']);
+    }),
+    _useStateVisited2 = _slicedToArray(_useStateVisited, 2),
+    visited = _useStateVisited2[0],
+    setVisited = _useStateVisited2[1];
+  var _useStateNotice = useState(''),
+    _useStateNotice2 = _slicedToArray(_useStateNotice, 2),
+    journeyNotice = _useStateNotice2[0],
+    setJourneyNotice = _useStateNotice2[1];
   var _useState91 = useState({}),
     _useState92 = _slicedToArray(_useState91, 2),
     calc = _useState92[0],
@@ -8850,7 +9226,11 @@ function App() {
       dProblemas: [],
       kAlertCount: 0,
       periodIni: '',
-      periodFin: ''
+      periodFin: '',
+      jornadaIni: '08:00',
+      jornadaFin: '16:00',
+      crewLeader: '',
+      participantCount: 0
     }),
     _useState96 = _slicedToArray(_useState95, 2),
     shared = _useState96[0],
@@ -8932,7 +9312,8 @@ function App() {
       sections.j_fotos = sections.j_fotos.map(function (f) {
         return {
           nombre: f.nombre,
-          desc: f.desc
+          desc: f.desc,
+          categoria: f.categoria || ''
         };
       });
     }
@@ -9064,7 +9445,42 @@ function App() {
     }
   }, [restoreFormData]);
   var go = function go(id) {
+    if (!id) return;
+    var previous = active;
+    setVisited(function (current) {
+      var nextVisited = new Set(current);
+      nextVisited.add(previous);
+      nextVisited.add(id);
+      return nextVisited;
+    });
     setActive(id);
+    setShowRoute(false);
+    setShowReview(false);
+    if (previous !== id) {
+      var completedSection = ALL_SECS.find(function (section) {
+        return section.id === previous;
+      });
+      setJourneyNotice(completedSection ? "✓ ".concat(completedSection.title, " registrado") : '');
+      window.setTimeout(function () {
+        return setJourneyNotice('');
+      }, 1800);
+    }
+    window.requestAnimationFrame(function () {
+      return window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'smooth'
+      });
+    });
+  };
+  var openReview = function openReview() {
+    setVisited(function (current) {
+      var nextVisited = new Set(current);
+      nextVisited.add(active);
+      return nextVisited;
+    });
+    setShowReview(true);
+    setShowRoute(false);
   };
   var idx = ALL_IDS.indexOf(active);
   var prev = idx > 0 ? ALL_IDS[idx - 1] : null;
@@ -9072,6 +9488,8 @@ function App() {
   var activeSec = ALL_SECS.find(function (s) {
     return s.id === active;
   });
+  var activeGuide = CLOSING_GUIDE[active] || CLOSING_GUIDE.A;
+  var progressPercent = Math.round((idx + 1) / ALL_IDS.length * 100);
   return /*#__PURE__*/React.createElement(FormCtx.Provider, {
     value: {
       sendero: sendero,
@@ -9089,7 +9507,48 @@ function App() {
       registerRestorer: registerRestorer,
       restoreFormData: restoreFormData
     }
-  }, bannerVisible && /*#__PURE__*/React.createElement("div", {
+  }, showRoute && /*#__PURE__*/React.createElement("div", {
+    className: "journey-route-overlay",
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-label": "Ruta del cierre de jornada"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "journey-route-panel"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "journey-route-heading"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", null, "Ruta del reporte"), /*#__PURE__*/React.createElement("strong", null, "Cierre de jornada")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function onClick() {
+      return setShowRoute(false);
+    },
+    "aria-label": "Cerrar ruta"
+  }, "×")), /*#__PURE__*/React.createElement("div", {
+    className: "journey-route-progress"
+  }, /*#__PURE__*/React.createElement("span", null, progressPercent, "% recorrido"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("i", {
+    style: {
+      width: "".concat(progressPercent, "%")
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "journey-route-list"
+  }, ALL_SECS.map(function (section, routeIndex) {
+    var routeGuide = CLOSING_GUIDE[section.id];
+    var done = visited.has(section.id) && section.id !== active;
+    return /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      key: section.id,
+      className: "journey-route-item".concat(section.id === active ? ' is-active' : '').concat(done ? ' is-done' : ''),
+      onClick: function onClick() {
+        return go(section.id);
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "journey-route-marker"
+    }, done ? '✓' : routeGuide.icon), /*#__PURE__*/React.createElement("span", {
+      className: "journey-route-copy"
+    }, /*#__PURE__*/React.createElement("small", null, "Paso ", routeIndex + 1), /*#__PURE__*/React.createElement("strong", null, section.title)), /*#__PURE__*/React.createElement("span", {
+      className: "journey-route-arrow",
+      "aria-hidden": "true"
+    }, "›"));
+  })))), bannerVisible && /*#__PURE__*/React.createElement("div", {
     className: "draft-banner",
     style: {
       position: 'fixed',
@@ -9226,6 +9685,7 @@ function App() {
       }, /*#__PURE__*/React.createElement(NavBtn, {
         sec: sec,
         isActive: active === sec.id,
+        isDone: visited.has(sec.id) && active !== sec.id,
         onClick: function onClick() {
           return go(sec.id);
         }
@@ -9255,7 +9715,7 @@ function App() {
     }
   }, /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
-      return setShowModal(true);
+      return openReview();
     },
     disabled: !sendero,
     title: !sendero ? 'Seleccione un sendero para habilitar' : 'Generar vista previa y DOCX',
@@ -9273,7 +9733,7 @@ function App() {
       opacity: sendero ? 1 : 0.6,
       transition: 'all 0.2s'
     }
-  }, "\uD83D\uDCC4 Generar informe"), !sendero && /*#__PURE__*/React.createElement("div", {
+  }, "\uD83D\uDCCB Revisar y generar"), !sendero && /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 10,
       color: 'rgba(255,255,255,0.45)',
@@ -9357,6 +9817,31 @@ function App() {
       minWidth: 0
     }
   }, /*#__PURE__*/React.createElement("div", {
+    className: "journey-compact-header"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "journey-route-button",
+    onClick: function onClick() {
+      return setShowRoute(true);
+    },
+    "aria-label": "Abrir ruta del reporte"
+  }, "☰"), /*#__PURE__*/React.createElement("div", {
+    className: "journey-current-icon",
+    "aria-hidden": "true"
+  }, activeGuide.icon), /*#__PURE__*/React.createElement("div", {
+    className: "journey-current-copy"
+  }, /*#__PURE__*/React.createElement("span", null, activeGuide.phase, " · ", idx + 1, "/", ALL_IDS.length), /*#__PURE__*/React.createElement("strong", null, activeSec === null || activeSec === void 0 ? void 0 : activeSec.title), /*#__PURE__*/React.createElement("small", null, activeGuide.prompt)), /*#__PURE__*/React.createElement("div", {
+    className: "journey-header-progress",
+    "aria-label": "Avance ".concat(progressPercent, "%")
+  }, /*#__PURE__*/React.createElement("i", {
+    style: {
+      width: "".concat(progressPercent, "%")
+    }
+  }))), journeyNotice && /*#__PURE__*/React.createElement("div", {
+    className: "journey-notice",
+    role: "status",
+    "aria-live": "polite"
+  }, journeyNotice), /*#__PURE__*/React.createElement("div", {
     className: "app-header",
     style: {
       background: G.mid,
@@ -9390,7 +9875,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.30'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.31'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];
@@ -9568,7 +10053,7 @@ function App() {
     return s.id === next;
   })) === null || _ALL_SECS$find2 === void 0 ? void 0 : _ALL_SECS$find2.badge), " Siguiente \u2192") : /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
-      return setShowModal(true);
+      return openReview();
     },
     disabled: !sendero,
     title: !sendero ? 'Seleccione un sendero para habilitar' : 'Generar vista previa y DOCX',
@@ -9586,7 +10071,18 @@ function App() {
       fontWeight: 700,
       color: sendero ? 'white' : G.muted
     }
-  }, "\uD83D\uDCC4 Generar informe"))))), showModal && /*#__PURE__*/React.createElement(InformeModal, {
+  }, "\uD83D\uDCCB Revisar reporte"))))), showReview && /*#__PURE__*/React.createElement(ClosingReview, {
+    data: getReportData(),
+    sendero: sendero,
+    onClose: function onClose() {
+      return setShowReview(false);
+    },
+    onGo: go,
+    onGenerate: function onGenerate() {
+      setShowReview(false);
+      setShowModal(true);
+    }
+  }), showModal && /*#__PURE__*/React.createElement(InformeModal, {
     onClose: function onClose() {
       return setShowModal(false);
     },

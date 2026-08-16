@@ -157,6 +157,14 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - Si no existe un número guardado, la celda de valor queda vacía y editable para completarla en Word antes de firmar el PDF.
 - El documento no aplica protección de edición; la celda y el resto del informe continúan siendo editables.
 
+## Experiencia de cierre de jornada (versión 1.31)
+
+- La interfaz móvil se reorganizó como un recorrido guiado para completar el reporte al regresar a la infraestructura.
+- Incluye encabezado compacto, ruta de 12 pasos, confirmaciones de avance y una mesa de revisión antes de generar el informe.
+- A, G y H usan selecciones visuales más grandes; los valores internos y su salida al Word no cambiaron.
+- J permite clasificar fotografías como vista general, problema, trabajo realizado o resultado final. La categoría se conserva en el borrador exportado, pero no altera la sección J del Word.
+- La mesa final es exclusivamente una vista de control: el generador DOCX y el machote institucional permanecen intactos.
+
 ## Precauciones
 
 - No convertir `index.html` a un proyecto npm durante esta etapa.
