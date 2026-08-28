@@ -17,7 +17,7 @@
   <link rel="manifest" href="./manifest.webmanifest"/>
   <link rel="icon" href="./icons/icon.svg" type="image/svg+xml"/>
   <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
-  <link rel="stylesheet" href="./responsive.css?v=134"/>
+  <link rel="stylesheet" href="./responsive.css?v=135"/>
   <script src="./vendor/react.production.min.js"></script>
   <script src="./vendor/react-dom.production.min.js"></script>
   <script src="./vendor/jszip.min.js"></script>
@@ -824,8 +824,8 @@ var SCHEMA = [{
   }, {
     id: 'M',
     badge: 'M',
-    title: 'Responsable y firma',
-    heading: 'M. Firmas y visto bueno',
+    title: 'Responsable del informe',
+    heading: 'M. Responsable y número de oficio',
     subs: []
   }]
 }];
@@ -884,7 +884,7 @@ var CLOSING_GUIDE = {
     icon: '📊',
     asset: 'ui-i-resultados-jornada',
     phase: 'Revisar resultados',
-    prompt: 'Compruebe los indicadores calculados por la herramienta.'
+    prompt: 'Registre las cantidades observadas al cierre de la jornada.'
   },
   J: {
     icon: '📷',
@@ -908,7 +908,7 @@ var CLOSING_GUIDE = {
     icon: '✍️',
     asset: 'ui-m-responsable-firma',
     phase: 'Cerrar el reporte',
-    prompt: 'Confirme al responsable y revise el informe antes de generarlo.'
+    prompt: 'Confirme al responsable y registre el número de oficio cuando esté disponible.'
   }
 };
 var OPTION_ICONS = {
@@ -5633,31 +5633,53 @@ var SecG = function SecG() {
   })))));
 };
 var RECURSOS_LIST = ['Machete', 'Pala', 'Palín', 'Pico', 'Vehículo institucional', 'GPS', 'Motosierra', 'Carretillo', 'Cuerda', 'Cinta métrica', 'Combustible', 'Lubricante', 'Mangueras de incendios', 'Bomba de incendios', 'Motobomba', 'Reservorio de incendios', 'Accesorios de incendios', 'Cloro u otros limpiadores', 'Escobones', 'Cepillo de acero', 'Espátulas'];
-var UNIDAD_OPTS = ['Unidades', 'Kilos', 'Litros', 'Galones', 'Metros lineales', 'm²', 'm³', 'Rollos', 'Bolsas', 'Colones'];
+var FIXED_RESOURCE_UNIT = 'Unidades';
 
-// Unidad por defecto según el recurso seleccionado
-var UNIT_BY_RESOURCE = {
-  'Machete': 'Unidades',
-  'Pala': 'Unidades',
-  'Palín': 'Unidades',
-  'Pico': 'Unidades',
-  'Vehículo institucional': 'Unidades',
-  'GPS': 'Unidades',
-  'Motosierra': 'Unidades',
-  'Carretillo': 'Unidades',
-  'Cuerda': 'Metros lineales',
-  'Cinta métrica': 'Unidades',
-  'Combustible': 'Colones',
-  'Lubricante': 'Colones',
-  'Mangueras de incendios': 'Unidades',
-  'Bomba de incendios': 'Unidades',
-  'Motobomba': 'Unidades',
-  'Reservorio de incendios': 'Unidades',
-  'Accesorios de incendios': 'Unidades',
-  'Cloro u otros limpiadores': 'Galones',
-  'Escobones': 'Unidades',
-  'Cepillo de acero': 'Unidades',
-  'Espátulas': 'Unidades'
+// Control táctil reutilizable: permite escribir o ajustar con botones grandes.
+var QuantityStepper = function QuantityStepper(_refQuantity) {
+  var value = _refQuantity.value,
+    onChange = _refQuantity.onChange,
+    label = _refQuantity.label,
+    _refQuantity$unit = _refQuantity.unit,
+    unit = _refQuantity$unit === void 0 ? '' : _refQuantity$unit;
+  var numericValue = parseInt(value, 10);
+  var current = isNaN(numericValue) ? 0 : Math.max(0, numericValue);
+  var changeBy = function changeBy(delta) {
+    return onChange(String(Math.max(0, current + delta)));
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "quantity-stepper",
+    role: "group",
+    "aria-label": label || 'Cantidad'
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "quantity-stepper-button quantity-stepper-minus",
+    onClick: function onClick() {
+      return changeBy(-1);
+    },
+    disabled: current <= 0,
+    "aria-label": "Disminuir ".concat(label || 'cantidad')
+  }, "\u2212"), /*#__PURE__*/React.createElement("input", {
+    className: "quantity-stepper-input",
+    type: "text",
+    inputMode: "numeric",
+    pattern: "[0-9]*",
+    value: value == null ? '' : value,
+    onChange: function handleQuantityChange(e) {
+      return onChange(e.target.value);
+    },
+    placeholder: "0",
+    "aria-label": label || 'Cantidad'
+  }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "quantity-stepper-button quantity-stepper-plus",
+    onClick: function onClick() {
+      return changeBy(1);
+    },
+    "aria-label": "Aumentar ".concat(label || 'cantidad')
+  }, "+"), unit && /*#__PURE__*/React.createElement("span", {
+    className: "quantity-stepper-unit"
+  }, unit));
 };
 var SecH = function SecH() {
   var _useContext8 = useContext(FormCtx),
@@ -5677,24 +5699,54 @@ var SecH = function SecH() {
     _useState52 = _slicedToArray(_useState51, 2),
     customRecs = _useState52[0],
     setCustomRecs = _useState52[1]; // recursos fuera del listado
+  var _useStateHComments = useState(function () {
+      return new Set();
+    }),
+    _useStateHComments2 = _slicedToArray(_useStateHComments, 2),
+    openComments = _useStateHComments2[0],
+    setOpenComments = _useStateHComments2[1];
+  var _useStateHGeneral = useState(''),
+    _useStateHGeneral2 = _slicedToArray(_useStateHGeneral, 2),
+    generalComment = _useStateHGeneral2[0],
+    setGeneralComment = _useStateHGeneral2[1];
+  var _useStateHGeneralOpen = useState(false),
+    _useStateHGeneralOpen2 = _slicedToArray(_useStateHGeneralOpen, 2),
+    generalCommentOpen = _useStateHGeneralOpen2[0],
+    setGeneralCommentOpen = _useStateHGeneralOpen2[1];
   var checkedHRef = useRef(checked);
   checkedHRef.current = checked;
   var dataHRef = useRef(data);
   dataHRef.current = data;
   var customRef = useRef(customRecs);
   customRef.current = customRecs;
+  var generalCommentRef = useRef(generalComment);
+  generalCommentRef.current = generalComment;
   useEffect(function () {
     rcH('h_data', function () {
       return {
         checked: _toConsumableArray(checkedHRef.current),
         tableData: dataHRef.current,
-        custom: customRef.current
+        custom: customRef.current,
+        generalComment: generalCommentRef.current
       };
     });
     rrH('h_data', function (d) {
       if (d.checked) setChecked(new Set(d.checked));
-      if (d.tableData) setData(d.tableData);
-      if (Array.isArray(d.custom)) setCustomRecs(d.custom);
+      if (d.tableData) {
+        var normalizedData = {};
+        Object.keys(d.tableData).forEach(function (key) {
+          normalizedData[key] = _objectSpread(_objectSpread({}, d.tableData[key]), {}, {
+            unidad: FIXED_RESOURCE_UNIT
+          });
+        });
+        setData(normalizedData);
+      }
+      if (Array.isArray(d.custom)) setCustomRecs(d.custom.map(function (item) {
+        return _objectSpread(_objectSpread({}, item), {}, {
+          unidad: FIXED_RESOURCE_UNIT
+        });
+      }));
+      if (d.generalComment != null) setGeneralComment(d.generalComment);
     });
   }, []); // eslint-disable-line
 
@@ -5710,15 +5762,15 @@ var SecH = function SecH() {
       return n;
     });
   };
-  // Asignar la unidad automáticamente al marcar un recurso (si aún no tiene una)
+  // Todos los recursos se registran en la unidad única solicitada.
   useEffect(function () {
     setData(function (d) {
       var changed = false;
       var nd = _objectSpread({}, d);
       checked.forEach(function (r) {
-        if (!nd[r] || !nd[r].unidad) {
+        if (!nd[r] || nd[r].unidad !== FIXED_RESOURCE_UNIT) {
           nd[r] = _objectSpread(_objectSpread({}, nd[r] || {}), {}, {
-            unidad: UNIT_BY_RESOURCE[r] || 'Unidades'
+            unidad: FIXED_RESOURCE_UNIT
           });
           changed = true;
         }
@@ -5737,7 +5789,7 @@ var SecH = function SecH() {
       return [].concat(_toConsumableArray(cs), [{
         id: Math.random(),
         nombre: '',
-        unidad: 'Unidades',
+        unidad: FIXED_RESOURCE_UNIT,
         cantidad: '',
         estado: ''
       }]);
@@ -5755,6 +5807,13 @@ var SecH = function SecH() {
       return cs.filter(function (c) {
         return c.id !== id;
       });
+    });
+  };
+  var toggleComment = function toggleComment(key) {
+    return setOpenComments(function (current) {
+      var next = new Set(current);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
     });
   };
   var activeRecs = RECURSOS_LIST.filter(function (r) {
@@ -5817,9 +5876,13 @@ var SecH = function SecH() {
       gap: '9px 24px'
     }
   }, RECURSOS_LIST.map(function (r) {
-    return /*#__PURE__*/React.createElement("label", {
+    var selected = checked.has(r);
+    var row = data[r] || {};
+    return /*#__PURE__*/React.createElement("div", {
       key: r,
-      className: "visual-option resource-visual-option".concat(checked.has(r) ? ' is-selected' : ''),
+      className: "resource-option-item".concat(selected ? ' is-selected' : '')
+    }, /*#__PURE__*/React.createElement("label", {
+      className: "visual-option resource-visual-option".concat(selected ? ' is-selected' : ''),
       style: {
         display: 'flex',
         alignItems: 'center',
@@ -5827,12 +5890,12 @@ var SecH = function SecH() {
         fontSize: 13,
         cursor: 'pointer',
         userSelect: 'none',
-        color: checked.has(r) ? G.mid : G.text,
-        fontWeight: checked.has(r) ? 700 : 400
+        color: selected ? G.mid : G.text,
+        fontWeight: selected ? 700 : 400
       }
     }, /*#__PURE__*/React.createElement("input", {
       type: "checkbox",
-      checked: checked.has(r),
+      checked: selected,
       onChange: function onChange() {
         return toggle(r);
       },
@@ -5846,15 +5909,43 @@ var SecH = function SecH() {
       fallback: resourceIcon(r)
     }), /*#__PURE__*/React.createElement("span", {
       className: "visual-option-text"
-    }, r));
+    }, r)), selected && /*#__PURE__*/React.createElement("div", {
+      className: "resource-inline-controls"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "resource-quantity-label"
+    }, "Cantidad"), /*#__PURE__*/React.createElement(QuantityStepper, {
+      value: row.cantidad,
+      label: "Cantidad de ".concat(r),
+      unit: FIXED_RESOURCE_UNIT,
+      onChange: function onChange(v) {
+        return upd(r, 'cantidad', v);
+      }
+    }), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "resource-comment-toggle".concat(openComments.has(r) || row.estado ? ' is-active' : ''),
+      onClick: function onClick() {
+        return toggleComment(r);
+      },
+      "aria-expanded": openComments.has(r) || !!row.estado
+    }, row.estado ? "✎ Editar comentario" : "+ Comentario"), (openComments.has(r) || row.estado) && /*#__PURE__*/React.createElement("input", {
+      className: "resource-inline-comment",
+      type: "text",
+      value: row.estado || '',
+      onChange: function onChange(e) {
+        return upd(r, 'estado', e.target.value);
+      },
+      placeholder: "Comentario breve (opcional)",
+      "aria-label": "Comentario sobre ".concat(r)
+    })));
   }))), activeRecs.length === 0 && customRecs.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    className: "resources-empty-message",
     style: {
       fontSize: 12.5,
       color: G.muted,
       fontStyle: 'italic',
       marginTop: 4
     }
-  }, "La tabla de recursos se genera autom\xE1ticamente al marcar \xEDtems arriba. La unidad se asigna sola seg\xFAn el recurso.") : /*#__PURE__*/React.createElement("table", {
+  }, "Toque una herramienta o implemento para registrar su cantidad.") : customRecs.length > 0 && /*#__PURE__*/React.createElement("table", {
     className: "mobile-card-table resources-table",
     style: {
       width: '100%',
@@ -5865,69 +5956,12 @@ var SecH = function SecH() {
     c: "Recurso",
     w: "200px"
   }), /*#__PURE__*/React.createElement(TH, {
-    c: "Unidad",
-    w: "130px"
-  }), /*#__PURE__*/React.createElement(TH, {
     c: "Cantidad",
-    w: "90px"
+    w: "260px"
   }), /*#__PURE__*/React.createElement(TH, {
-    c: "Estado / observaci\xF3n"
-  }))), /*#__PURE__*/React.createElement("tbody", null, activeRecs.map(function (r, idx) {
+    c: "Comentario"
+  }))), /*#__PURE__*/React.createElement("tbody", null, customRecs.map(function (c, idx) {
     var ev = idx % 2 === 0;
-    var row = data[r] || {};
-    return /*#__PURE__*/React.createElement("tr", {
-      key: r
-    }, /*#__PURE__*/React.createElement("td", {
-      "data-label": "Recurso",
-      style: _objectSpread(_objectSpread({}, td(ev)), {}, {
-        fontWeight: 600,
-        color: G.dark
-      })
-    }, r), /*#__PURE__*/React.createElement("td", {
-      "data-label": "Unidad",
-      style: _objectSpread(_objectSpread({}, td(ev)), {}, {
-        padding: 0
-      })
-    }, /*#__PURE__*/React.createElement("select", {
-      value: row.unidad || '',
-      onChange: function onChange(e) {
-        return upd(r, 'unidad', e.target.value);
-      },
-      style: {
-        width: '100%',
-        border: 'none',
-        padding: '7px 8px',
-        fontSize: 12,
-        fontFamily: 'inherit',
-        outline: 'none',
-        background: 'transparent',
-        cursor: 'pointer',
-        color: row.unidad ? G.text : G.muted
-      }
-    }, /*#__PURE__*/React.createElement("option", {
-      value: ""
-    }, "\u2014 Unidad \u2014"), UNIDAD_OPTS.map(function (u) {
-      return /*#__PURE__*/React.createElement("option", {
-        key: u,
-        value: u
-      }, u);
-    }))), /*#__PURE__*/React.createElement("td", {
-      "data-label": "Cantidad",
-      style: _objectSpread(_objectSpread({}, td(ev)), {}, {
-        padding: 0
-      })
-    }, cellInp(row.cantidad, function (v) {
-      return upd(r, 'cantidad', v);
-    }, 'number', '0')), /*#__PURE__*/React.createElement("td", {
-      "data-label": "Estado / observación",
-      style: _objectSpread(_objectSpread({}, td(ev)), {}, {
-        padding: 0
-      })
-    }, cellInp(row.estado, function (v) {
-      return upd(r, 'estado', v);
-    }, 'text', 'Estado o nota')));
-  }), customRecs.map(function (c, idx) {
-    var ev = (activeRecs.length + idx) % 2 === 0;
     return /*#__PURE__*/React.createElement("tr", {
       key: c.id
     }, /*#__PURE__*/React.createElement("td", {
@@ -5936,6 +5970,7 @@ var SecH = function SecH() {
         padding: 0
       })
     }, /*#__PURE__*/React.createElement("div", {
+      className: "custom-resource-name",
       style: {
         display: 'flex',
         alignItems: 'center'
@@ -5959,9 +5994,12 @@ var SecH = function SecH() {
         color: G.dark
       }
     }), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "resource-delete-button",
       onClick: function onClick() {
         return delCustom(c.id);
       },
+      "aria-label": "Eliminar recurso no listado",
       title: "Eliminar recurso",
       style: {
         border: 'none',
@@ -5972,49 +6010,39 @@ var SecH = function SecH() {
         padding: '4px 6px'
       }
     }, "\u2715"))), /*#__PURE__*/React.createElement("td", {
-      "data-label": "Unidad",
-      style: _objectSpread(_objectSpread({}, td(ev)), {}, {
-        padding: 0
-      })
-    }, /*#__PURE__*/React.createElement("select", {
-      value: c.unidad || '',
-      onChange: function onChange(e) {
-        return updCustom(c.id, 'unidad', e.target.value);
-      },
-      style: {
-        width: '100%',
-        border: 'none',
-        padding: '7px 8px',
-        fontSize: 12,
-        fontFamily: 'inherit',
-        outline: 'none',
-        background: 'transparent',
-        cursor: 'pointer',
-        color: c.unidad ? G.text : G.muted
-      }
-    }, /*#__PURE__*/React.createElement("option", {
-      value: ""
-    }, "\u2014 Unidad \u2014"), UNIDAD_OPTS.map(function (u) {
-      return /*#__PURE__*/React.createElement("option", {
-        key: u,
-        value: u
-      }, u);
-    }))), /*#__PURE__*/React.createElement("td", {
       "data-label": "Cantidad",
       style: _objectSpread(_objectSpread({}, td(ev)), {}, {
         padding: 0
       })
-    }, cellInp(c.cantidad, function (v) {
+    }, /*#__PURE__*/React.createElement(QuantityStepper, {
+      value: c.cantidad,
+      label: "Cantidad de ".concat(c.nombre || 'recurso no listado'),
+      unit: FIXED_RESOURCE_UNIT,
+      onChange: function onChange(v) {
       return updCustom(c.id, 'cantidad', v);
-    }, 'number', '0')), /*#__PURE__*/React.createElement("td", {
-      "data-label": "Estado / observación",
+      }
+    })), /*#__PURE__*/React.createElement("td", {
+      "data-label": "Comentario",
       style: _objectSpread(_objectSpread({}, td(ev)), {}, {
         padding: 0
       })
-    }, cellInp(c.estado, function (v) {
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "resource-comment-actions"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "resource-comment-toggle".concat(openComments.has(c.id) || c.estado ? ' is-active' : ''),
+      onClick: function onClick() {
+        return toggleComment(c.id);
+      },
+      "aria-expanded": openComments.has(c.id) || !!c.estado
+    }, c.estado ? "\u270E Editar" : "+ Comentario"), (openComments.has(c.id) || c.estado) && cellInp(c.estado, function (v) {
       return updCustom(c.id, 'estado', v);
-    }, 'text', 'Estado o nota')));
-  }))), /*#__PURE__*/React.createElement("button", {
+    }, 'text', 'Comentario breve sobre este recurso'))));
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "resource-footer-actions"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "resource-add-button",
     onClick: addCustom,
     style: {
       display: 'flex',
@@ -6031,18 +6059,36 @@ var SecH = function SecH() {
       fontFamily: 'inherit',
       fontWeight: 700
     }
-  }, "\uFF0B Agregar otro recurso (no listado)"));
+  }, "\uFF0B Agregar otro recurso"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "resource-comment-toggle resource-general-toggle".concat(generalCommentOpen || generalComment ? ' is-active' : ''),
+    onClick: function onClick() {
+      return setGeneralCommentOpen(function (open) {
+        return !open;
+      });
+    },
+    "aria-expanded": generalCommentOpen || !!generalComment
+  }, generalComment ? "\u270E Comentario general" : "+ Comentario general")), (generalCommentOpen || generalComment) && /*#__PURE__*/React.createElement("div", {
+    className: "resource-general-comment"
+  }, /*#__PURE__*/React.createElement(Lbl, {
+    c: "Comentario sobre el conjunto de recursos",
+    htmlFor: "resource-general-comment"
+  }), /*#__PURE__*/React.createElement("textarea", {
+    id: "resource-general-comment",
+    rows: 2,
+    value: generalComment,
+    onChange: function onChange(e) {
+      return setGeneralComment(e.target.value);
+    },
+    placeholder: "Observaci\xF3n general (opcional)"
+  })));
 };
 var SecI = function SecI() {
-  var _c$puntosAtendidos;
   var _useContext9 = useContext(FormCtx),
-    calc = _useContext9.calc,
     laborLines = _useContext9.laborLines,
     shared = _useContext9.shared,
     rcI = _useContext9.registerCollector,
     rrI = _useContext9.registerRestorer;
-  var c = calc || {};
-
   // ── Campos manuales controlados (guardables) ─────────────────────
   var _useState53 = useState({
       drenajes: '',
@@ -6087,35 +6133,6 @@ var SecI = function SecI() {
     });
   };
 
-  // Campo automático (verde) — solo lectura
-  var Auto = function Auto(_ref38) {
-    var label = _ref38.label,
-      value = _ref38.value,
-      nota = _ref38.nota;
-    return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Lbl, {
-      c: label
-    }), /*#__PURE__*/React.createElement("div", {
-      style: {
-        padding: '7px 10px',
-        borderRadius: 4,
-        minHeight: 34,
-        background: value ? G.pale : G.soft,
-        border: "1px solid ".concat(value ? G.light : G.border),
-        fontSize: 13,
-        fontWeight: value ? 700 : 400,
-        color: value ? G.mid : G.muted,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 6
-      }
-    }, value || '—', nota && /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 10.5,
-        color: G.muted,
-        fontWeight: 400
-      }
-    }, nota)));
-  };
   var labSet = new Set(laborLines);
 
   // Categorías de actividad inferidas desde E
@@ -6142,8 +6159,6 @@ var SecI = function SecI() {
     if (restriccion === 'No' && !mf.visitantes) updMf('visitantes', 'No aplica');
   }, [restriccion]); // eslint-disable-line
 
-  var hpFmt = c.horasPersonaMin ? fmtMin(c.horasPersonaMin) : null;
-  var ppd = c.promPersonasDia ? String(c.promPersonasDia) : null;
   var EBadge = function EBadge(_ref39) {
     var active = _ref39.active,
       sec = _ref39.sec;
@@ -6171,7 +6186,10 @@ var SecI = function SecI() {
       eActive = _ref40.eActive,
       eSec = _ref40.eSec,
       warn = _ref40.warn;
-    return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "manual-counter-card"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "manual-counter-heading",
       style: {
         display: 'flex',
         alignItems: 'center',
@@ -6199,70 +6217,17 @@ var SecI = function SecI() {
         color: '#E65100',
         fontWeight: 700
       }
-    }, warn)), /*#__PURE__*/React.createElement("input", {
-      type: type,
+    }, warn)), /*#__PURE__*/React.createElement(QuantityStepper, {
       value: mf[fkey],
-      onChange: function onChange(e) {
-        return updMf(fkey, e.target.value);
-      },
-      placeholder: ph,
-      style: {
-        border: "1px solid ".concat(G.border),
-        borderRadius: 4,
-        padding: '7px 10px',
-        fontSize: 13,
-        fontFamily: 'inherit',
-        color: G.text,
-        background: G.white,
-        width: '100%',
-        outline: 'none'
+      label: label,
+      unit: "Cantidad",
+      onChange: function onChange(value) {
+        return updMf(fkey, value);
       }
     }));
   };
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(InfoBox, {
-    t: "blue",
-    c: "Los campos en verde se calculan autom\xE1ticamente desde las secciones B, C y D. Los campos con badge \u2713 E indican actividad registrada en Secci\xF3n E \u2014 ingrese la cantidad exacta."
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginBottom: 14
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12,
-      fontWeight: 700,
-      color: G.mid,
-      marginBottom: 8,
-      textTransform: 'uppercase',
-      letterSpacing: '0.05em'
-    }
-  }, "Calculado autom\xE1ticamente"), /*#__PURE__*/React.createElement(Gr, {
-    cols: 3,
-    gap: 12
-  }, /*#__PURE__*/React.createElement(Auto, {
-    label: "Metros de sendero atendidos",
-    value: c.totalMetros ? "".concat(c.totalMetros, " m") : null,
-    nota: "\u2190 C"
-  }), /*#__PURE__*/React.createElement(Auto, {
-    label: "Horas-persona totales",
-    value: hpFmt,
-    nota: "\u2190 B"
-  }), /*#__PURE__*/React.createElement(Auto, {
-    label: "D\xEDas efectivos de trabajo",
-    value: c.diasEfectivos || null,
-    nota: "\u2190 B"
-  }), /*#__PURE__*/React.createElement(Auto, {
-    label: "Participantes \xFAnicos",
-    value: c.participantesUnicos || null,
-    nota: "\u2190 B"
-  }), /*#__PURE__*/React.createElement(Auto, {
-    label: "Promedio personas / d\xEDa",
-    value: ppd,
-    nota: "\u2190 B"
-  }), /*#__PURE__*/React.createElement(Auto, {
-    label: "N.\xB0 puntos cr\xEDticos (con severidad)",
-    value: (_c$puntosAtendidos = c.puntosAtendidos) !== null && _c$puntosAtendidos !== void 0 ? _c$puntosAtendidos : null,
-    nota: "\u2190 D"
-  }))), /*#__PURE__*/React.createElement(Sep, null), /*#__PURE__*/React.createElement("div", {
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "manual-results-section",
     style: {
       marginBottom: 14
     }
@@ -6275,10 +6240,10 @@ var SecI = function SecI() {
       textTransform: 'uppercase',
       letterSpacing: '0.05em'
     }
-  }, "Datos de campo \u2014 ingreso manual"), /*#__PURE__*/React.createElement(Gr, {
-    cols: 2,
-    gap: 12
-  }, /*#__PURE__*/React.createElement(MfInput, {
+  }, "Datos de campo \u2014 ingreso manual"), /*#__PURE__*/React.createElement("div", {
+    className: "manual-counter-grid"
+  },
+  /*#__PURE__*/React.createElement(MfInput, {
     fkey: "drenajes",
     label: "Drenajes limpiados o reparados",
     eActive: actD,
@@ -6797,9 +6762,7 @@ var SecK = function SecK() {
     }, extra);
   };
   var _useState65 = useState(function () {
-      return Array.from({
-        length: 3
-      }, mkRow);
+      return [];
     }),
     _useState66 = _slicedToArray(_useState65, 2),
     rows = _useState66[0],
@@ -6913,7 +6876,7 @@ var SecK = function SecK() {
       }
     });
   };
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  return /*#__PURE__*/React.createElement("div", null, rows.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mobile-card-table-wrap",
     style: {
       overflowX: 'auto',
@@ -7014,9 +6977,12 @@ var SecK = function SecK() {
         padding: 0
       })
     }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "pending-delete-button",
       onClick: function onClick() {
         return delRow(r.id);
       },
+      "aria-label": "Eliminar pendiente ".concat(idx + 1),
       style: {
         border: 'none',
         background: 'transparent',
@@ -7027,7 +6993,13 @@ var SecK = function SecK() {
         width: '100%'
       }
     }, "\u2715")));
-  })))), /*#__PURE__*/React.createElement("button", {
+  })))), rows.length === 0 && /*#__PURE__*/React.createElement("div", {
+    className: "pending-empty-state"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "+"), /*#__PURE__*/React.createElement("strong", null, "Sin pendientes registrados"), /*#__PURE__*/React.createElement("small", null, "Agregue únicamente las situaciones que requieren seguimiento.")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "pending-add-button",
     onClick: addRow,
     style: {
       display: 'flex',
@@ -7044,7 +7016,7 @@ var SecK = function SecK() {
       fontFamily: 'inherit',
       fontWeight: 700
     }
-  }, "\uFF0B Agregar pendiente"), /*#__PURE__*/React.createElement(Sep, null), /*#__PURE__*/React.createElement(Sub, {
+  }, "+ Agregar pendiente"), /*#__PURE__*/React.createElement(Sep, null), /*#__PURE__*/React.createElement(Sub, {
     title: "K.1 \u2014 Recomendaci\xF3n de gesti\xF3n"
   }, /*#__PURE__*/React.createElement(Gr, {
     cols: 2
@@ -7108,6 +7080,27 @@ var SecK = function SecK() {
     setCrit: setCrit
   })))));
 };
+var CONDITION_RATING_LABELS = {
+  1: 'Muy malo',
+  2: 'Malo',
+  3: 'Regular',
+  4: 'Bueno',
+  5: 'Excelente'
+};
+var CONDITION_RATING_FACES = {
+  1: '😭',
+  2: '🙁',
+  3: '😐',
+  4: '🙂',
+  5: '😄'
+};
+var PENDING_JUSTIFICATION_OPTIONS = ['Requiere más tiempo', 'Condiciones atmosféricas', 'Emergencias o accidente', 'Cambio de actividad', 'Daño en equipo', 'Equipo insuficiente', 'Otro'];
+var LEGACY_PENDING_JUSTIFICATION_MAP = {
+  'Requiere más tiempo de trabajo': 'Requiere más tiempo',
+  'Condiciones atmosféricas adversas': 'Condiciones atmosféricas',
+  'Accidente o imprevisto': 'Emergencias o accidente',
+  'Falta de equipo o materiales': 'Equipo insuficiente'
+};
 var SecL = function SecL() {
   var _useContext10 = useContext(FormCtx),
     laborLines = _useContext10.laborLines,
@@ -7119,14 +7112,18 @@ var SecL = function SecL() {
     _useState68 = _slicedToArray(_useState67, 2),
     lines = _useState68[0],
     setLines = _useState68[1];
-  var _useState69 = useState(''),
-    _useState70 = _slicedToArray(_useState69, 2),
-    condFinal = _useState70[0],
-    setCondFinal = _useState70[1];
-  var _useState71 = useState(''),
-    _useState72 = _slicedToArray(_useState71, 2),
-    justif = _useState72[0],
-    setJustif = _useState72[1];
+  var _useStateLRating = useState(0),
+    _useStateLRating2 = _slicedToArray(_useStateLRating, 2),
+    conditionRating = _useStateLRating2[0],
+    setConditionRating = _useStateLRating2[1];
+  var _useStateLJustification = useState([]),
+    _useStateLJustification2 = _slicedToArray(_useStateLJustification, 2),
+    justifChoices = _useStateLJustification2[0],
+    setJustifChoices = _useStateLJustification2[1];
+  var _useStateLJustificationOther = useState(''),
+    _useStateLJustificationOther2 = _slicedToArray(_useStateLJustificationOther, 2),
+    justifOther = _useStateLJustificationOther2[0],
+    setJustifOther = _useStateLJustificationOther2[1];
   var _useState73 = useState(''),
     _useState74 = _slicedToArray(_useState73, 2),
     recom = _useState74[0],
@@ -7134,9 +7131,15 @@ var SecL = function SecL() {
   var linesRef = useRef(lines);
   linesRef.current = lines;
   var lExtraRef = useRef({});
+  var justifValues = justifChoices.map(function (choice) {
+    return choice === 'Otro' ? "Otro".concat(justifOther.trim() ? ': ' + justifOther.trim() : '') : choice;
+  });
   lExtraRef.current = {
-    condFinal: condFinal,
-    justif: justif,
+    condFinal: CONDITION_RATING_LABELS[conditionRating] || '',
+    condFinalRating: conditionRating,
+    justif: justifValues.join(', '),
+    justifChoices: justifChoices,
+    justifOther: justifOther,
     recom: recom
   };
   useEffect(function () {
@@ -7147,8 +7150,36 @@ var SecL = function SecL() {
     });
     rrL('l_data', function (d) {
       if (Array.isArray(d.lines) && d.lines.length) setLines(d.lines);
-      if (d.condFinal != null) setCondFinal(d.condFinal);
-      if (d.justif != null) setJustif(d.justif);
+      if (d.condFinalRating) {
+        setConditionRating(parseInt(d.condFinalRating, 10) || 0);
+      } else if (d.condFinal) {
+        var restoredRating = Object.keys(CONDITION_RATING_LABELS).find(function (key) {
+          return CONDITION_RATING_LABELS[key].toLowerCase() === String(d.condFinal).toLowerCase();
+        });
+        if (restoredRating) setConditionRating(parseInt(restoredRating, 10));
+      }
+      if (Array.isArray(d.justifChoices)) {
+        setJustifChoices(d.justifChoices.map(function (choice) {
+          return LEGACY_PENDING_JUSTIFICATION_MAP[choice] || choice;
+        }).filter(function (choice) {
+          return PENDING_JUSTIFICATION_OPTIONS.indexOf(choice) >= 0;
+        }));
+        setJustifOther(d.justifOther || '');
+      } else if (d.justifChoice) {
+        setJustifChoices([LEGACY_PENDING_JUSTIFICATION_MAP[d.justifChoice] || d.justifChoice]);
+        setJustifOther(d.justifOther || '');
+      } else if (d.justif) {
+        var normalizedJustif = LEGACY_PENDING_JUSTIFICATION_MAP[d.justif] || d.justif;
+        if (PENDING_JUSTIFICATION_OPTIONS.indexOf(normalizedJustif) >= 0) {
+          setJustifChoices([normalizedJustif]);
+        } else if (String(d.justif).indexOf('Otro:') === 0) {
+          setJustifChoices(['Otro']);
+          setJustifOther(String(d.justif).slice(5).trim());
+        } else {
+          setJustifChoices(['Otro']);
+          setJustifOther(d.justif);
+        }
+      }
       if (d.recom != null) setRecom(d.recom);
     });
   }, []); // eslint-disable-line
@@ -7197,14 +7228,11 @@ var SecL = function SecL() {
       });
     });
   };
-  var addLine = function addLine() {
-    return setLines(function (ls) {
-      return [].concat(_toConsumableArray(ls), [{
-        id: Math.random(),
-        text: '',
-        fromE: false,
-        eKey: ''
-      }]);
+  var toggleJustification = function toggleJustification(option) {
+    return setJustifChoices(function (choices) {
+      return choices.indexOf(option) >= 0 ? choices.filter(function (choice) {
+        return choice !== option;
+      }) : [].concat(_toConsumableArray(choices), [option]);
     });
   };
   return /*#__PURE__*/React.createElement("div", {
@@ -7282,35 +7310,64 @@ var SecL = function SecL() {
         flexShrink: 0
       }
     }, "\u2715"));
-  })), /*#__PURE__*/React.createElement("button", {
-    onClick: addLine,
-    style: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: 5,
-      marginTop: 8,
-      padding: '5px 11px',
-      background: G.pale,
-      border: "1px dashed ".concat(G.light),
-      borderRadius: 4,
-      cursor: 'pointer',
-      fontSize: 12,
-      color: G.mid,
-      fontFamily: 'inherit',
-      fontWeight: 700
-    }
-  }, "\uFF0B Agregar labor adicional")), /*#__PURE__*/React.createElement(Txt, {
-    label: "Condici\xF3n final del sendero / tramo",
-    rows: 3,
-    value: condFinal,
-    onChange: setCondFinal
-  }), /*#__PURE__*/React.createElement(Txt, {
-    label: "Justificaci\xF3n de pendientes no resueltos",
-    rows: 3,
-    value: justif,
-    onChange: setJustif
-  }), /*#__PURE__*/React.createElement(Txt, {
-    label: "Recomendaci\xF3n final para la administraci\xF3n del ASP",
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "condition-rating-field"
+  }, /*#__PURE__*/React.createElement(Lbl, {
+    c: "Condici\xF3n final del sendero / tramo"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "condition-slider-scale",
+    "aria-hidden": "true"
+  }, [1, 2, 3, 4, 5].map(function (rating) {
+    return /*#__PURE__*/React.createElement("span", {
+      key: rating,
+      className: conditionRating === rating ? 'is-selected' : ''
+    }, /*#__PURE__*/React.createElement("strong", null, CONDITION_RATING_FACES[rating]), /*#__PURE__*/React.createElement("small", null, CONDITION_RATING_LABELS[rating]));
+  })), /*#__PURE__*/React.createElement("input", {
+    className: "condition-slider",
+    type: "range",
+    min: "1",
+    max: "5",
+    step: "1",
+    value: conditionRating || 3,
+    onChange: function onChange(e) {
+      return setConditionRating(parseInt(e.target.value, 10));
+    },
+    "aria-label": "Condici\xF3n final del sendero o tramo",
+    "aria-valuetext": conditionRating ? CONDITION_RATING_LABELS[conditionRating] : 'Sin calificar'
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "condition-rating-label",
+    "aria-live": "polite"
+  }, conditionRating ? "".concat(CONDITION_RATING_FACES[conditionRating], " ").concat(CONDITION_RATING_LABELS[conditionRating], " \xB7 ").concat(conditionRating, "/5") : 'Deslice la barra para calificar')), /*#__PURE__*/React.createElement("div", {
+    className: "pending-justification-field"
+  }, /*#__PURE__*/React.createElement(Lbl, {
+    c: "Justificaci\xF3n de pendientes no resueltos"
+  }), /*#__PURE__*/React.createElement("fieldset", {
+    className: "pending-justification-options"
+  }, /*#__PURE__*/React.createElement("legend", {
+    className: "sr-only"
+  }, "Seleccione una o varias justificaciones"), PENDING_JUSTIFICATION_OPTIONS.map(function (option) {
+    return /*#__PURE__*/React.createElement("label", {
+      key: option,
+      className: "pending-justification-option".concat(justifChoices.indexOf(option) >= 0 ? ' is-selected' : '')
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "checkbox",
+      value: option,
+      checked: justifChoices.indexOf(option) >= 0,
+      onChange: function onChange() {
+        return toggleJustification(option);
+      }
+    }), /*#__PURE__*/React.createElement("span", null, option));
+  })), justifChoices.indexOf('Otro') >= 0 && /*#__PURE__*/React.createElement("input", {
+    className: "pending-justification-other",
+    type: "text",
+    value: justifOther,
+    onChange: function onChange(e) {
+      return setJustifOther(e.target.value);
+    },
+    placeholder: "Especifique la justificaci\xF3n",
+    "aria-label": "Especifique otra justificaci\xF3n"
+  })), /*#__PURE__*/React.createElement(Txt, {
+    label: "Observaciones y recomendaciones",
     rows: 4,
     value: recom,
     onChange: setRecom
@@ -7329,10 +7386,15 @@ var SecM = function SecM() {
     _useState78 = _slicedToArray(_useState77, 2),
     nombreManual = _useState78[0],
     setNombreManual = _useState78[1]; // texto cuando es "Otro"
+  var _useStateMOficio = useState(''),
+    _useStateMOficio2 = _slicedToArray(_useStateMOficio, 2),
+    oficio = _useStateMOficio2[0],
+    setOficio = _useStateMOficio2[1];
   var nombre = nombreSel === '__otro__' ? nombreManual : nombreSel; // nombre final
   var dRef = useRef({});
   dRef.current = {
-    nombre: nombre
+    nombre: nombre,
+    oficio: oficio.trim()
   };
   useEffect(function () {
     rcM('m_data', function () {
@@ -7348,6 +7410,7 @@ var SecM = function SecM() {
           setNombreManual(d.nombre);
         }
       }
+      if (d.oficio != null) setOficio(d.oficio);
     });
   }, []); // eslint-disable-line
 
@@ -7450,24 +7513,28 @@ var SecM = function SecM() {
       color: G.light,
       marginTop: 4
     }
-  }, participants.length > 0 ? '🔒 La lista se toma de los participantes registrados en la Sección B. Use «Otro» solo si el responsable no figura allí.' : 'ℹ Registre el personal en la Sección B para elegir el responsable de la lista. Mientras tanto, puede escribir el nombre.')), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Lbl, {
-    c: "Firma"
+  }, participants.length > 0 ? '🔒 La lista se toma de los participantes registrados en la Sección B. Use «Otro» solo si el responsable no figura allí.' : 'ℹ Registre el personal en la Sección B para elegir el responsable de la lista. Mientras tanto, puede escribir el nombre.')), /*#__PURE__*/React.createElement("div", {
+    className: "official-number-field"
+  }, /*#__PURE__*/React.createElement(Lbl, {
+    c: "Número de oficio",
+    htmlFor: "m-oficio"
   }), /*#__PURE__*/React.createElement("div", {
-    className: "signature-pad",
-    role: "img",
-    "aria-label": "Espacio reservado para firma",
-    style: {
-      height: 70,
-      border: "1px dashed ".concat(G.border),
-      borderRadius: 4,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      color: G.muted,
-      fontSize: 12,
-      background: G.soft
-    }
-  }, "Espacio para firma")), /*#__PURE__*/React.createElement(Inp, {
+    className: "official-number-actions"
+  }, /*#__PURE__*/React.createElement("input", {
+    id: "m-oficio",
+    type: "text",
+    value: oficio,
+    onChange: function onChange(e) {
+      return setOficio(e.target.value);
+    },
+    placeholder: "Escriba el número de oficio completo",
+    autoComplete: "off"
+  }), /*#__PURE__*/React.createElement("a", {
+    className: "myoffice-link",
+    href: "https://myoffice.sinac.go.cr/",
+    target: "_blank",
+    rel: "noopener noreferrer"
+  }, "↗ MyOffice")), /*#__PURE__*/React.createElement("small", null, "Puede dejarlo vacío y completarlo posteriormente en el Word.")), /*#__PURE__*/React.createElement(Inp, {
     label: "Fecha",
     type: "date",
     dv: TODAY
@@ -7713,8 +7780,8 @@ var buildDocx = /*#__PURE__*/function () {
             sz: 20
           }), docxPara(' '),
           // A. Control
-          // El oficio permanece como celda editable del Word aunque no se capture en la interfaz.
-          docxHeading('A. Control del reporte', 2), docxTable(['Campo', 'Valor'], [['Número de oficio', a.oficio || ''], ['ASP', 'Parque Nacional Los Quetzales'], ['Sendero', sendero || '—'], ['Tipo de intervención', joinSet(a.tipoInterv)], ['Origen de la solicitud', joinSet(a.origen)], ['Condición climática', joinSet(a.clima)], ['Restricción uso público', (a.restriccion || 'No') + (a.restriccion && a.restriccion !== 'No' && a.restrDet ? " \u2014 ".concat(a.restrDet) : '')]]), docxPara(' '),
+          // El oficio se captura en M y la celda del Word permanece editable si se completa después.
+          docxHeading('A. Control del reporte', 2), docxTable(['Campo', 'Valor'], [['Número de oficio', m.oficio || a.oficio || ''], ['ASP', 'Parque Nacional Los Quetzales'], ['Sendero', sendero || '—'], ['Tipo de intervención', joinSet(a.tipoInterv)], ['Origen de la solicitud', joinSet(a.origen)], ['Condición climática', joinSet(a.clima)], ['Restricción uso público', (a.restriccion || 'No') + (a.restriccion && a.restriccion !== 'No' && a.restrDet ? " \u2014 ".concat(a.restrDet) : '')]]), docxPara(' '),
           // B. Personal
           docxHeading('B. Registro de participantes', 2), docxTable(['Fecha', 'Nombre', 'Tipo', 'Participación', 'Horas', 'Encargado'], b.map(function (r) {
             return [r.fecha || '', r.nombre || '', r.tipo === 'funcionario' ? 'SINAC' : 'Externo', r.parcial ? 'Parcial' : 'Completa', fmtM(calcParticipantMin(r)), r.encargado ? 'Sí' : ''];
@@ -7792,11 +7859,15 @@ var buildDocx = /*#__PURE__*/function () {
               return c.nombre && c.nombre.trim();
             });
             var rows = checked.map(function (r) {
-              return [r, (td[r] || {}).unidad || '', String((td[r] || {}).cantidad || ''), (td[r] || {}).estado || ''];
+              return [r, FIXED_RESOURCE_UNIT, String((td[r] || {}).cantidad || ''), (td[r] || {}).estado || ''];
             }).concat(custom.map(function (c) {
-              return [c.nombre, c.unidad || '', String(c.cantidad || ''), c.estado || ''];
+              return [c.nombre, FIXED_RESOURCE_UNIT, String(c.cantidad || ''), c.estado || ''];
             }));
-            return [docxTable(['Recurso', 'Unidad', 'Cantidad', 'Estado / observación'], rows)];
+            var resourceBlocks = [docxTable(['Recurso', 'Unidad', 'Cantidad', 'Comentario'], rows)];
+            if (h.generalComment) resourceBlocks.push(docxPara("Comentario general: ".concat(h.generalComment), {
+              indent: 360
+            }));
+            return resourceBlocks;
           }()), [docxPara(' '),
           // I. Resultados
           docxHeading('I. Resultados e indicadores', 2), docxTable(['Indicador', 'Valor'], [['Metros de sendero atendidos', calc.totalMetros ? "".concat(calc.totalMetros, " m") : '—'], ['Horas-persona totales', calc.horasPersonaMin ? "".concat(Math.floor(calc.horasPersonaMin / 60), ":").concat(String(calc.horasPersonaMin % 60).padStart(2, '0')) : '—'], ['Días efectivos', String(calc.diasEfectivos || '—')], ['Participantes únicos', String(calc.participantesUnicos || '—')], ['Promedio personas/día', String(calc.promPersonasDia || '—')], ['Puntos críticos (con severidad)', String(calc.puntosAtendidos || '—')], ['Drenajes limpiados/reparados', String(mf.drenajes || '—')], ['Árboles / ramas retiradas', String(mf.arboles || '—')], ['Estructuras menores reparadas', String(mf.estructuras || '—')], ['Señales revisadas o corregidas', String(mf.senales || '—')], ['Residuos retirados', String(mf.residuos || '—')], ['Visitantes afectados', String(mf.visitantes || '—')], ['¿Requiere seguimiento?', String(mf.seguimiento || '—')]]), docxPara(' '),
@@ -7860,15 +7931,13 @@ var buildDocx = /*#__PURE__*/function () {
             indent: 360
           }), docxPara(' ', {
             sz: 10
-          }), docxPara('Recomendación final para la administración del ASP:', {
+          }), docxPara('Observaciones y recomendaciones:', {
             bold: true
           }), docxPara(l.recom || '—', {
             indent: 360
           }), docxPara(' '),
-          // M. Firmas
-          docxHeading('M. Firma del responsable', 2), docxTable(['Campo', 'Valor'], [['Nombre', m.nombre || '—']]), docxPara(' '), docxPara('_'.repeat(40) + '   Firma', {
-            sz: 20
-          }), docxPara(' '), docxPara('MINAE · SINAC · ACC · Parque Nacional Los Quetzales', {
+          // M. Responsable del informe
+          docxHeading('M. Responsable del informe', 2), docxTable(['Campo', 'Valor'], [['Nombre', m.nombre || '—'], ['Número de oficio', m.oficio || a.oficio || '']]), docxPara(' '), docxPara('MINAE · SINAC · ACC · Parque Nacional Los Quetzales', {
             sz: 16,
             color: '7A756A'
           })]).join('\n'); // ── Documento dentro del membrete institucional ──
@@ -8642,7 +8711,7 @@ var InformeModal = function InformeModal(_ref46) {
       borderCollapse: 'collapse',
       fontSize: 12
     }
-  }, [['Metros atendidos', calc.totalMetros ? "".concat(calc.totalMetros, " m") : '—'], ['Horas-persona', calc.horasPersonaMin ? "".concat(Math.floor(calc.horasPersonaMin / 60), ":").concat(String(calc.horasPersonaMin % 60).padStart(2, '0')) : '—'], ['Días efectivos', calc.diasEfectivos || '—'], ['Participantes únicos', calc.participantesUnicos || '—'], ['Promedio personas/día', calc.promPersonasDia || '—'], ['Puntos críticos', calc.puntosAtendidos || '—'], ['Drenajes limpiados/reparados', mf.drenajes || '—'], ['Árboles / ramas retiradas', mf.arboles || '—'], ['Estructuras menores reparadas', mf.estructuras || '—'], ['Señales revisadas o corregidas', mf.senales || '—'], ['Residuos retirados', mf.residuos || '—'], ['Visitantes afectados', mf.visitantes || '—'], ['¿Requiere seguimiento?', mf.seguimiento || '—']].map(function (_ref52, i) {
+  }, [['Drenajes limpiados/reparados', mf.drenajes || '—'], ['Árboles / ramas retiradas', mf.arboles || '—'], ['Estructuras menores reparadas', mf.estructuras || '—'], ['Señales revisadas o corregidas', mf.senales || '—'], ['Residuos retirados', mf.residuos || '—'], ['Visitantes afectados', mf.visitantes || '—'], ['¿Requiere seguimiento?', mf.seguimiento || '—']].map(function (_ref52, i) {
     var _ref53 = _slicedToArray(_ref52, 2),
       l = _ref53[0],
       v = _ref53[1];
@@ -8686,7 +8755,7 @@ var InformeModal = function InformeModal(_ref46) {
       borderCollapse: 'collapse',
       fontSize: 12
     }
-  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, ['Recurso', 'Unidad', 'Cantidad', 'Estado / observación'].map(function (hh) {
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, ['Recurso', 'Unidad', 'Cantidad', 'Comentario'].map(function (hh) {
     return /*#__PURE__*/React.createElement("th", {
       key: hh,
       style: {
@@ -8715,7 +8784,7 @@ var InformeModal = function InformeModal(_ref46) {
         padding: '5px 8px',
         background: i % 2 === 0 ? 'white' : G.soft
       }
-    }, td.unidad || ''), /*#__PURE__*/React.createElement("td", {
+    }, FIXED_RESOURCE_UNIT), /*#__PURE__*/React.createElement("td", {
       style: {
         border: '1px solid #E0DDD5',
         padding: '5px 8px',
@@ -8747,7 +8816,7 @@ var InformeModal = function InformeModal(_ref46) {
         padding: '5px 8px',
         background: i % 2 === 0 ? 'white' : G.soft
       }
-    }, c.unidad || ''), /*#__PURE__*/React.createElement("td", {
+    }, FIXED_RESOURCE_UNIT), /*#__PURE__*/React.createElement("td", {
       style: {
         border: '1px solid #E0DDD5',
         padding: '5px 8px',
@@ -8760,7 +8829,17 @@ var InformeModal = function InformeModal(_ref46) {
         background: i % 2 === 0 ? 'white' : G.soft
       }
     }, c.estado || ''));
-  })))), ((lConc.lines || []).some(function (x) {
+  }))), hRec.generalComment && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 7,
+      fontSize: 12.5
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontWeight: 700,
+      color: G.mid
+    }
+  }, "Comentario general: "), hRec.generalComment)), ((lConc.lines || []).some(function (x) {
     return x.text && x.text.trim();
   }) || lConc.condFinal || lConc.justif || lConc.recom) && /*#__PURE__*/React.createElement("div", {
     style: {
@@ -8841,7 +8920,7 @@ var InformeModal = function InformeModal(_ref46) {
       color: G.mid,
       fontSize: 12
     }
-  }, "Recomendaci\xF3n final: "), /*#__PURE__*/React.createElement("span", {
+  }, "Observaciones y recomendaciones: "), /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: 12.5
     }
@@ -9034,13 +9113,13 @@ var InformeModal = function InformeModal(_ref46) {
       paddingBottom: 4,
       borderBottom: "2px solid ".concat(G.pale)
     }
-  }, "M. Firma del responsable"), /*#__PURE__*/React.createElement("table", {
+  }, "M. Responsable del informe"), /*#__PURE__*/React.createElement("table", {
     style: {
       width: '60%',
       borderCollapse: 'collapse',
       fontSize: 12
     }
-  }, [['Nombre', m.nombre || '—']].map(function (_ref56, i) {
+  }, [['Nombre', m.nombre || '—'], ['Número de oficio', m.oficio || a.oficio || '']].map(function (_ref56, i) {
     var _ref57 = _slicedToArray(_ref56, 2),
       l = _ref57[0],
       v = _ref57[1];
@@ -9064,32 +9143,13 @@ var InformeModal = function InformeModal(_ref46) {
     }, v));
   })), /*#__PURE__*/React.createElement("div", {
     style: {
-      marginTop: 16,
-      borderTop: "1px solid ".concat(G.border),
-      paddingTop: 16,
-      width: 280
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      borderBottom: "1px solid ".concat(G.text),
-      height: 50,
-      marginBottom: 4
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12,
-      color: G.muted,
-      textAlign: 'center'
-    }
-  }, "Firma"))), /*#__PURE__*/React.createElement("div", {
-    style: {
       borderTop: "1px solid ".concat(G.border),
       paddingTop: 10,
       textAlign: 'center',
       fontSize: 11,
       color: G.muted
     }
-  }, "Reporte generado electr\xF3nicamente \u2014 MINAE \xB7 SINAC \xB7 ACC \xB7 PNLQ")));
+  }, "Reporte generado electr\xF3nicamente \u2014 MINAE \xB7 SINAC \xB7 ACC \xB7 PNLQ"))));
 };
 
 // ─── COMPONENTE BOTÓN DE NAV ─────────────────────────────────────────────────
@@ -10006,7 +10066,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.34'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.35'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];

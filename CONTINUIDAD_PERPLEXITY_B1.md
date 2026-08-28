@@ -186,6 +186,14 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - Se corrigieron cuatro abreviaturas `font` inválidas, el límite inclusivo de 700 px y varios objetivos táctiles inferiores a 44 px.
 - Se consolidaron las reglas ilustradas móviles en consultas de contenedor; los datos y el DOCX permanecen sin cambios.
 
+## Registro operativo de cierre (versión 1.35)
+
+- H muestra cantidad y controles `− / +` inmediatamente debajo de cada recurso seleccionado; el DOCX conserva recurso, unidad, cantidad y comentario.
+- I ya no contiene componentes de resultados automáticos en pantalla; todos los indicadores calculados siguen incorporándose al Word.
+- K inicia sin filas y permite agregar pendientes individualmente mediante `+ Agregar pendiente`.
+- L usa una barra de cinco estados con apoyo visual y admite varias justificaciones simultáneas; el Word recibe la categoría, todas las justificaciones y las observaciones/recomendaciones.
+- M elimina la línea de firma, captura el número de oficio junto al acceso a MyOffice y lo coloca en el informe Word.
+
 ## Precauciones
 
 - No convertir `index.html` a un proyecto npm durante esta etapa.
