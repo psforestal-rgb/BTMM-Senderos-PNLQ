@@ -208,6 +208,13 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - En D y E, el segundo toque contrae la tarjeta sin borrar el elemento ni su nivel; al contraerse aparece un semáforo pequeño con Baja en verde, Media en ámbar o Alta en rojo.
 - La acción `Quitar` deselecciona explícitamente un elemento. Los recolectores de D/E y el generador Word permanecen sin cambios.
 
+## Chapia, acciones visibles y otro dato manual (versión 1.38)
+
+- E.1 usa `Chapia lateral de vegetación` tanto en pantalla como en el Word; los borradores que guardaron el nombre anterior se migran al restaurarse.
+- Las tarjetas expandidas de D y E presentan `Minimizar` y `Quitar` juntos en una sola fila.
+- I permite agregar un dato de campo adicional con detalle libre y cantidad; se guarda en `i_fields` y aparece en la tabla de resultados del Word.
+- El dato adicional puede minimizarse sin perder información o quitarse para limpiar ambos campos.
+
 ## Precauciones
 
 - No convertir `index.html` a un proyecto npm durante esta etapa.

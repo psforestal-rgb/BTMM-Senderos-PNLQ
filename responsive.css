@@ -2673,17 +2673,32 @@ table.mobile-card-table.trail-segments-table-hidden {
   opacity: 0.72;
 }
 
+.icon-choice-card-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.icon-choice-minimize,
 .icon-choice-remove {
   min-height: 44px;
   padding: 8px 13px;
-  border: 1px solid #9f2f2f;
   border-radius: 999px;
   background: #fff;
-  color: #8a2424;
   font-family: inherit;
   font-size: 12px;
   font-weight: 850;
   touch-action: manipulation;
+}
+
+.icon-choice-minimize {
+  border: 1px solid #526f91;
+  color: #244b78;
+}
+
+.icon-choice-remove {
+  border: 1px solid #9f2f2f;
+  color: #8a2424;
 }
 
 .icon-choice-other {
@@ -4246,6 +4261,82 @@ body.preview-mobile .closing-review-overlay {
   font-weight: 850 !important;
   line-height: 1.35;
   letter-spacing: 0.025em !important;
+}
+
+.manual-other-add {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 12px;
+  padding: 10px 13px;
+  border: 2px dashed #526f91;
+  border-radius: 10px;
+  background: #f4f8fc;
+  color: #244b78;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 850;
+  text-align: left;
+  touch-action: manipulation;
+}
+
+.manual-other-add.has-value {
+  border-style: solid;
+  border-color: #2e7d4f;
+  background: #edf8f1;
+  color: #185b35;
+}
+
+.manual-other-card {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  border: 2px solid #526f91;
+  background: #f8fbff;
+}
+
+.manual-other-detail-label {
+  color: #172a4d;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.section-body .manual-other-detail {
+  width: 100%;
+  min-height: 46px;
+  padding: 9px 10px !important;
+  border: 2px solid #657384 !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  color: #071a3c !important;
+  font-size: 16px !important;
+}
+
+.manual-other-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.manual-other-minimize,
+.manual-other-remove {
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 850;
+  touch-action: manipulation;
+}
+
+.manual-other-minimize {
+  border: 1px solid #526f91;
+  color: #244b78;
+}
+
+.manual-other-remove {
+  border: 1px solid #9f2f2f;
+  color: #8a2424;
 }
 
 .k1-table td[data-label="Acciones"] .pending-delete-button {

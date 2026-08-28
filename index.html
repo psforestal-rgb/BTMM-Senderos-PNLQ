@@ -17,7 +17,7 @@
   <link rel="manifest" href="./manifest.webmanifest"/>
   <link rel="icon" href="./icons/icon.svg" type="image/svg+xml"/>
   <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
-  <link rel="stylesheet" href="./responsive.css?v=137"/>
+  <link rel="stylesheet" href="./responsive.css?v=138"/>
   <script src="./vendor/react.production.min.js"></script>
   <script src="./vendor/react-dom.production.min.js"></script>
   <script src="./vendor/jszip.min.js"></script>
@@ -4859,7 +4859,7 @@ var ITEM_VISUALS = {
   'Riesgo por fauna, enjambres u otro factor biológico': ['🐝', 'Riesgo biológico', 'd13-riesgo-biologico'],
   'Daño por evento climático reciente': ['⛈️', 'Daño climático', 'd14-dano-climatico'],
   'Otro': ['➕', 'Otro problema', 'd15-otro'],
-  'Roza o limpieza lateral de vegetación': ['🌱', 'Roza lateral', 'e01-roza-lateral'],
+  'Chapia lateral de vegetación': ['🌱', 'Chapia lateral', 'e01-roza-lateral'],
   'Poda selectiva de ramas bajas': ['✂️', 'Poda selectiva', 'e02-poda-selectiva'],
   'Remoción de árboles/ramas caídas': ['🪵', 'Retiro de árboles caídos', 'e03-retiro-caidos'],
   'Remoción de árboles/ramas riesgosas': ['⚠️', 'Retiro de árboles riesgosos', 'e04-retiro-riesgosos'],
@@ -5148,7 +5148,7 @@ var SecD = function SecD() {
   })))));
 };
 var E_ITEMS = {
-  E1: ['Roza o limpieza lateral de vegetación', 'Poda selectiva de ramas bajas', 'Remoción de árboles/ramas caídas', 'Remoción de árboles/ramas riesgosas', 'Retiro de obstáculos sueltos', 'Recolección de residuos', 'Limpieza de mirador, descanso o área de espera', 'Otro (E.1)'],
+  E1: ['Chapia lateral de vegetación', 'Poda selectiva de ramas bajas', 'Remoción de árboles/ramas caídas', 'Remoción de árboles/ramas riesgosas', 'Retiro de obstáculos sueltos', 'Recolección de residuos', 'Limpieza de mirador, descanso o área de espera', 'Otro (E.1)'],
   E2: ['Limpieza de cunetas o salidas de agua', 'Reconformación menor de huella', 'Retiro de sedimentos/slough/derrumbes menores', 'Mejora de pendiente transversal / evacuación de agua', 'Establecimiento o reparación menor de drenaje superficial', 'Colocación puntual de material estabilizante autorizado', 'Cierre de atajo', 'Otro (E.2)'],
   E3: ['Reparación menor de escalón', 'Reparación menor de baranda', 'Reparación menor de puente/pasarela', 'Ajuste o reposición de señal temporal', 'Limpieza o enderezado de rótulo existente', 'Colocación de cinta / aviso preventivo', 'Cierre temporal de punto inseguro', 'Otro (E.3)']
 };
@@ -5198,9 +5198,18 @@ var SecE = function SecE() {
       };
     });
     registerRestorer('e_data', function (d) {
-      if (d.checked) setChecked(new Set(d.checked));
+      if (d.checked) setChecked(new Set(d.checked.map(function (item) {
+        return item === 'Roza o limpieza lateral de vegetación' ? 'Chapia lateral de vegetación' : item;
+      })));
       if (d.otroTexts) setOtroE(d.otroTexts);
-      if (d.sevs) setSevsE(d.sevs);
+      if (d.sevs) {
+        var restoredSevs = _objectSpread({}, d.sevs);
+        if (restoredSevs['Roza o limpieza lateral de vegetación'] && !restoredSevs['Chapia lateral de vegetación']) {
+          restoredSevs['Chapia lateral de vegetación'] = restoredSevs['Roza o limpieza lateral de vegetación'];
+        }
+        delete restoredSevs['Roza o limpieza lateral de vegetación'];
+        setSevsE(restoredSevs);
+      }
     });
   }, []); // eslint-disable-line
   // Push lista de labores marcadas (con texto de Otro) a FormCtx
@@ -5289,6 +5298,11 @@ var CbSec = function CbSec(_ref36) {
       return current === item ? '' : current;
     });
   };
+  var minimizeChoice = function minimizeChoice(item) {
+    setExpandedItem(function (current) {
+      return current === item ? '' : current;
+    });
+  };
   return /*#__PURE__*/React.createElement("div", {
     className: "icon-choice-grid"
   }, items.map(function (item) {
@@ -5358,14 +5372,7 @@ var CbSec = function CbSec(_ref36) {
           return onSeverity(item, level);
         }
       }, level);
-    })), /*#__PURE__*/React.createElement("button", {
-      type: "button",
-      className: "icon-choice-remove",
-      onClick: function onClick() {
-        return removeChoice(item);
-      },
-      "aria-label": "Quitar ".concat(meta[1])
-    }, "Quitar")), isOtro && expanded && /*#__PURE__*/React.createElement("input", {
+    })), isOtro && /*#__PURE__*/React.createElement("input", {
       className: "icon-choice-other",
       type: "text",
       value: otherTexts[item] || '',
@@ -5374,7 +5381,23 @@ var CbSec = function CbSec(_ref36) {
       },
       placeholder: "Especifique el detalle\u2026",
       "aria-label": "Detalle de ".concat(meta[1])
-    }));
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "icon-choice-card-actions"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "icon-choice-minimize",
+      onClick: function onClick() {
+        return minimizeChoice(item);
+      },
+      "aria-label": "Minimizar ".concat(meta[1])
+    }, "Minimizar"), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "icon-choice-remove",
+      onClick: function onClick() {
+        return removeChoice(item);
+      },
+      "aria-label": "Quitar ".concat(meta[1])
+    }, "Quitar"))));
   }));
 };
 var G1_VISITOR_INFO = 'Rotulación o información al visitante';
@@ -6182,7 +6205,9 @@ var SecI = function SecI() {
       estructuras: '',
       senales: '',
       residuos: '',
-      visitantes: ''
+      visitantes: '',
+      otroDetalle: '',
+      otroCantidad: ''
     }),
     _useState54 = _slicedToArray(_useState53, 2),
     mf = _useState54[0],
@@ -6195,6 +6220,10 @@ var SecI = function SecI() {
     setSeguimiento = _useState56[1];
   var segRef = useRef(seguimiento);
   segRef.current = seguimiento;
+  var _useStateIOtherOpen = useState(false),
+    _useStateIOtherOpen2 = _slicedToArray(_useStateIOtherOpen, 2),
+    otherManualOpen = _useStateIOtherOpen2[0],
+    setOtherManualOpen = _useStateIOtherOpen2[1];
   useEffect(function () {
     rcI('i_fields', function () {
       return _objectSpread(_objectSpread({}, mfRef.current), {}, {
@@ -6208,6 +6237,7 @@ var SecI = function SecI() {
         setMf(function (prev) {
           return _objectSpread(_objectSpread({}, prev), rest);
         });
+        if (d.otroDetalle || d.otroCantidad) setOtherManualOpen(true);
         if (seg) setSeguimiento(seg);
       }
     });
@@ -6217,6 +6247,15 @@ var SecI = function SecI() {
     return setMf(function (f) {
       return _objectSpread(_objectSpread({}, f), {}, _defineProperty({}, k, v));
     });
+  };
+  var removeOtherManual = function removeOtherManual() {
+    setMf(function (f) {
+      return _objectSpread(_objectSpread({}, f), {}, {
+        otroDetalle: '',
+        otroCantidad: ''
+      });
+    });
+    setOtherManualOpen(false);
   };
 
   var labSet = new Set(laborLines);
@@ -6312,6 +6351,8 @@ var SecI = function SecI() {
       }
     }));
   };
+  var hasOtherManual = !!(mf.otroDetalle || mf.otroCantidad);
+  var otherManualSummary = hasOtherManual ? "Otro: ".concat(mf.otroDetalle || 'sin detalle').concat(mf.otroCantidad ? " · Cantidad ".concat(mf.otroCantidad) : '') : '+ Agregar otro dato de campo';
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "manual-results-section",
     style: {
@@ -6360,7 +6401,49 @@ var SecI = function SecI() {
     type: "text",
     ph: "0 / No aplica",
     warn: restriccion !== 'No' ? "\u26A0 Restricci\xF3n ".concat(restriccion, " en A") : null
-  }))), /*#__PURE__*/React.createElement(Sep, null), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Lbl, {
+  })), !otherManualOpen ? /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "manual-other-add".concat(hasOtherManual ? ' has-value' : ''),
+    onClick: function onClick() {
+      return setOtherManualOpen(true);
+    },
+    "aria-expanded": false
+  }, otherManualSummary) : /*#__PURE__*/React.createElement("div", {
+    className: "manual-counter-card manual-other-card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "manual-counter-heading"
+  }, /*#__PURE__*/React.createElement("span", null, "Otro dato de campo")), /*#__PURE__*/React.createElement("label", {
+    className: "manual-other-detail-label",
+    htmlFor: "manual-other-detail"
+  }, "Detalle"), /*#__PURE__*/React.createElement("input", {
+    id: "manual-other-detail",
+    className: "manual-other-detail",
+    type: "text",
+    value: mf.otroDetalle || '',
+    onChange: function onChange(e) {
+      return updMf('otroDetalle', e.target.value);
+    },
+    placeholder: "Escriba el dato o resultado registrado"
+  }), /*#__PURE__*/React.createElement(QuantityStepper, {
+    value: mf.otroCantidad,
+    label: mf.otroDetalle ? "Cantidad de ".concat(mf.otroDetalle) : 'Cantidad del otro dato',
+    unit: "Cantidad",
+    onChange: function onChange(value) {
+      return updMf('otroCantidad', value);
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "manual-other-actions"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "manual-other-minimize",
+    onClick: function onClick() {
+      return setOtherManualOpen(false);
+    }
+  }, "Minimizar"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "manual-other-remove",
+    onClick: removeOtherManual
+  }, "Quitar")))), /*#__PURE__*/React.createElement(Sep, null), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Lbl, {
     c: "\xBFRequiere seguimiento?"
   }), kAlertCount > 0 && /*#__PURE__*/React.createElement("div", {
     style: {
@@ -7956,7 +8039,7 @@ var buildDocx = /*#__PURE__*/function () {
             return resourceBlocks;
           }()), [docxPara(' '),
           // I. Resultados
-          docxHeading('I. Resultados e indicadores', 2), docxTable(['Indicador', 'Valor'], [['Metros de sendero atendidos', calc.totalMetros ? "".concat(calc.totalMetros, " m") : '—'], ['Horas-persona totales', calc.horasPersonaMin ? "".concat(Math.floor(calc.horasPersonaMin / 60), ":").concat(String(calc.horasPersonaMin % 60).padStart(2, '0')) : '—'], ['Días efectivos', String(calc.diasEfectivos || '—')], ['Participantes únicos', String(calc.participantesUnicos || '—')], ['Promedio personas/día', String(calc.promPersonasDia || '—')], ['Puntos críticos (con severidad)', String(calc.puntosAtendidos || '—')], ['Drenajes limpiados/reparados', String(mf.drenajes || '—')], ['Árboles / ramas retiradas', String(mf.arboles || '—')], ['Estructuras menores reparadas', String(mf.estructuras || '—')], ['Señales revisadas o corregidas', String(mf.senales || '—')], ['Residuos retirados', String(mf.residuos || '—')], ['Visitantes afectados', String(mf.visitantes || '—')], ['¿Requiere seguimiento?', String(mf.seguimiento || '—')]]), docxPara(' '),
+          docxHeading('I. Resultados e indicadores', 2), docxTable(['Indicador', 'Valor'], [['Metros de sendero atendidos', calc.totalMetros ? "".concat(calc.totalMetros, " m") : '—'], ['Horas-persona totales', calc.horasPersonaMin ? "".concat(Math.floor(calc.horasPersonaMin / 60), ":").concat(String(calc.horasPersonaMin % 60).padStart(2, '0')) : '—'], ['Días efectivos', String(calc.diasEfectivos || '—')], ['Participantes únicos', String(calc.participantesUnicos || '—')], ['Promedio personas/día', String(calc.promPersonasDia || '—')], ['Puntos críticos (con severidad)', String(calc.puntosAtendidos || '—')], ['Drenajes limpiados/reparados', String(mf.drenajes || '—')], ['Árboles / ramas retiradas', String(mf.arboles || '—')], ['Estructuras menores reparadas', String(mf.estructuras || '—')], ['Señales revisadas o corregidas', String(mf.senales || '—')], ['Residuos retirados', String(mf.residuos || '—')], ['Visitantes afectados', String(mf.visitantes || '—')], mf.otroDetalle || mf.otroCantidad ? [mf.otroDetalle ? "Otro: ".concat(mf.otroDetalle) : 'Otro dato de campo', String(mf.otroCantidad || '—')] : null, ['¿Requiere seguimiento?', String(mf.seguimiento || '—')]].filter(Boolean)), docxPara(' '),
           // J. Evidencia fotográfica
           docxHeading('J. Evidencia fotográfica', 2)], _toConsumableArray(fotoData.length > 0 ? fotoData.flatMap(function (fd) {
             return [docxPara("Foto ".concat(String(fd.n).padStart(2, '0')).concat(fd.desc ? ': ' + fd.desc : ''), {
@@ -8797,7 +8880,7 @@ var InformeModal = function InformeModal(_ref46) {
       borderCollapse: 'collapse',
       fontSize: 12
     }
-  }, [['Drenajes limpiados/reparados', mf.drenajes || '—'], ['Árboles / ramas retiradas', mf.arboles || '—'], ['Estructuras menores reparadas', mf.estructuras || '—'], ['Señales revisadas o corregidas', mf.senales || '—'], ['Residuos retirados', mf.residuos || '—'], ['Visitantes afectados', mf.visitantes || '—'], ['¿Requiere seguimiento?', mf.seguimiento || '—']].map(function (_ref52, i) {
+  }, [['Drenajes limpiados/reparados', mf.drenajes || '—'], ['Árboles / ramas retiradas', mf.arboles || '—'], ['Estructuras menores reparadas', mf.estructuras || '—'], ['Señales revisadas o corregidas', mf.senales || '—'], ['Residuos retirados', mf.residuos || '—'], ['Visitantes afectados', mf.visitantes || '—'], mf.otroDetalle || mf.otroCantidad ? [mf.otroDetalle ? "Otro: ".concat(mf.otroDetalle) : 'Otro dato de campo', String(mf.otroCantidad || '—')] : null, ['¿Requiere seguimiento?', mf.seguimiento || '—']].filter(Boolean).map(function (_ref52, i) {
     var _ref53 = _slicedToArray(_ref52, 2),
       l = _ref53[0],
       v = _ref53[1];
@@ -10152,7 +10235,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.37'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.38'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];
