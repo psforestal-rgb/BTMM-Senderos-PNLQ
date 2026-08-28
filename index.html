@@ -17,7 +17,7 @@
   <link rel="manifest" href="./manifest.webmanifest"/>
   <link rel="icon" href="./icons/icon.svg" type="image/svg+xml"/>
   <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
-  <link rel="stylesheet" href="./responsive.css?v=139"/>
+  <link rel="stylesheet" href="./responsive.css?v=140"/>
   <script src="./vendor/react.production.min.js"></script>
   <script src="./vendor/react-dom.production.min.js"></script>
   <script src="./vendor/jszip.min.js"></script>
@@ -2172,6 +2172,12 @@ var SecB = function SecB() {
   }, [periodB.ini, periodB.fin, jornadaIni, jornadaFin, rows]); // eslint-disable-line
   var rowsRef = useRef(rows);
   rowsRef.current = rows;
+  var scheduleRef = useRef({});
+  scheduleRef.current = {
+    fecha: fechaNueva,
+    ini: jornadaIni,
+    fin: jornadaFin
+  };
   var diasRef = useRef(dias);
   diasRef.current = dias;
   var bloqueadasRef = useRef(bloqueadas);
@@ -2245,6 +2251,18 @@ var SecB = function SecB() {
           setRows([]);
         }
       }
+    });
+    registerCollector('b_schedule', function () {
+      return scheduleRef.current;
+    });
+    registerRestorer('b_schedule', function (saved) {
+      if (!saved || _typeof(saved) !== 'object') return;
+      var restoredDate = saved.fecha || TODAY;
+      var restoredIniMin = Math.min(930, clockToMinutes(saved.ini, 480));
+      var restoredFinMin = Math.max(restoredIniMin + 30, clockToMinutes(saved.fin, 960));
+      setFechaNueva(restoredDate);
+      setJornadaIni(minutesToClock(restoredIniMin));
+      setJornadaFin(minutesToClock(restoredFinMin));
     });
     registerCollector('b_days', function () {
       return diasRef.current;
@@ -6628,7 +6646,7 @@ var SecJ = function SecJ() {
     className: "photo-guide"
   }, /*#__PURE__*/React.createElement("div", {
     className: "photo-guide-copy"
-  }, /*#__PURE__*/React.createElement("span", null, "Galería guiada"), /*#__PURE__*/React.createElement("strong", null, "Seleccione las fotos tomadas durante la jornada"), /*#__PURE__*/React.createElement("p", null, "Puede cargar varias a la vez y clasificarlas después. Las categorías ayudan a revisar; el formato del Word no cambia.")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", null, "Galería guiada"), /*#__PURE__*/React.createElement("strong", null, "Seleccione las fotos tomadas durante la jornada"), /*#__PURE__*/React.createElement("p", null, "Puede cargar varias a la vez y clasificarlas después. La categoría identificará cada evidencia en el informe Word.")), /*#__PURE__*/React.createElement("div", {
     className: "photo-guide-types",
     "aria-label": "Tipos de evidencia sugeridos"
   }, PHOTO_CATEGORIES.map(function (category) {
@@ -7720,7 +7738,7 @@ var docxTable = function docxTable(headers, rows) {
 };
 var buildDocx = /*#__PURE__*/function () {
   var _ref43 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(ctx) {
-    var _ctx$sendero, sendero, _ctx$calc, calc, _ctx$laborLines, laborLines, _ctx$participants, participants, _ctx$shared, shared, getReportData, rd, a, b, c, d, e, g, k, m, mf, bx, h, l, b2map, b2, b3map, b3, fmtM, mapImg, svgEl, fotosRaw, fotoData, i, f, mm, ext, b64, dims, maxCx, cx, cy, docxImage, joinSet, mapEmu, mapParagraph, body, docXml, imgRels, relXml, zip, blob, blobUrl, dlLink, fechaStr, _t, _t2;
+    var _ctx$sendero, sendero, _ctx$calc, calc, _ctx$laborLines, laborLines, _ctx$participants, participants, _ctx$shared, shared, getReportData, rd, a, b, bs, c, d, e, g, k, m, mf, bx, h, l, b2map, b2, b3map, b3, fmtM, mapImg, svgEl, fotosRaw, fotoData, i, f, mm, ext, b64, dims, maxCx, cx, cy, docxImage, joinSet, mapEmu, mapParagraph, body, docXml, imgRels, relXml, zip, blob, blobUrl, dlLink, fechaStr, _t, _t2;
     return _regenerator().w(function (_context) {
       while (1) switch (_context.p = _context.n) {
         case 0:
@@ -7728,6 +7746,11 @@ var buildDocx = /*#__PURE__*/function () {
           rd = getReportData();
           a = rd.a_data || {};
           b = rd.b_rows || [];
+          bs = rd.b_schedule || {
+            fecha: b[0] && b[0].fecha || '',
+            ini: b[0] && b[0].ini || '',
+            fin: b[0] && b[0].fin || ''
+          };
           c = normalizeTramosForReport(rd.c_tramos || []);
           d = rd.d_data || {};
           e = rd.e_data || {};
@@ -7843,6 +7866,9 @@ var buildDocx = /*#__PURE__*/function () {
             cx: cx,
             cy: cy,
             desc: f.desc || '',
+            categoria: (PHOTO_CATEGORIES.find(function (category) {
+              return category.id === f.categoria;
+            }) || {}).label || '',
             nombre: f.nombre || "foto".concat(i + 1),
             rid: "rIdFoto".concat(i + 1),
             numId: 100 + i,
@@ -7887,14 +7913,18 @@ var buildDocx = /*#__PURE__*/function () {
             sz: 20,
             bold: true,
             color: '2E6B4F'
-          }), docxPara("Fecha de jornada: ".concat(b[0] && b[0].fecha || '—', "   |   Sendero: ").concat(sendero || '—'), {
+          }), docxPara("Fecha de jornada: ".concat(bs.fecha || b[0] && b[0].fecha || '—', "   |   Sendero: ").concat(sendero || '—'), {
             sz: 20
           }), docxPara(' '),
           // A. Control
           // El oficio se captura en M y la celda del Word permanece editable si se completa después.
           docxHeading('A. Control del reporte', 2), docxTable(['Campo', 'Valor'], [['Número de oficio', m.oficio || a.oficio || ''], ['ASP', 'Parque Nacional Los Quetzales'], ['Sendero', sendero || '—'], ['Tipo de intervención', joinSet(a.tipoInterv)], ['Origen de la solicitud', joinSet(a.origen)], ['Condición climática', joinSet(a.clima)], ['Restricción uso público', (a.restriccion || 'No') + (a.restriccion && a.restriccion !== 'No' && a.restrDet ? " \u2014 ".concat(a.restrDet) : '')]]), docxPara(' '),
           // B. Personal
-          docxHeading('B. Registro de participantes', 2), docxTable(['Fecha', 'Nombre', 'Tipo', 'Participación', 'Horas', 'Encargado'], b.map(function (r) {
+          docxHeading('B. Registro de participantes', 2), docxPara("Horario general de la jornada: ".concat(bs.ini || '—', " – ").concat(bs.fin || '—'), {
+            bold: true,
+            color: '2E6B4F',
+            keepNext: true
+          }), docxTable(['Fecha', 'Nombre', 'Tipo', 'Participación', 'Horas', 'Encargado'], b.map(function (r) {
             return [r.fecha || '', r.nombre || '', r.tipo === 'funcionario' ? 'SINAC' : 'Externo', r.parcial ? 'Parcial' : 'Completa', fmtM(calcParticipantMin(r)), r.encargado ? 'Sí' : ''];
           })), docxPara(' '),
           // B.2 — Consolidado por participante
@@ -7942,7 +7972,7 @@ var buildDocx = /*#__PURE__*/function () {
           }), mapParagraph, docxPara(' ')] : []), [
           // D. Diagnóstico
           docxHeading('D. Diagnóstico inicial', 2), docxTable(['ID', 'Problema', 'Severidad'], (d.activeProbs || []).map(function (p, i) {
-            return ["P-".concat(String(i + 1).padStart(2, '0')), p, (d.sevs || {})[p] || '—'];
+            return ["P-".concat(String(i + 1).padStart(2, '0')), p === 'Otro' && d.otroText ? "Otro: ".concat(d.otroText) : p, (d.sevs || {})[p] || '—'];
           })), docxPara(' '),
           // E. Labores
           docxHeading('E. Labores realizadas', 2)], _toConsumableArray(laborLines.length > 0 ? laborLines.map(function (l, i) {
@@ -7959,7 +7989,12 @@ var buildDocx = /*#__PURE__*/function () {
             return docxPara("\u2713 ".concat(item).concat(item === 'Otro' && g.otroG1 ? ': ' + g.otroG1 : ''), {
               indent: 360
             });
-          })), [docxPara("G.2 \u2014 Incidente / accidente: ".concat(g.incidente || 'No'), {
+          })), [docxPara("No cumplidos: ".concat(G1_ITEMS.filter(function (item) {
+            return item !== 'Otro' && (g.g1 || []).indexOf(item) < 0;
+          }).join(', ') || 'Ninguno'), {
+            bold: true,
+            color: '7A3E00'
+          }), docxPara("G.2 \u2014 Incidente / accidente: ".concat(g.incidente || 'No'), {
             bold: true
           })], _toConsumableArray(g.incidente === 'Sí' && g.incDet ? [docxTable(['Campo', 'Detalle'], [['Persona afectada', g.incDet.persona || '—'], ['Tipo de afectación', g.incDet.tipo || '—'], ['Atención brindada', g.incDet.atencion || '—'], ['¿Requiere reporte adicional?', g.incDet.reporte || 'No']])] : []), [docxPara(' '),
           // H. Recursos utilizados
@@ -7984,7 +8019,7 @@ var buildDocx = /*#__PURE__*/function () {
           docxHeading('I. Resultados e indicadores', 2), docxTable(['Indicador', 'Valor'], [['Metros de sendero atendidos', calc.totalMetros ? "".concat(calc.totalMetros, " m") : '—'], ['Horas-persona totales', calc.horasPersonaMin ? "".concat(Math.floor(calc.horasPersonaMin / 60), ":").concat(String(calc.horasPersonaMin % 60).padStart(2, '0')) : '—'], ['Días efectivos', String(calc.diasEfectivos || '—')], ['Participantes únicos', String(calc.participantesUnicos || '—')], ['Promedio personas/día', String(calc.promPersonasDia || '—')], ['Puntos críticos (con severidad)', String(calc.puntosAtendidos || '—')], ['Drenajes limpiados/reparados', String(mf.drenajes || '—')], ['Árboles / ramas retiradas', String(mf.arboles || '—')], ['Estructuras menores reparadas', String(mf.estructuras || '—')], ['Señales revisadas o corregidas', String(mf.senales || '—')], ['Residuos retirados', String(mf.residuos || '—')], ['Visitantes afectados', String(mf.visitantes || '—')], mf.otroDetalle || mf.otroCantidad ? [mf.otroDetalle ? "Otro: ".concat(mf.otroDetalle) : 'Otro dato de campo', String(mf.otroCantidad || '—')] : null, ['¿Requiere seguimiento?', String(mf.seguimiento || '—')]].filter(Boolean)), docxPara(' '),
           // J. Evidencia fotográfica
           docxHeading('J. Evidencia fotográfica', 2)], _toConsumableArray(fotoData.length > 0 ? fotoData.flatMap(function (fd) {
-            return [docxPara("Foto ".concat(String(fd.n).padStart(2, '0')).concat(fd.desc ? ': ' + fd.desc : ''), {
+            return [docxPara("Foto ".concat(String(fd.n).padStart(2, '0')).concat(fd.categoria ? ' — ' + fd.categoria : '').concat(fd.desc ? ': ' + fd.desc : ''), {
               bold: true,
               sz: 18,
               color: '2E6B4F'
@@ -8175,6 +8210,11 @@ var InformeModal = function InformeModal(_ref46) {
   var rd = getReportData ? getReportData() : {};
   var a = rd.a_data || {};
   var b = rd.b_rows || [];
+  var bs = rd.b_schedule || {
+    fecha: b[0] && b[0].fecha || '',
+    ini: b[0] && b[0].ini || '',
+    fin: b[0] && b[0].fin || ''
+  };
   var c = normalizeTramosForReport(rd.c_tramos || []);
   var d = rd.d_data || {};
   var k = rd.k_data || {};
@@ -8400,7 +8440,7 @@ var InformeModal = function InformeModal(_ref46) {
       borderRadius: 4,
       overflow: 'hidden'
     }
-  }, [['Sendero', sendero || '—'], ['Fecha de jornada', b[0] && b[0].fecha || '—']].map(function (_ref48, i) {
+  }, [['Sendero', sendero || '—'], ['Fecha de jornada', bs.fecha || b[0] && b[0].fecha || '—']].map(function (_ref48, i) {
     var _ref49 = _slicedToArray(_ref48, 2),
       l = _ref49[0],
       v = _ref49[1];
@@ -8451,7 +8491,7 @@ var InformeModal = function InformeModal(_ref46) {
     style: rowStyle
   }, lbl('Condición climática'), val((a.clima || []).join(', '))), /*#__PURE__*/React.createElement("div", {
     style: rowStyle
-  }, lbl('Restricción de uso público'), val((a.restriccion || 'No') + (a.restriccion && a.restriccion !== 'No' && a.restrDet ? " \u2014 ".concat(a.restrDet) : '')))), b.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, lbl('Restricción de uso público'), val((a.restriccion || 'No') + (a.restriccion && a.restriccion !== 'No' && a.restrDet ? " \u2014 ".concat(a.restrDet) : '')))), /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 16
     }
@@ -8465,7 +8505,14 @@ var InformeModal = function InformeModal(_ref46) {
       paddingBottom: 4,
       borderBottom: "2px solid ".concat(G.pale)
     }
-  }, "B. Registro de participantes"), /*#__PURE__*/React.createElement("table", {
+  }, "B. Registro de participantes"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: 7,
+      fontSize: 12,
+      fontWeight: 700,
+      color: G.mid
+    }
+  }, "Horario general de la jornada: ", bs.ini || '—', " – ", bs.fin || '—'), /*#__PURE__*/React.createElement("table", {
     style: {
       width: '100%',
       borderCollapse: 'collapse',
@@ -8686,7 +8733,7 @@ var InformeModal = function InformeModal(_ref46) {
         padding: '5px 8px',
         background: i % 2 === 0 ? 'white' : G.soft
       }
-    }, p), /*#__PURE__*/React.createElement("td", {
+    }, p === 'Otro' && d.otroText ? "Otro: ".concat(d.otroText) : p), /*#__PURE__*/React.createElement("td", {
       style: {
         border: '1px solid #E0DDD5',
         padding: '5px 8px',
@@ -8724,8 +8771,10 @@ var InformeModal = function InformeModal(_ref46) {
   }))), function () {
     var gg = rd.g1_data || {};
     var g1ok = gg.g1 || [];
+    var g1missing = G1_ITEMS.filter(function (item) {
+      return item !== 'Otro' && g1ok.indexOf(item) < 0;
+    });
     var hayInc = gg.incidente === 'Sí';
-    if (g1ok.length === 0 && !hayInc) return null;
     return /*#__PURE__*/React.createElement("div", {
       style: {
         marginBottom: 16
@@ -8764,6 +8813,13 @@ var InformeModal = function InformeModal(_ref46) {
         }
       }, it, it === 'Otro' && gg.otroG1 ? ": ".concat(gg.otroG1) : '');
     }))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        marginBottom: 8,
+        fontSize: 12.5,
+        fontWeight: 700,
+        color: g1missing.length > 0 ? '#7A3E00' : G.mid
+      }
+    }, "No cumplidos: ", g1missing.length > 0 ? g1missing.join(', ') : 'Ninguno'), /*#__PURE__*/React.createElement("div", {
       style: {
         fontSize: 13
       }
@@ -8846,7 +8902,7 @@ var InformeModal = function InformeModal(_ref46) {
     }, v));
   }))), ((hRec.checked || []).length > 0 || (hRec.custom || []).filter(function (c) {
     return c.nombre && c.nombre.trim();
-  }).length > 0) && /*#__PURE__*/React.createElement("div", {
+  }).length > 0 || hRec.generalComment) && /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 16
     }
@@ -9176,6 +9232,9 @@ var InformeModal = function InformeModal(_ref46) {
       gap: 14
     }
   }, fotos.map(function (f, i) {
+    var photoCategory = PHOTO_CATEGORIES.find(function (category) {
+      return category.id === f.categoria;
+    });
     return /*#__PURE__*/React.createElement("div", {
       key: i,
       style: {
@@ -9193,7 +9252,7 @@ var InformeModal = function InformeModal(_ref46) {
         textTransform: 'uppercase',
         letterSpacing: '0.05em'
       }
-    }, "Foto ", String(i + 1).padStart(2, '0')), /*#__PURE__*/React.createElement("img", {
+    }, "Foto ", String(i + 1).padStart(2, '0'), photoCategory ? " — ".concat(photoCategory.label) : ''), /*#__PURE__*/React.createElement("img", {
       src: f.url,
       alt: f.desc || "Foto ".concat(i + 1),
       style: {
@@ -10177,7 +10236,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.39'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.40'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];

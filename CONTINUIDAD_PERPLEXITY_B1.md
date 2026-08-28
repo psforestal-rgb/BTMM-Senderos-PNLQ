@@ -221,6 +221,14 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - Se retiró de la vista de L el campo redundante `Síntesis de labores ejecutadas`.
 - El Word conserva la síntesis automática con las labores seleccionadas en E, por lo que el machote y la información final no se pierden.
 
+## Correspondencia formulario–Word (versión 1.40)
+
+- B conserva de forma independiente la fecha y el horario general de la jornada, incluso antes de agregar participantes, y los muestra en el Word y su vista previa.
+- D incorpora en el diagnóstico del informe el detalle escrito cuando se selecciona `Otro`.
+- G.1 informa tanto las verificaciones cumplidas como las no cumplidas; `Otro` solo se incluye cuando el usuario lo selecciona y detalla.
+- J identifica cada fotografía con su categoría en el Word y en la vista previa, además de conservar su descripción.
+- Se auditó la correspondencia de A, B, C, D, E, G, H, I, J, K, L y M sin retirar tablas, cálculos ni campos del machote institucional.
+
 ## Precauciones
 
 - No convertir `index.html` a un proyecto npm durante esta etapa.
