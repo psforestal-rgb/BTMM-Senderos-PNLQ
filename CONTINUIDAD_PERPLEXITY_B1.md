@@ -194,6 +194,13 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - L usa una barra de cinco estados con apoyo visual y admite varias justificaciones simultáneas; el Word recibe la categoría, todas las justificaciones y las observaciones/recomendaciones.
 - M elimina la línea de firma, captura el número de oficio junto al acceso a MyOffice y lo coloca en el informe Word.
 
+## Recursos contraíbles (versión 1.36)
+
+- En H, el primer toque selecciona el recurso y abre sus controles de cantidad; otro toque sobre la ilustración contrae el panel sin borrar la selección.
+- Toda cantidad mayor que cero se muestra como una insignia pequeña en la esquina inferior derecha de la tarjeta; con cantidad cero o vacía no aparece insignia.
+- La acción `Quitar` permite deseleccionar explícitamente el recurso y evita que un segundo toque lo elimine por accidente.
+- El recolector `h_data` y la salida de recursos al informe Word permanecen sin cambios.
+
 ## Precauciones
 
 - No convertir `index.html` a un proyecto npm durante esta etapa.

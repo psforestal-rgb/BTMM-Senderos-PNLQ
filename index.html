@@ -17,7 +17,7 @@
   <link rel="manifest" href="./manifest.webmanifest"/>
   <link rel="icon" href="./icons/icon.svg" type="image/svg+xml"/>
   <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
-  <link rel="stylesheet" href="./responsive.css?v=135"/>
+  <link rel="stylesheet" href="./responsive.css?v=136"/>
   <script src="./vendor/react.production.min.js"></script>
   <script src="./vendor/react-dom.production.min.js"></script>
   <script src="./vendor/jszip.min.js"></script>
@@ -5705,6 +5705,10 @@ var SecH = function SecH() {
     _useStateHComments2 = _slicedToArray(_useStateHComments, 2),
     openComments = _useStateHComments2[0],
     setOpenComments = _useStateHComments2[1];
+  var _useStateHExpanded = useState(''),
+    _useStateHExpanded2 = _slicedToArray(_useStateHExpanded, 2),
+    expandedResource = _useStateHExpanded2[0],
+    setExpandedResource = _useStateHExpanded2[1];
   var _useStateHGeneral = useState(''),
     _useStateHGeneral2 = _slicedToArray(_useStateHGeneral, 2),
     generalComment = _useStateHGeneral2[0],
@@ -5751,15 +5755,33 @@ var SecH = function SecH() {
   }, []); // eslint-disable-line
 
   var toggle = function toggle(r) {
-    return setChecked(function (s) {
+    if (checked.has(r)) {
+      setExpandedResource(function (current) {
+        return current === r ? '' : r;
+      });
+      return;
+    }
+    setChecked(function (s) {
       var n = new Set(s);
-      if (n.has(r)) {
-        n.delete(r);
-      } else {
-        n.add(r);
-        if (r === 'Vehículo institucional') n.add('Combustible');
-      }
+      n.add(r);
+      if (r === 'Vehículo institucional') n.add('Combustible');
       return n;
+    });
+    setExpandedResource(r);
+  };
+  var removeResource = function removeResource(r) {
+    setChecked(function (s) {
+      var n = new Set(s);
+      n.delete(r);
+      return n;
+    });
+    setExpandedResource(function (current) {
+      return current === r ? '' : current;
+    });
+    setOpenComments(function (current) {
+      var next = new Set(current);
+      next.delete(r);
+      return next;
     });
   };
   // Todos los recursos se registran en la unidad única solicitada.
@@ -5877,12 +5899,15 @@ var SecH = function SecH() {
     }
   }, RECURSOS_LIST.map(function (r) {
     var selected = checked.has(r);
+    var expanded = expandedResource === r;
     var row = data[r] || {};
+    var quantity = Number(row.cantidad) || 0;
     return /*#__PURE__*/React.createElement("div", {
       key: r,
-      className: "resource-option-item".concat(selected ? ' is-selected' : '')
+      className: "resource-option-item".concat(selected ? ' is-selected' : '').concat(expanded ? ' is-expanded' : '')
     }, /*#__PURE__*/React.createElement("label", {
       className: "visual-option resource-visual-option".concat(selected ? ' is-selected' : ''),
+      "aria-expanded": expanded,
       style: {
         display: 'flex',
         alignItems: 'center',
@@ -5909,7 +5934,10 @@ var SecH = function SecH() {
       fallback: resourceIcon(r)
     }), /*#__PURE__*/React.createElement("span", {
       className: "visual-option-text"
-    }, r)), selected && /*#__PURE__*/React.createElement("div", {
+    }, r), selected && !expanded && quantity > 0 && /*#__PURE__*/React.createElement("span", {
+      className: "resource-quantity-badge",
+      "aria-label": "Cantidad: ".concat(quantity)
+    }, quantity)), expanded && /*#__PURE__*/React.createElement("div", {
       className: "resource-inline-controls"
     }, /*#__PURE__*/React.createElement("span", {
       className: "resource-quantity-label"
@@ -5920,14 +5948,22 @@ var SecH = function SecH() {
       onChange: function onChange(v) {
         return upd(r, 'cantidad', v);
       }
-    }), /*#__PURE__*/React.createElement("button", {
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "resource-inline-actions"
+    }, /*#__PURE__*/React.createElement("button", {
       type: "button",
       className: "resource-comment-toggle".concat(openComments.has(r) || row.estado ? ' is-active' : ''),
       onClick: function onClick() {
         return toggleComment(r);
       },
       "aria-expanded": openComments.has(r) || !!row.estado
-    }, row.estado ? "✎ Editar comentario" : "+ Comentario"), (openComments.has(r) || row.estado) && /*#__PURE__*/React.createElement("input", {
+    }, row.estado ? "✎ Editar comentario" : "+ Comentario"), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "resource-remove-button",
+      onClick: function onClick() {
+        return removeResource(r);
+      }
+    }, "Quitar")), (openComments.has(r) || row.estado) && /*#__PURE__*/React.createElement("input", {
       className: "resource-inline-comment",
       type: "text",
       value: row.estado || '',
@@ -10066,7 +10102,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.35'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.36'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];
