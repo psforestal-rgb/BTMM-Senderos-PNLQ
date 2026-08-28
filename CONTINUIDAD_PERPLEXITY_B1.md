@@ -215,6 +215,12 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - I permite agregar un dato de campo adicional con detalle libre y cantidad; se guarda en `i_fields` y aparece en la tabla de resultados del Word.
 - El dato adicional puede minimizarse sin perder información o quitarse para limpiar ambos campos.
 
+## Recursos y conclusión simplificados (versión 1.39)
+
+- Las tarjetas abiertas de H presentan `Comentario`, `Minimizar` y `Quitar` en una sola fila; minimizar conserva cantidad y comentario.
+- Se retiró de la vista de L el campo redundante `Síntesis de labores ejecutadas`.
+- El Word conserva la síntesis automática con las labores seleccionadas en E, por lo que el machote y la información final no se pierden.
+
 ## Precauciones
 
 - No convertir `index.html` a un proyecto npm durante esta etapa.
