@@ -229,6 +229,14 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - J identifica cada fotografía con su categoría en el Word y en la vista previa, además de conservar su descripción.
 - Se auditó la correspondencia de A, B, C, D, E, G, H, I, J, K, L y M sin retirar tablas, cálculos ni campos del machote institucional.
 
+## Terminología y formato institucional del Word (versión 1.41)
+
+- D denomina **Gravedad** a la escala Baja · Media · Alta; E denomina la misma escala **Dificultad percibida**. Los valores internos se conservan para mantener compatibilidad con borradores.
+- I usa la etiqueta **Árboles / ramas grandes retiradas** en formulario, vista previa e informe.
+- Se eliminó la sección duplicada **Síntesis de labores ejecutadas** de la vista previa y del Word; las labores siguen documentadas una sola vez en E.
+- El contenido generado del Word usa Arial, texto normal de 11 pt y azul marino oscuro `#0B1F3A` en títulos y encabezados de tablas.
+- La estructura gráfica, relaciones, logos y geometría del membrete institucional se mantienen; su texto también se normaliza a Arial.
+
 ## Precauciones
 
 - No convertir `index.html` a un proyecto npm durante esta etapa.

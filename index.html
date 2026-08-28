@@ -17,7 +17,7 @@
   <link rel="manifest" href="./manifest.webmanifest"/>
   <link rel="icon" href="./icons/icon.svg" type="image/svg+xml"/>
   <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
-  <link rel="stylesheet" href="./responsive.css?v=140"/>
+  <link rel="stylesheet" href="./responsive.css?v=141"/>
   <script src="./vendor/react.production.min.js"></script>
   <script src="./vendor/react-dom.production.min.js"></script>
   <script src="./vendor/jszip.min.js"></script>
@@ -5027,6 +5027,7 @@ var SecD = function SecD() {
     onToggle: toggle,
     sevs: sevs,
     onSeverity: setSev,
+    levelLabel: "Gravedad",
     otherTexts: {
       Otro: otroText
     },
@@ -5111,7 +5112,7 @@ var SecD = function SecD() {
   }), /*#__PURE__*/React.createElement(TH, {
     c: "Problema"
   }), /*#__PURE__*/React.createElement(TH, {
-    c: "Severidad",
+    c: "Gravedad",
     w: "130px"
   }))), /*#__PURE__*/React.createElement("tbody", null, activeProbs.map(function (p, idx) {
     var ev = idx % 2 === 0;
@@ -5130,7 +5131,7 @@ var SecD = function SecD() {
       "data-label": "Problema",
       style: td(ev)
     }, tabLabel(p)), /*#__PURE__*/React.createElement("td", {
-      "data-label": "Severidad",
+      "data-label": "Gravedad",
       style: _objectSpread(_objectSpread({}, td(ev)), {}, {
         padding: 0
       })
@@ -5153,7 +5154,7 @@ var SecD = function SecD() {
       }
     }, /*#__PURE__*/React.createElement("option", {
       value: ""
-    }, "\u2014 Severidad \u2014"), SEV_OPTS.map(function (o) {
+    }, "\u2014 Gravedad \u2014"), SEV_OPTS.map(function (o) {
       return /*#__PURE__*/React.createElement("option", {
         key: o,
         value: o,
@@ -5238,7 +5239,7 @@ var SecE = function SecE() {
     }).map(function (item) {
       var _otroE$item;
       var label = item.startsWith('Otro') && (_otroE$item = otroE[item]) !== null && _otroE$item !== void 0 && _otroE$item.trim() ? "".concat(item, ": ").concat(otroE[item].trim()) : item;
-      return sevsE[item] ? "".concat(label, " — Severidad ").concat(sevsE[item]) : label;
+      return sevsE[item] ? "".concat(label, " — Dificultad percibida: ").concat(sevsE[item]) : label;
     }));
   }, [checked, otroE, sevsE]); // eslint-disable-line
 
@@ -5250,6 +5251,7 @@ var SecE = function SecE() {
     onToggle: toggle,
     sevs: sevsE,
     onSeverity: setSevE,
+    levelLabel: "Dificultad percibida",
     otherTexts: otroE,
     onOtherText: function onOtherText(item, value) {
       return setOtroE(function (p) {
@@ -5264,6 +5266,7 @@ var SecE = function SecE() {
     onToggle: toggle,
     sevs: sevsE,
     onSeverity: setSevE,
+    levelLabel: "Dificultad percibida",
     otherTexts: otroE,
     onOtherText: function onOtherText(item, value) {
       return setOtroE(function (p) {
@@ -5278,6 +5281,7 @@ var SecE = function SecE() {
     onToggle: toggle,
     sevs: sevsE,
     onSeverity: setSevE,
+    levelLabel: "Dificultad percibida",
     otherTexts: otroE,
     onOtherText: function onOtherText(item, value) {
       return setOtroE(function (p) {
@@ -5294,8 +5298,10 @@ var CbSec = function CbSec(_ref36) {
     onToggle = _ref36.onToggle,
     sevs = _ref36.sevs,
     onSeverity = _ref36.onSeverity,
+    levelLabel = _ref36.levelLabel,
     otherTexts = _ref36.otherTexts,
     onOtherText = _ref36.onOtherText;
+  var levelTerm = levelLabel || 'Nivel';
   var _useStateChoiceExpanded = useState(''),
     _useStateChoiceExpanded2 = _slicedToArray(_useStateChoiceExpanded, 2),
     expandedItem = _useStateChoiceExpanded2[0],
@@ -5364,7 +5370,7 @@ var CbSec = function CbSec(_ref36) {
     }, meta[1])), selected && !expanded && severity && /*#__PURE__*/React.createElement("span", {
       className: "icon-choice-semaphore icon-choice-semaphore-".concat(severity.toLowerCase()),
       role: "img",
-      "aria-label": "Nivel ".concat(severity)
+      "aria-label": "".concat(levelTerm, " ").concat(severity)
     }, /*#__PURE__*/React.createElement("span", {
       className: "icon-choice-semaphore-light is-alta"
     }), /*#__PURE__*/React.createElement("span", {
@@ -5375,10 +5381,10 @@ var CbSec = function CbSec(_ref36) {
       className: "icon-choice-level-wrap"
     }, /*#__PURE__*/React.createElement("span", {
       className: "icon-choice-level-title"
-    }, selected ? severity ? "Nivel: ".concat(severity) : 'Seleccione el nivel' : 'Seleccione el elemento'), /*#__PURE__*/React.createElement("div", {
+    }, selected ? severity ? "".concat(levelTerm, ": ").concat(severity) : "Seleccione ".concat(levelTerm.toLowerCase()) : 'Seleccione el elemento'), /*#__PURE__*/React.createElement("div", {
       className: "icon-choice-level-bar",
       role: "group",
-      "aria-label": "Nivel de severidad de ".concat(meta[1])
+      "aria-label": "".concat(levelTerm, " de ").concat(meta[1])
     }, ['Baja', 'Media', 'Alta'].map(function (level) {
       return /*#__PURE__*/React.createElement("button", {
         type: "button",
@@ -6407,7 +6413,7 @@ var SecI = function SecI() {
     eSec: "E.2"
   }), MfInput({
     fkey: "arboles",
-    label: "\xC1rboles / ramas retiradas",
+    label: "\xC1rboles / ramas grandes retiradas",
     eActive: actA,
     eSec: "E.1"
   }), MfInput({
@@ -7690,7 +7696,11 @@ var SEC_MAP = {
 var xmlEscape = function xmlEscape(s) {
   return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 };
-var HENDERSON_RFONTS = '<w:rFonts w:ascii="HendersonSansW00-BasicLight" w:hAnsi="HendersonSansW00-BasicLight" w:cs="HendersonSansW00-BasicLight"/>';
+var DOCX_NAVY = '0B1F3A';
+var DOCX_RFONTS = '<w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>';
+var normalizeDocxTypography = function normalizeDocxTypography(xml) {
+  return String(xml || '').replace(/HendersonSansW00-[A-Za-z0-9]+/g, 'Arial').replace(/<w:rFonts\b[^>]*\/>/g, DOCX_RFONTS).replace('<w:sz w:val="24"/><w:szCs w:val="24"/>', '<w:sz w:val="22"/><w:szCs w:val="22"/>').replace(/<a:latin typeface="[^"]*"\/>/g, '<a:latin typeface="Arial"/>');
+};
 var docxPara = function docxPara(text) {
   var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   var sz = opts.sz || 22;
@@ -7699,12 +7709,12 @@ var docxPara = function docxPara(text) {
   var indent = opts.indent ? "<w:ind w:left=\"".concat(opts.indent, "\"/>") : '';
   var spBefore = opts.spBefore ? "<w:spacing w:before=\"".concat(opts.spBefore, "\"/>") : '';
   var keepNext = opts.keepNext ? '<w:keepNext/><w:keepLines/>' : '';
-  return "<w:p><w:pPr>".concat(keepNext).concat(indent).concat(spBefore, "</w:pPr><w:r><w:rPr>").concat(HENDERSON_RFONTS).concat(bold, "<w:sz w:val=\"").concat(sz, "\"/><w:szCs w:val=\"").concat(sz, "\"/>").concat(color, "</w:rPr><w:t xml:space=\"preserve\">").concat(xmlEscape(text), "</w:t></w:r></w:p>");
+  return "<w:p><w:pPr>".concat(keepNext).concat(indent).concat(spBefore, "</w:pPr><w:r><w:rPr>").concat(DOCX_RFONTS).concat(bold, "<w:sz w:val=\"").concat(sz, "\"/><w:szCs w:val=\"").concat(sz, "\"/>").concat(color, "</w:rPr><w:t xml:space=\"preserve\">").concat(xmlEscape(text), "</w:t></w:r></w:p>");
 };
 var docxHeading = function docxHeading(text) {
   var level = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
   var sz = level === 1 ? 28 : level === 2 ? 24 : 22;
-  var color = level === 1 ? '1A3C2A' : level === 2 ? '2E6B4F' : '52B788';
+  var color = DOCX_NAVY;
   // keepNext: el encabezado permanece junto a la tabla/párrafo que le sigue
   return docxPara(text, {
     sz: sz,
@@ -7721,16 +7731,16 @@ var docxTable = function docxTable(headers, rows) {
   }).join(''), "</w:tblGrid>");
   // Encabezado: se repite en cada página (tblHeader) y no se parte (cantSplit)
   var hRow = "<w:tr><w:trPr><w:tblHeader/><w:cantSplit/></w:trPr>".concat(headers.map(function (h) {
-    return "<w:tc><w:tcPr><w:tcW w:w=\"".concat(colW, "\" w:type=\"dxa\"/><w:shd w:fill=\"1A3C2A\" w:val=\"clear\"/></w:tcPr><w:p><w:r><w:rPr>").concat(HENDERSON_RFONTS, "<w:b/><w:color w:val=\"FFFFFF\"/><w:sz w:val=\"18\"/></w:rPr><w:t>").concat(xmlEscape(h), "</w:t></w:r></w:p></w:tc>");
+    return "<w:tc><w:tcPr><w:tcW w:w=\"".concat(colW, "\" w:type=\"dxa\"/><w:shd w:fill=\"").concat(DOCX_NAVY, "\" w:val=\"clear\"/></w:tcPr><w:p><w:r><w:rPr>").concat(DOCX_RFONTS, "<w:b/><w:color w:val=\"FFFFFF\"/><w:sz w:val=\"22\"/><w:szCs w:val=\"22\"/></w:rPr><w:t>").concat(xmlEscape(h), "</w:t></w:r></w:p></w:tc>");
   }).join(''), "</w:tr>");
   var dRows;
   if (!rows || rows.length === 0) {
     // Tabla vacía: encabezados + una sola fila "No hay registros" (sin líneas en blanco)
-    dRows = "<w:tr><w:trPr><w:cantSplit/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"9000\" w:type=\"dxa\"/><w:gridSpan w:val=\"".concat(headers.length, "\"/></w:tcPr><w:p><w:pPr><w:jc w:val=\"center\"/></w:pPr><w:r><w:rPr>").concat(HENDERSON_RFONTS, "<w:i/><w:color w:val=\"7A756A\"/><w:sz w:val=\"18\"/></w:rPr><w:t>No hay registros</w:t></w:r></w:p></w:tc></w:tr>");
+    dRows = "<w:tr><w:trPr><w:cantSplit/></w:trPr><w:tc><w:tcPr><w:tcW w:w=\"9000\" w:type=\"dxa\"/><w:gridSpan w:val=\"".concat(headers.length, "\"/></w:tcPr><w:p><w:pPr><w:jc w:val=\"center\"/></w:pPr><w:r><w:rPr>").concat(DOCX_RFONTS, "<w:i/><w:color w:val=\"7A756A\"/><w:sz w:val=\"22\"/><w:szCs w:val=\"22\"/></w:rPr><w:t>No hay registros</w:t></w:r></w:p></w:tc></w:tr>");
   } else {
     dRows = rows.map(function (r, i) {
       return "<w:tr><w:trPr><w:cantSplit/></w:trPr>".concat(r.map(function (c, ci) {
-        return "<w:tc><w:tcPr><w:tcW w:w=\"".concat(colW, "\" w:type=\"dxa\"/>").concat(i % 2 === 1 ? '<w:shd w:fill="F4F1EB" w:val="clear"/>' : '', "</w:tcPr><w:p><w:r><w:rPr>").concat(HENDERSON_RFONTS, "<w:sz w:val=\"18\"/></w:rPr><w:t xml:space=\"preserve\">").concat(xmlEscape(c), "</w:t></w:r></w:p></w:tc>");
+        return "<w:tc><w:tcPr><w:tcW w:w=\"".concat(colW, "\" w:type=\"dxa\"/>").concat(i % 2 === 1 ? '<w:shd w:fill="F4F1EB" w:val="clear"/>' : '', "</w:tcPr><w:p><w:r><w:rPr>").concat(DOCX_RFONTS, "<w:sz w:val=\"22\"/><w:szCs w:val=\"22\"/></w:rPr><w:t xml:space=\"preserve\">").concat(xmlEscape(c), "</w:t></w:r></w:p></w:tc>");
       }).join(''), "</w:tr>");
     }).join('');
   }
@@ -7907,14 +7917,14 @@ var buildDocx = /*#__PURE__*/function () {
           body = [
           // Encabezado institucional
           docxPara('MINAE · SINAC · Área de Conservación Central', {
-            sz: 18,
-            color: '2E6B4F'
+            sz: 22,
+            color: DOCX_NAVY
           }), docxHeading('Reporte de Labores de Mantenimiento de Senderos', 1), docxPara("Parque Nacional Los Quetzales", {
-            sz: 20,
+            sz: 22,
             bold: true,
-            color: '2E6B4F'
+            color: DOCX_NAVY
           }), docxPara("Fecha de jornada: ".concat(bs.fecha || b[0] && b[0].fecha || '—', "   |   Sendero: ").concat(sendero || '—'), {
-            sz: 20
+            sz: 22
           }), docxPara(' '),
           // A. Control
           // El oficio se captura en M y la celda del Word permanece editable si se completa después.
@@ -7922,7 +7932,7 @@ var buildDocx = /*#__PURE__*/function () {
           // B. Personal
           docxHeading('B. Registro de participantes', 2), docxPara("Horario general de la jornada: ".concat(bs.ini || '—', " – ").concat(bs.fin || '—'), {
             bold: true,
-            color: '2E6B4F',
+            color: DOCX_NAVY,
             keepNext: true
           }), docxTable(['Fecha', 'Nombre', 'Tipo', 'Participación', 'Horas', 'Encargado'], b.map(function (r) {
             return [r.fecha || '', r.nombre || '', r.tipo === 'funcionario' ? 'SINAC' : 'Externo', r.parcial ? 'Parcial' : 'Completa', fmtM(calcParticipantMin(r)), r.encargado ? 'Sí' : ''];
@@ -7930,8 +7940,8 @@ var buildDocx = /*#__PURE__*/function () {
           // B.2 — Consolidado por participante
           docxPara('B.2 — Consolidado de horas por participante', {
             bold: true,
-            sz: 20,
-            color: '2E6B4F',
+            sz: 22,
+            color: DOCX_NAVY,
             keepNext: true
           }), docxTable(['Nombre', 'Tipo', 'Días', 'Horas-persona'], b2.length > 0 ? b2.map(function (p) {
             return [p.nombre, p.tipo === 'funcionario' ? 'SINAC' : 'Externo', String(p.fechas.size), fmtM(p.totalMin)];
@@ -7941,8 +7951,8 @@ var buildDocx = /*#__PURE__*/function () {
           // B.3 — Consolidado diario de cuadrilla
           docxPara('B.3 — Consolidado diario de cuadrilla', {
             bold: true,
-            sz: 20,
-            color: '2E6B4F',
+            sz: 22,
+            color: DOCX_NAVY,
             keepNext: true
           }), docxTable(['Fecha', 'N.° personas', 'Horas-persona', 'Encargado de cuadrilla', 'Observaciones'], b3.length > 0 ? b3.map(function (d) {
             return [d.fecha, String(d.nombres.size), fmtM(d.totalMin), d.encargado || (bx[d.fecha] || {}).resp || '', (bx[d.fecha] || {}).obs || ''];
@@ -7964,14 +7974,14 @@ var buildDocx = /*#__PURE__*/function () {
             return t.estIni || t.estFin;
           }).length > 0 ? [docxPara("Longitud total intervenida: ".concat(calc.totalMetros || 0, " m"), {
             bold: true,
-            color: '2E6B4F'
+            color: DOCX_NAVY
           })] : []), [docxPara(' ')], _toConsumableArray(mapImg ? [docxPara('Mapa planimétrico de tramos (CRTM05):', {
             bold: true,
-            color: '2E6B4F',
+            color: DOCX_NAVY,
             keepNext: true
           }), mapParagraph, docxPara(' ')] : []), [
           // D. Diagnóstico
-          docxHeading('D. Diagnóstico inicial', 2), docxTable(['ID', 'Problema', 'Severidad'], (d.activeProbs || []).map(function (p, i) {
+          docxHeading('D. Diagnóstico inicial', 2), docxTable(['ID', 'Problema', 'Gravedad'], (d.activeProbs || []).map(function (p, i) {
             return ["P-".concat(String(i + 1).padStart(2, '0')), p === 'Otro' && d.otroText ? "Otro: ".concat(d.otroText) : p, (d.sevs || {})[p] || '—'];
           })), docxPara(' '),
           // E. Labores
@@ -8016,13 +8026,13 @@ var buildDocx = /*#__PURE__*/function () {
             return resourceBlocks;
           }()), [docxPara(' '),
           // I. Resultados
-          docxHeading('I. Resultados e indicadores', 2), docxTable(['Indicador', 'Valor'], [['Metros de sendero atendidos', calc.totalMetros ? "".concat(calc.totalMetros, " m") : '—'], ['Horas-persona totales', calc.horasPersonaMin ? "".concat(Math.floor(calc.horasPersonaMin / 60), ":").concat(String(calc.horasPersonaMin % 60).padStart(2, '0')) : '—'], ['Días efectivos', String(calc.diasEfectivos || '—')], ['Participantes únicos', String(calc.participantesUnicos || '—')], ['Promedio personas/día', String(calc.promPersonasDia || '—')], ['Puntos críticos (con severidad)', String(calc.puntosAtendidos || '—')], ['Drenajes limpiados/reparados', String(mf.drenajes || '—')], ['Árboles / ramas retiradas', String(mf.arboles || '—')], ['Estructuras menores reparadas', String(mf.estructuras || '—')], ['Señales revisadas o corregidas', String(mf.senales || '—')], ['Residuos retirados', String(mf.residuos || '—')], ['Visitantes afectados', String(mf.visitantes || '—')], mf.otroDetalle || mf.otroCantidad ? [mf.otroDetalle ? "Otro: ".concat(mf.otroDetalle) : 'Otro dato de campo', String(mf.otroCantidad || '—')] : null, ['¿Requiere seguimiento?', String(mf.seguimiento || '—')]].filter(Boolean)), docxPara(' '),
+          docxHeading('I. Resultados e indicadores', 2), docxTable(['Indicador', 'Valor'], [['Metros de sendero atendidos', calc.totalMetros ? "".concat(calc.totalMetros, " m") : '—'], ['Horas-persona totales', calc.horasPersonaMin ? "".concat(Math.floor(calc.horasPersonaMin / 60), ":").concat(String(calc.horasPersonaMin % 60).padStart(2, '0')) : '—'], ['Días efectivos', String(calc.diasEfectivos || '—')], ['Participantes únicos', String(calc.participantesUnicos || '—')], ['Promedio personas/día', String(calc.promPersonasDia || '—')], ['Puntos críticos (con gravedad)', String(calc.puntosAtendidos || '—')], ['Drenajes limpiados/reparados', String(mf.drenajes || '—')], ['Árboles / ramas grandes retiradas', String(mf.arboles || '—')], ['Estructuras menores reparadas', String(mf.estructuras || '—')], ['Señales revisadas o corregidas', String(mf.senales || '—')], ['Residuos retirados', String(mf.residuos || '—')], ['Visitantes afectados', String(mf.visitantes || '—')], mf.otroDetalle || mf.otroCantidad ? [mf.otroDetalle ? "Otro: ".concat(mf.otroDetalle) : 'Otro dato de campo', String(mf.otroCantidad || '—')] : null, ['¿Requiere seguimiento?', String(mf.seguimiento || '—')]].filter(Boolean)), docxPara(' '),
           // J. Evidencia fotográfica
           docxHeading('J. Evidencia fotográfica', 2)], _toConsumableArray(fotoData.length > 0 ? fotoData.flatMap(function (fd) {
             return [docxPara("Foto ".concat(String(fd.n).padStart(2, '0')).concat(fd.categoria ? ' — ' + fd.categoria : '').concat(fd.desc ? ': ' + fd.desc : ''), {
               bold: true,
-              sz: 18,
-              color: '2E6B4F'
+              sz: 22,
+              color: DOCX_NAVY
             }), docxImage(fd.rid, fd.numId, fd.cx, fd.cy, "Foto ".concat(fd.n)), docxPara(' ', {
               sz: 10
             })];
@@ -8038,8 +8048,8 @@ var buildDocx = /*#__PURE__*/function () {
           // K.1 — Recomendación de gestión
           docxPara('K.1 — Recomendación de gestión', {
             bold: true,
-            sz: 20,
-            color: '2E6B4F'
+            sz: 22,
+            color: DOCX_NAVY
           })], _toConsumableArray(function () {
             var k1 = k.k1 || {};
             var critArr = Array.isArray(k.crit) ? k.crit : [];
@@ -8050,22 +8060,7 @@ var buildDocx = /*#__PURE__*/function () {
             return [docxTable(['Aspecto', 'Valor'], [['¿Requiere cierre temporal?', k1.cierre || 'No'], ['¿Requiere señalización preventiva?', k1.senal || 'No'], ['¿Requiere compra de materiales?', compraTxt], ['¿Requiere criterio técnico adicional?', critTxt]])];
           }()), [docxPara(' '),
           // L. Conclusión
-          docxHeading('L. Conclusión', 2), docxPara('Síntesis de labores ejecutadas:', {
-            bold: true
-          })], _toConsumableArray((l.lines || []).filter(function (x) {
-            return x.text && x.text.trim();
-          }).length > 0 ? (l.lines || []).filter(function (x) {
-            return x.text && x.text.trim();
-          }).map(function (x, i) {
-            return docxPara("".concat(i + 1, ". ").concat(x.text), {
-              indent: 360
-            });
-          }) : [docxPara('Sin labores registradas.', {
-            color: '7A756A',
-            indent: 360
-          })]), [docxPara(' ', {
-            sz: 10
-          }), docxPara('Condición final del sendero / tramo:', {
+          docxHeading('L. Conclusión', 2), docxPara('Condición final del sendero / tramo:', {
             bold: true
           }), docxPara(l.condFinal || '—', {
             indent: 360
@@ -8084,7 +8079,7 @@ var buildDocx = /*#__PURE__*/function () {
           }), docxPara(' '),
           // M. Responsable del informe
           docxHeading('M. Responsable del informe', 2), docxTable(['Campo', 'Valor'], [['Nombre', m.nombre || '—'], ['Número de oficio', m.oficio || a.oficio || '']]), docxPara(' '), docxPara('MINAE · SINAC · ACC · Parque Nacional Los Quetzales', {
-            sz: 16,
+            sz: 22,
             color: '7A756A'
           })]).join('\n'); // ── Documento dentro del membrete institucional ──
           docXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n' + MEMBRETE.docOpen + '<w:body>' + body + MEMBRETE.sectPr + '</w:body></w:document>'; // Relaciones del documento: las del membrete + imágenes del informe
@@ -8097,19 +8092,19 @@ var buildDocx = /*#__PURE__*/function () {
           zip.file('_rels/.rels', MEMBRETE.rels);
           zip.file('word/document.xml', docXml);
           zip.file('word/_rels/document.xml.rels', relXml);
-          zip.file('word/styles.xml', MEMBRETE.styles);
+          zip.file('word/styles.xml', normalizeDocxTypography(MEMBRETE.styles));
           zip.file('word/settings.xml', MEMBRETE.settings);
           zip.file('word/webSettings.xml', MEMBRETE.webSettings);
-          zip.file('word/fontTable.xml', MEMBRETE.fontTable);
-          zip.file('word/theme/theme1.xml', MEMBRETE.theme);
-          zip.file('word/endnotes.xml', MEMBRETE.endnotes);
-          zip.file('word/footnotes.xml', MEMBRETE.footnotes);
-          zip.file('word/numbering.xml', MEMBRETE.numbering);
+          zip.file('word/fontTable.xml', normalizeDocxTypography(MEMBRETE.fontTable));
+          zip.file('word/theme/theme1.xml', normalizeDocxTypography(MEMBRETE.theme));
+          zip.file('word/endnotes.xml', normalizeDocxTypography(MEMBRETE.endnotes));
+          zip.file('word/footnotes.xml', normalizeDocxTypography(MEMBRETE.footnotes));
+          zip.file('word/numbering.xml', normalizeDocxTypography(MEMBRETE.numbering));
           // Encabezados y pie (membrete)
-          zip.file('word/header1.xml', MEMBRETE.header1);
-          zip.file('word/header2.xml', MEMBRETE.header2);
-          zip.file('word/header3.xml', MEMBRETE.header3);
-          zip.file('word/footer1.xml', MEMBRETE.footer1);
+          zip.file('word/header1.xml', normalizeDocxTypography(MEMBRETE.header1));
+          zip.file('word/header2.xml', normalizeDocxTypography(MEMBRETE.header2));
+          zip.file('word/header3.xml', normalizeDocxTypography(MEMBRETE.header3));
+          zip.file('word/footer1.xml', normalizeDocxTypography(MEMBRETE.footer1));
           zip.file('word/_rels/header1.xml.rels', MEMBRETE.header1Rels);
           zip.file('word/_rels/header2.xml.rels', MEMBRETE.header2Rels);
           zip.file('word/_rels/header3.xml.rels', MEMBRETE.header3Rels);
@@ -8701,7 +8696,7 @@ var InformeModal = function InformeModal(_ref46) {
       borderCollapse: 'collapse',
       fontSize: 12
     }
-  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, ['ID', 'Problema', 'Severidad'].map(function (h) {
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, ['ID', 'Problema', 'Gravedad'].map(function (h) {
     return /*#__PURE__*/React.createElement("th", {
       key: h,
       style: {
@@ -8878,7 +8873,7 @@ var InformeModal = function InformeModal(_ref46) {
       borderCollapse: 'collapse',
       fontSize: 12
     }
-  }, [['Drenajes limpiados/reparados', mf.drenajes || '—'], ['Árboles / ramas retiradas', mf.arboles || '—'], ['Estructuras menores reparadas', mf.estructuras || '—'], ['Señales revisadas o corregidas', mf.senales || '—'], ['Residuos retirados', mf.residuos || '—'], ['Visitantes afectados', mf.visitantes || '—'], mf.otroDetalle || mf.otroCantidad ? [mf.otroDetalle ? "Otro: ".concat(mf.otroDetalle) : 'Otro dato de campo', String(mf.otroCantidad || '—')] : null, ['¿Requiere seguimiento?', mf.seguimiento || '—']].filter(Boolean).map(function (_ref52, i) {
+  }, [['Drenajes limpiados/reparados', mf.drenajes || '—'], ['Árboles / ramas grandes retiradas', mf.arboles || '—'], ['Estructuras menores reparadas', mf.estructuras || '—'], ['Señales revisadas o corregidas', mf.senales || '—'], ['Residuos retirados', mf.residuos || '—'], ['Visitantes afectados', mf.visitantes || '—'], mf.otroDetalle || mf.otroCantidad ? [mf.otroDetalle ? "Otro: ".concat(mf.otroDetalle) : 'Otro dato de campo', String(mf.otroCantidad || '—')] : null, ['¿Requiere seguimiento?', mf.seguimiento || '—']].filter(Boolean).map(function (_ref52, i) {
     var _ref53 = _slicedToArray(_ref52, 2),
       l = _ref53[0],
       v = _ref53[1];
@@ -9006,9 +9001,7 @@ var InformeModal = function InformeModal(_ref46) {
       fontWeight: 700,
       color: G.mid
     }
-  }, "Comentario general: "), hRec.generalComment)), ((lConc.lines || []).some(function (x) {
-    return x.text && x.text.trim();
-  }) || lConc.condFinal || lConc.justif || lConc.recom) && /*#__PURE__*/React.createElement("div", {
+  }, "Comentario general: "), hRec.generalComment)), (lConc.condFinal || lConc.justif || lConc.recom) && /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 16
     }
@@ -9022,34 +9015,7 @@ var InformeModal = function InformeModal(_ref46) {
       paddingBottom: 4,
       borderBottom: "2px solid ".concat(G.pale)
     }
-  }, "L. Conclusi\xF3n"), (lConc.lines || []).some(function (x) {
-    return x.text && x.text.trim();
-  }) && /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginBottom: 8
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontWeight: 700,
-      color: G.mid,
-      fontSize: 12,
-      marginBottom: 3
-    }
-  }, "S\xEDntesis de labores ejecutadas:"), /*#__PURE__*/React.createElement("ol", {
-    style: {
-      paddingLeft: 20
-    }
-  }, (lConc.lines || []).filter(function (x) {
-    return x.text && x.text.trim();
-  }).map(function (x, i) {
-    return /*#__PURE__*/React.createElement("li", {
-      key: i,
-      style: {
-        fontSize: 12.5,
-        marginBottom: 2
-      }
-    }, x.text);
-  }))), lConc.condFinal && /*#__PURE__*/React.createElement("div", {
+  }, "L. Conclusi\xF3n"), lConc.condFinal && /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 6
     }
@@ -10236,7 +10202,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.40'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.41'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];
