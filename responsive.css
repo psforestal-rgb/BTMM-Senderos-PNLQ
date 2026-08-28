@@ -2460,6 +2460,7 @@ table.mobile-card-table.trail-segments-table-hidden {
 }
 
 .icon-choice-card {
+  position: relative;
   display: flex;
   min-width: 0;
   min-height: 246px;
@@ -2525,6 +2526,43 @@ table.mobile-card-table.trail-segments-table-hidden {
   border-color: #b88b00;
   background: #fff3a3;
   box-shadow: 0 0 0 3px rgba(255, 210, 0, 0.38);
+}
+
+.icon-choice-semaphore {
+  position: absolute;
+  right: 7px;
+  bottom: 7px;
+  z-index: 2;
+  display: grid;
+  gap: 2px;
+  padding: 4px;
+  border: 2px solid #fff;
+  border-radius: 7px;
+  background: #202936;
+  box-shadow: 0 2px 7px rgba(2, 26, 83, 0.28);
+}
+
+.icon-choice-semaphore-light {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #69727d;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+
+.icon-choice-semaphore-alta .is-alta {
+  background: #ff3b30;
+  box-shadow: 0 0 5px #ff3b30;
+}
+
+.icon-choice-semaphore-media .is-media {
+  background: #ffb000;
+  box-shadow: 0 0 5px #ffb000;
+}
+
+.icon-choice-semaphore-baja .is-baja {
+  background: #34c759;
+  box-shadow: 0 0 5px #34c759;
 }
 
 .icon-choice-fallback {
@@ -2633,6 +2671,19 @@ table.mobile-card-table.trail-segments-table-hidden {
   color: #8a949f;
   cursor: not-allowed;
   opacity: 0.72;
+}
+
+.icon-choice-remove {
+  min-height: 44px;
+  padding: 8px 13px;
+  border: 1px solid #9f2f2f;
+  border-radius: 999px;
+  background: #fff;
+  color: #8a2424;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 850;
+  touch-action: manipulation;
 }
 
 .icon-choice-other {
@@ -3683,15 +3734,15 @@ table.mobile-card-table.trail-segments-table-hidden {
     min-height: 0;
   }
 
-  .icon-choice-card:not(.icon-choice-card-selected) .icon-choice-level-wrap {
+  .icon-choice-card:not(.icon-choice-card-expanded) .icon-choice-level-wrap {
     display: none;
   }
 
-  .icon-choice-card-selected {
+  .icon-choice-card-expanded {
     grid-column: 1 / -1;
   }
 
-  .icon-choice-card-selected .icon-choice-toggle {
+  .icon-choice-card-expanded .icon-choice-toggle {
     min-height: 100px;
     flex-direction: row;
     align-items: center;
@@ -3699,7 +3750,7 @@ table.mobile-card-table.trail-segments-table-hidden {
     text-align: left;
   }
 
-  .icon-choice-card-selected .icon-choice-symbol {
+  .icon-choice-card-expanded .icon-choice-symbol {
     flex: 0 0 var(--illustration-card-size);
     margin: 0;
   }
@@ -3714,7 +3765,7 @@ table.mobile-card-table.trail-segments-table-hidden {
     hyphens: auto;
   }
 
-  .icon-choice-card-selected .icon-choice-name {
+  .icon-choice-card-expanded .icon-choice-name {
     flex: 1 1 auto;
     justify-content: flex-start;
     text-align: left;

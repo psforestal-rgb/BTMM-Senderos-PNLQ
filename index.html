@@ -17,7 +17,7 @@
   <link rel="manifest" href="./manifest.webmanifest"/>
   <link rel="icon" href="./icons/icon.svg" type="image/svg+xml"/>
   <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
-  <link rel="stylesheet" href="./responsive.css?v=136"/>
+  <link rel="stylesheet" href="./responsive.css?v=137"/>
   <script src="./vendor/react.production.min.js"></script>
   <script src="./vendor/react-dom.production.min.js"></script>
   <script src="./vendor/jszip.min.js"></script>
@@ -5269,6 +5269,26 @@ var CbSec = function CbSec(_ref36) {
     onSeverity = _ref36.onSeverity,
     otherTexts = _ref36.otherTexts,
     onOtherText = _ref36.onOtherText;
+  var _useStateChoiceExpanded = useState(''),
+    _useStateChoiceExpanded2 = _slicedToArray(_useStateChoiceExpanded, 2),
+    expandedItem = _useStateChoiceExpanded2[0],
+    setExpandedItem = _useStateChoiceExpanded2[1];
+  var handleChoiceToggle = function handleChoiceToggle(item, selected) {
+    if (selected) {
+      setExpandedItem(function (current) {
+        return current === item ? '' : item;
+      });
+      return;
+    }
+    onToggle(item);
+    setExpandedItem(item);
+  };
+  var removeChoice = function removeChoice(item) {
+    onToggle(item);
+    setExpandedItem(function (current) {
+      return current === item ? '' : current;
+    });
+  };
   return /*#__PURE__*/React.createElement("div", {
     className: "icon-choice-grid"
   }, items.map(function (item) {
@@ -5276,17 +5296,19 @@ var CbSec = function CbSec(_ref36) {
     var selected = checked.has(item);
     var meta = ITEM_VISUALS[item] || ['•', item, 'item'];
     var severity = sevs[item] || '';
+    var expanded = expandedItem === item;
     return /*#__PURE__*/React.createElement("article", {
-      className: "icon-choice-card".concat(selected ? ' icon-choice-card-selected' : ''),
+      className: "icon-choice-card".concat(selected ? ' icon-choice-card-selected' : '').concat(expanded ? ' icon-choice-card-expanded' : ''),
       key: item,
       title: item
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
       className: "icon-choice-toggle",
       "aria-pressed": selected,
-      "aria-label": "".concat(selected ? 'Quitar' : 'Seleccionar', " ").concat(meta[1]),
+      "aria-expanded": expanded,
+      "aria-label": "".concat(selected ? expanded ? 'Contraer' : 'Editar' : 'Seleccionar', " ").concat(meta[1]),
       onClick: function onClick() {
-        return onToggle(item);
+        return handleChoiceToggle(item, selected);
       }
     }, /*#__PURE__*/React.createElement("div", {
       className: "icon-choice-symbol",
@@ -5307,7 +5329,17 @@ var CbSec = function CbSec(_ref36) {
       }
     })), /*#__PURE__*/React.createElement("div", {
       className: "icon-choice-name"
-    }, meta[1])), /*#__PURE__*/React.createElement("div", {
+    }, meta[1])), selected && !expanded && severity && /*#__PURE__*/React.createElement("span", {
+      className: "icon-choice-semaphore icon-choice-semaphore-".concat(severity.toLowerCase()),
+      role: "img",
+      "aria-label": "Nivel ".concat(severity)
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "icon-choice-semaphore-light is-alta"
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "icon-choice-semaphore-light is-media"
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "icon-choice-semaphore-light is-baja"
+    })), expanded && /*#__PURE__*/React.createElement("div", {
       className: "icon-choice-level-wrap"
     }, /*#__PURE__*/React.createElement("span", {
       className: "icon-choice-level-title"
@@ -5326,7 +5358,14 @@ var CbSec = function CbSec(_ref36) {
           return onSeverity(item, level);
         }
       }, level);
-    }))), isOtro && selected && /*#__PURE__*/React.createElement("input", {
+    })), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "icon-choice-remove",
+      onClick: function onClick() {
+        return removeChoice(item);
+      },
+      "aria-label": "Quitar ".concat(meta[1])
+    }, "Quitar")), isOtro && expanded && /*#__PURE__*/React.createElement("input", {
       className: "icon-choice-other",
       type: "text",
       value: otherTexts[item] || '',
@@ -5645,7 +5684,14 @@ var QuantityStepper = function QuantityStepper(_refQuantity) {
   var numericValue = parseInt(value, 10);
   var current = isNaN(numericValue) ? 0 : Math.max(0, numericValue);
   var changeBy = function changeBy(delta) {
-    return onChange(String(Math.max(0, current + delta)));
+    var scrollX = window.scrollX || 0;
+    var scrollY = window.scrollY || 0;
+    onChange(String(Math.max(0, current + delta)));
+    window.requestAnimationFrame(function () {
+      if (Math.abs((window.scrollY || 0) - scrollY) > 4) {
+        window.scrollTo(scrollX, scrollY);
+      }
+    });
   };
   return /*#__PURE__*/React.createElement("div", {
     className: "quantity-stepper",
@@ -5654,7 +5700,9 @@ var QuantityStepper = function QuantityStepper(_refQuantity) {
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "quantity-stepper-button quantity-stepper-minus",
-    onClick: function onClick() {
+    onClick: function onClick(e) {
+      e.preventDefault();
+      e.stopPropagation();
       return changeBy(-1);
     },
     disabled: current <= 0,
@@ -5673,7 +5721,9 @@ var QuantityStepper = function QuantityStepper(_refQuantity) {
   }), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "quantity-stepper-button quantity-stepper-plus",
-    onClick: function onClick() {
+    onClick: function onClick(e) {
+      e.preventDefault();
+      e.stopPropagation();
       return changeBy(1);
     },
     "aria-label": "Aumentar ".concat(label || 'cantidad')
@@ -6279,32 +6329,32 @@ var SecI = function SecI() {
   }, "Datos de campo \u2014 ingreso manual"), /*#__PURE__*/React.createElement("div", {
     className: "manual-counter-grid"
   },
-  /*#__PURE__*/React.createElement(MfInput, {
+  MfInput({
     fkey: "drenajes",
     label: "Drenajes limpiados o reparados",
     eActive: actD,
     eSec: "E.2"
-  }), /*#__PURE__*/React.createElement(MfInput, {
+  }), MfInput({
     fkey: "arboles",
     label: "\xC1rboles / ramas retiradas",
     eActive: actA,
     eSec: "E.1"
-  }), /*#__PURE__*/React.createElement(MfInput, {
+  }), MfInput({
     fkey: "estructuras",
     label: "Estructuras menores reparadas",
     eActive: actE,
     eSec: "E.3"
-  }), /*#__PURE__*/React.createElement(MfInput, {
+  }), MfInput({
     fkey: "senales",
     label: "Se\xF1ales revisadas o corregidas",
     eActive: actS,
     eSec: "E.3"
-  }), /*#__PURE__*/React.createElement(MfInput, {
+  }), MfInput({
     fkey: "residuos",
     label: "Residuos retirados (kg / bolsas)",
     type: "text",
     ph: "0 kg / 0 bolsas"
-  }), /*#__PURE__*/React.createElement(MfInput, {
+  }), MfInput({
     fkey: "visitantes",
     label: "Visitantes afectados por restricci\xF3n",
     type: "text",
@@ -10102,7 +10152,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.36'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.37'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];

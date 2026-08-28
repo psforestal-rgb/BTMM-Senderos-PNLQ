@@ -201,6 +201,13 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - La acción `Quitar` permite deseleccionar explícitamente el recurso y evita que un segundo toque lo elimine por accidente.
 - El recolector `h_data` y la salida de recursos al informe Word permanecen sin cambios.
 
+## Contadores estables y niveles contraíbles (versión 1.37)
+
+- Los botones `− / +` de cantidad preservan la posición vertical y evitan acciones predeterminadas que podían desplazar la pantalla al inicio.
+- Los contadores manuales de I ya no se remontan como componentes nuevos después de cada cambio de cantidad.
+- En D y E, el segundo toque contrae la tarjeta sin borrar el elemento ni su nivel; al contraerse aparece un semáforo pequeño con Baja en verde, Media en ámbar o Alta en rojo.
+- La acción `Quitar` deselecciona explícitamente un elemento. Los recolectores de D/E y el generador Word permanecen sin cambios.
+
 ## Precauciones
 
 - No convertir `index.html` a un proyecto npm durante esta etapa.
