@@ -275,6 +275,14 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - El aviso lateral muestra `Sector en desarrollo` en lugar de `Seleccione sendero para activar`, que no aplicaba al no existir selector de sendero visible.
 - `updateShared` publica ahora `sector` para que la barra lateral pueda consultarlo.
 
+## Guardar y contraer pendientes (versión 1.49)
+
+- Cada fila de K incorpora un botón **Guardar** junto a la **✕** de eliminar; contrae el pendiente a una sola línea con `P-xx`, la situación y la severidad en color.
+- La fila contraída conserva la ✕ y se reabre tocando el resumen; los datos no se modifican al contraer ni al reexpandir.
+- El botón queda deshabilitado mientras la situación pendiente esté vacía, para no contraer una fila sin describir.
+- El estado de contracción vive en `kCerradas`, aparte de las filas: `k_data.rows` no cambia y el informe Word tampoco.
+- En móvil los botones muestran la etiqueta `Guardar`; en escritorio la columna de acciones pasa de 28 px a 84 px para alojar ambos.
+
 ## Precauciones
 
 - No convertir `index.html` a un proyecto npm durante esta etapa.

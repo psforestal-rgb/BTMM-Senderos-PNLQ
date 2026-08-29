@@ -1444,7 +1444,7 @@ textarea {
     border-radius: 7px !important;
   }
 
-  .mobile-card-table td[data-label="Acciones"] button {
+  .mobile-card-table td[data-label="Acciones"] > button {
     width: 100% !important;
     border: 1px solid #d99b9b !important;
     background: #fff7f7 !important;
@@ -5612,4 +5612,151 @@ body.preview-mobile .closing-review-overlay {
 .sector-field.is-blocked::before {
   content: "EN DESARROLLO";
   background: #b98900;
+}
+
+
+/* ---- K: guardar y contraer pendientes ---- */
+.pending-row-actions {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px;
+}
+
+.pending-row-actions button {
+  display: grid;
+  flex: 1 1 0;
+  min-width: 38px;
+  min-height: 38px;
+  border-radius: 7px;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  place-items: center;
+  transition: background 150ms ease, border-color 150ms ease, opacity 150ms ease;
+}
+
+.pending-save-button {
+  border: 1px solid #9ec7ab;
+  background: #f2fbf5;
+  color: #2e7344;
+}
+
+.pending-save-button:hover:not(:disabled) {
+  border-color: #4f8b62;
+  background: #e6f6ec;
+}
+
+.pending-save-button:disabled {
+  border-color: var(--ui-border, #d5d8de);
+  background: #f4f5f7;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.pending-delete-button {
+  border: 1px solid #d99b9b;
+  background: #fff7f7;
+  color: #bb4444;
+}
+
+.pending-delete-button:hover {
+  border-color: #bb4444;
+  background: #ffeded;
+}
+
+/* Fila contraida: una sola linea con el resumen del pendiente */
+.pending-collapsed {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+}
+
+.pending-collapsed-open {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 9px;
+  border: 1px solid #cfd8e3;
+  border-radius: 8px;
+  background: #f7f9fc;
+  color: inherit;
+  font-family: inherit;
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pending-collapsed-open:hover {
+  border-color: #9fb3cc;
+  background: #eef3fa;
+}
+
+.pending-collapsed-open > strong {
+  flex: 0 0 auto;
+  color: var(--brand-navy, #0b1f3a);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.pending-collapsed-open > span {
+  overflow: hidden;
+  flex: 1 1 auto;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pending-collapsed-open > em {
+  flex: 0 0 auto;
+  font-size: 10.5px;
+  font-style: normal;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.pending-collapsed .pending-delete-button {
+  flex: 0 0 auto;
+  min-width: 38px;
+  min-height: 38px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.pending-btn-label {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .pending-collapsed {
+    padding: 8px;
+  }
+
+  /* En movil los botones son anchos: la etiqueta evita depender solo del icono. */
+  .pending-row-actions button {
+    grid-auto-flow: column;
+    gap: 7px;
+    font-size: 14px;
+  }
+
+  .pending-btn-label {
+    display: inline;
+    font-weight: 800;
+  }
+
+  .pending-collapsed-open {
+    min-height: 48px;
+    font-size: 14px;
+  }
+
+  .pending-collapsed .pending-delete-button,
+  .pending-row-actions button {
+    min-width: 48px;
+    min-height: 48px;
+  }
 }

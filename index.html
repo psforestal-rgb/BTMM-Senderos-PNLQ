@@ -7004,6 +7004,15 @@ var SecK = function SecK() {
     _useState66 = _slicedToArray(_useState65, 2),
     rows = _useState66[0],
     setRows = _useState66[1];
+  // Colapso visual de pendientes. Se guarda aparte de las filas para no alterar k_data ni el informe.
+  var _kCerradas = useState({});
+  var kCerradas = _kCerradas[0];
+  var setKCerradas = _kCerradas[1];
+  var setKCerrada = function setKCerrada(id, valor) {
+    setKCerradas(function (s) {
+      return _objectSpread(_objectSpread({}, s), {}, _defineProperty({}, id, valor));
+    });
+  };
 
   // La tabla de pendientes se llena manualmente (no se auto-completa desde la Sección D).
   // El funcionario agrega los pendientes que correspondan al llegar a esta sección.
@@ -7139,11 +7148,45 @@ var SecK = function SecK() {
     w: "220px"
   }), /*#__PURE__*/React.createElement(TH, {
     c: "",
-    w: "28px"
+    w: "84px"
   }))), /*#__PURE__*/React.createElement("tbody", null, rows.map(function (r, idx) {
     var ev = idx % 2 === 0;
+    var rotulo = r.idTxt || "P-".concat(String(idx + 1).padStart(2, '0'));
+    if (kCerradas[r.id]) return /*#__PURE__*/React.createElement("tr", {
+      key: r.id,
+      className: "pending-row is-collapsed"
+    }, /*#__PURE__*/React.createElement("td", {
+      colSpan: 5,
+      "data-label": "Pendiente",
+      style: _objectSpread(_objectSpread({}, tdB(ev)), {}, {
+        padding: 0
+      })
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "pending-collapsed"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "pending-collapsed-open",
+      onClick: function onClick() {
+        return setKCerrada(r.id, false);
+      },
+      "aria-expanded": "false",
+      "aria-label": "Editar pendiente ".concat(rotulo)
+    }, /*#__PURE__*/React.createElement("strong", null, rotulo), /*#__PURE__*/React.createElement("span", null, r.situacion || 'Sin descripción'), r.sev && /*#__PURE__*/React.createElement("em", {
+      className: "pending-sev",
+      style: {
+        color: sevClr(r.sev)
+      }
+    }, r.sev)), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "pending-delete-button",
+      onClick: function onClick() {
+        return delRow(r.id);
+      },
+      "aria-label": "Eliminar pendiente ".concat(rotulo)
+    }, "\u2715"))));
     return /*#__PURE__*/React.createElement("tr", {
-      key: r.id
+      key: r.id,
+      className: "pending-row is-open"
     }, /*#__PURE__*/React.createElement("td", {
       "data-label": "ID",
       style: tdB(ev)
@@ -7213,23 +7256,27 @@ var SecK = function SecK() {
         textAlign: 'center',
         padding: 0
       })
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "pending-row-actions"
     }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "pending-save-button",
+      onClick: function onClick() {
+        return setKCerrada(r.id, true);
+      },
+      disabled: !String(r.situacion || '').trim(),
+      title: String(r.situacion || '').trim() ? 'Guardar y contraer este pendiente' : 'Describa la situación pendiente para poder contraerla',
+      "aria-label": "Guardar y contraer pendiente ".concat(rotulo)
+    }, "\uD83D\uDCBE", /*#__PURE__*/React.createElement("span", {
+      className: "pending-btn-label"
+    }, "Guardar")), /*#__PURE__*/React.createElement("button", {
       type: "button",
       className: "pending-delete-button",
       onClick: function onClick() {
         return delRow(r.id);
       },
-      "aria-label": "Eliminar pendiente ".concat(idx + 1),
-      style: {
-        border: 'none',
-        background: 'transparent',
-        cursor: 'pointer',
-        color: '#BB4444',
-        fontSize: 13,
-        padding: '5px 3px',
-        width: '100%'
-      }
-    }, "\u2715")));
+      "aria-label": "Eliminar pendiente ".concat(rotulo)
+    }, "\u2715"))));
   })))), rows.length === 0 && /*#__PURE__*/React.createElement("div", {
     className: "pending-empty-state"
   }, /*#__PURE__*/React.createElement("span", {
@@ -10405,7 +10452,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.48'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.49'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];
