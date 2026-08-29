@@ -881,7 +881,7 @@ textarea {
 }
 
 .sendero-field::before {
-  content: "PRIMER PASO";
+  content: "SEGUNDO PASO";
   display: inline-flex;
   margin-bottom: 8px;
   padding: 4px 8px;
@@ -5523,4 +5523,93 @@ body.preview-mobile .closing-review-overlay {
     scroll-behavior: auto !important;
     transition: none !important;
   }
+}
+
+
+/* ---- Paso 1: selector de sector ---- */
+.sector-field {
+  position: relative;
+  grid-column: 1 / -1;
+  margin-bottom: 14px;
+  padding: 15px;
+  border: 2px solid #c58b00;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fff8df 0%, #fffdf7 100%);
+  box-shadow: 0 4px 14px rgba(154, 109, 0, 0.12);
+  transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.sector-field::before {
+  content: "PRIMER PASO";
+  display: inline-flex;
+  margin-bottom: 8px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #9a6d00;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+}
+
+.sector-field.is-complete {
+  border-color: #4f8b62;
+  background: linear-gradient(135deg, #edf9f0 0%, #fbfffc 100%);
+  box-shadow: 0 4px 14px rgba(39, 111, 62, 0.1);
+}
+
+.sector-field.is-complete::before {
+  content: "\2713 LISTO";
+  background: #2e7344;
+}
+
+/* ---- Aviso de sector en desarrollo ---- */
+.sector-dev-note {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 14px 15px;
+  border: 2px dashed #b98900;
+  border-radius: 12px;
+  background: #fffaf0;
+}
+
+.sector-dev-badge {
+  flex: 0 0 auto;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.sector-dev-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sector-dev-copy > strong {
+  color: #8a5a00;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.sector-dev-copy > p {
+  margin: 0;
+  color: #5c4a22;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.sector-field.is-blocked {
+  border-color: #b98900;
+  background: linear-gradient(135deg, #fff6e2 0%, #fffdf6 100%);
+}
+
+.sector-field.is-blocked::before {
+  content: "EN DESARROLLO";
+  background: #b98900;
 }

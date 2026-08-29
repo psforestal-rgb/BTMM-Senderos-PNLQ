@@ -257,6 +257,16 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - Se verificó ausencia de desbordamiento horizontal en 390, 768, 1024, 1280 y 1920 px.
 - La variante móvil, los recolectores y el informe Word no cambian.
 
+## Selector de sector (versión 1.47)
+
+- La sección A abre ahora con **1. Seleccione el sector (obligatorio)** y el sendero pasa a ser el paso 2; los pasos guiados siguientes se renumeraron a 3, 4, 5 y 6.
+- `SECTORES` ofrece `Los Quetzales`, `Tapantí` y `Rondas Cortafuegos`; solo `SECTOR_ACTIVO` (`Los Quetzales`) habilita el selector de senderos.
+- Al elegir `Tapantí` o `Rondas Cortafuegos` se muestra el aviso **En desarrollo**, se oculta el selector de senderos y se limpia cualquier sendero previo para que no llegue al informe.
+- `findBlockingRequirement` valida primero el sector: sin sector indica `Falta seleccionar el sector` y con un sector en desarrollo indica `Sector en desarrollo`, de modo que el recorrido guiado no queda sin salida.
+- Se retiró de la pantalla el bloque estático **ASP / nombre del área**, que solo mostraba un texto fijo.
+- El informe Word y la vista previa **conservan la fila ASP** con `Parque Nacional Los Quetzales` y **añaden** una fila `Sector`; el cambio es aditivo y no retira ninguna fila del machote.
+- `a_data` incorpora `sector`. Los borradores anteriores no lo traen: al restaurarlos, un borrador con `sendero` adopta `Los Quetzales`, por lo que no se pierde información guardada.
+
 ## Precauciones
 
 - No convertir `index.html` a un proyecto npm durante esta etapa.

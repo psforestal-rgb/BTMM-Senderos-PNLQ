@@ -1498,6 +1498,8 @@ var Tabla = function Tabla(_ref1) {
 
 // ─── SECCIONES ───────────────────────────────────────────────────────────────
 var SENDEROS = ['Barajas', 'Ojo de Agua', 'Zeledonia'];
+var SECTOR_ACTIVO = 'Los Quetzales';
+var SECTORES = [SECTOR_ACTIVO, 'Tapant\xED', 'Rondas Cortafuegos'];
 var TODAY = function () {
   var d = new Date();
   d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
@@ -1558,6 +1560,15 @@ var SecA = function SecA() {
   var fechaIni = (sharedA === null || sharedA === void 0 ? void 0 : sharedA.periodIni) || '';
   var fechaFin = (sharedA === null || sharedA === void 0 ? void 0 : sharedA.periodFin) || '';
   var bVisited = !!(visitedSections && visitedSections.has && visitedSections.has('B'));
+  var _sectorState = useState('');
+  var sector = _sectorState[0];
+  var setSector = _sectorState[1];
+  var sectorActivo = sector === SECTOR_ACTIVO;
+  var sectorEnDesarrollo = !!sector && !sectorActivo;
+  // Un sector en desarrollo no admite sendero: se limpia para no arrastrarlo al informe.
+  useEffect(function () {
+    if (sector && !sectorActivo && sendero) setSendero('');
+  }, [sector, sectorActivo, sendero]);
 
   var oficioFull = oficioNum.trim();
   var _useContext2 = useContext(FormCtx),
@@ -1568,6 +1579,7 @@ var SecA = function SecA() {
   aRef.current = {
     fechaIni: fechaIni,
     fechaFin: fechaFin,
+    sector: sector,
     sendero: sendero,
     restriccion: restriccion,
     oficio: oficioFull,
@@ -1584,6 +1596,7 @@ var SecA = function SecA() {
     rrA('a_data', function (d) {
       if (d.restriccion) setRestriccion(d.restriccion);
       if (d.sendero) setSendero(d.sendero);
+      if (d.sector) setSector(d.sector);else if (d.sendero) setSector(SECTOR_ACTIVO);
       if (d.oficio || d.oficioNum) setOficioNum(d.oficio || d.oficioNum);
       if (d.tipoInterv) setTipoInterv(Array.isArray(d.tipoInterv) ? d.tipoInterv[0] || '' : d.tipoInterv);
       if (d.origen) setOrigen(Array.isArray(d.origen) ? d.origen[0] || '' : d.origen);
@@ -1595,16 +1608,53 @@ var SecA = function SecA() {
   useEffect(function () {
     updateShared({
       restriccion: restriccion,
-      aRequiredReady: !!(sendero && tipoInterv && origen && clima)
+      aRequiredReady: !!(sectorActivo && sendero && tipoInterv && origen && clima)
     });
-  }, [restriccion, sendero, tipoInterv, origen, clima]); // eslint-disable-line
+  }, [restriccion, sector, sectorActivo, sendero, tipoInterv, origen, clima]); // eslint-disable-line
 
   return /*#__PURE__*/React.createElement("div", {
     className: "closing-start"
   }, /*#__PURE__*/React.createElement("div", {
+    className: "sector-field".concat(sectorActivo ? ' is-complete' : sectorEnDesarrollo ? ' is-blocked' : ' is-required')
+  }, /*#__PURE__*/React.createElement(Lbl, {
+    c: "1. Seleccione el sector (obligatorio)"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "sendero-picker",
+    role: "radiogroup",
+    tabIndex: -1,
+    "aria-describedby": "sector-help",
+    "aria-label": "Sectores de trabajo"
+  }, SECTORES.map(function (sc, sectorIndex) {
+    return /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      key: sc,
+      role: "radio",
+      className: "sendero-pick".concat(sector === sc ? ' is-selected' : ''),
+      "aria-checked": sector === sc ? 'true' : 'false',
+      onClick: function onClick() {
+        setSector(sc);
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "sendero-pick-icon",
+      "aria-hidden": "true"
+    }, ['\uD83C\uDFDE\uFE0F', '\uD83D\uDCA7', '\uD83D\uDD25'][sectorIndex] || '\uD83D\uDCCD'), /*#__PURE__*/React.createElement("span", {
+      className: "sendero-pick-copy"
+    }, /*#__PURE__*/React.createElement("strong", null, sc), /*#__PURE__*/React.createElement("span", null, sector === sc ? '\u2713 Seleccionado' : 'Elegir')));
+  })), /*#__PURE__*/React.createElement("div", {
+    id: "sector-help",
+    className: "field-help"
+  }, sector ? sectorActivo ? "\u2713 Sector seleccionado. Contin\xFAe con el sendero." : "Este sector todav\xEDa no est\xE1 habilitado." : "Este es el primer paso. Debe elegir el sector para continuar.")), sectorEnDesarrollo && /*#__PURE__*/React.createElement("div", {
+    className: "sector-dev-note",
+    role: "status"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "sector-dev-badge",
+    "aria-hidden": "true"
+  }, "\uD83D\uDEA7"), /*#__PURE__*/React.createElement("div", {
+    className: "sector-dev-copy"
+  }, /*#__PURE__*/React.createElement("strong", null, "En desarrollo"), /*#__PURE__*/React.createElement("p", null, "El sector ".concat(sector, " a\xFAn no est\xE1 habilitado en esta herramienta. Seleccione ").concat(SECTOR_ACTIVO, " para registrar una jornada.")))), sectorActivo && /*#__PURE__*/React.createElement("div", {
     className: "sendero-field".concat(sendero ? ' is-complete' : ' is-required')
   }, /*#__PURE__*/React.createElement(Lbl, {
-    c: "1. Seleccione el sendero (obligatorio)"
+    c: "2. Seleccione el sendero (obligatorio)"
   }), /*#__PURE__*/React.createElement("div", {
     className: "sendero-picker",
     role: "radiogroup",
@@ -1630,7 +1680,7 @@ var SecA = function SecA() {
   })), /*#__PURE__*/React.createElement("div", {
     id: "sendero-help",
     className: "field-help"
-  }, sendero ? "\u2713 Sendero seleccionado. Ya puede completar los datos de la jornada." : "Este es el primer paso. Debe elegir el sendero para continuar al siguiente m\xF3dulo.")), /*#__PURE__*/React.createElement(Gr, {
+  }, sendero ? "\u2713 Sendero seleccionado. Ya puede completar los datos de la jornada." : "Elija el sendero para continuar al siguiente m\xF3dulo.")), /*#__PURE__*/React.createElement(Gr, {
     cols: 2
   }, /*#__PURE__*/React.createElement("div", {
     className: "office-field is-removed"
@@ -1709,36 +1759,10 @@ var SecA = function SecA() {
     }
   }, "\uD83D\uDD12 Campo autom\xE1tico: toma la primera y \xFAltima fecha registradas en la Secci\xF3n B (personal y horas)."))), /*#__PURE__*/React.createElement(Sep, null), /*#__PURE__*/React.createElement(Gr, {
     cols: 2
-  }, false && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Lbl, {
-    c: "\xC1rea de Conservaci\xF3n"
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 13,
-      padding: '7px 10px',
-      background: G.pale,
-      borderRadius: 4,
-      border: "1px solid ".concat(G.border),
-      color: G.mid,
-      fontWeight: 700
-    }
-  }, "ACC \u2014 \xC1rea de Conservaci\xF3n Central")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Lbl, {
-    c: "ASP / nombre del \xE1rea"
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 13,
-      padding: '7px 10px',
-      background: G.pale,
-      borderRadius: 4,
-      border: "1px solid ".concat(G.border),
-      color: G.mid,
-      fontWeight: 700
-    }
-  }, "Parque Nacional Los Quetzales"))), /*#__PURE__*/React.createElement(Sep, null), /*#__PURE__*/React.createElement(Gr, {
-    cols: 2
   }, /*#__PURE__*/React.createElement("div", {
     className: "guided-field-step guided-type".concat(tipoInterv ? ' is-complete' : '')
   }, /*#__PURE__*/React.createElement(GuidedHead, {
-    number: "2",
+    number: "3",
     title: "Tipo de intervenci\xF3n",
     complete: !!tipoInterv
   }), /*#__PURE__*/React.createElement(Radios, {
@@ -1749,7 +1773,7 @@ var SecA = function SecA() {
   })), /*#__PURE__*/React.createElement("div", {
     className: "guided-field-step guided-origin".concat(origen ? ' is-complete' : '')
   }, /*#__PURE__*/React.createElement(GuidedHead, {
-    number: "3",
+    number: "4",
     title: "Origen de la solicitud",
     complete: !!origen
   }), /*#__PURE__*/React.createElement(Radios, {
@@ -1762,7 +1786,7 @@ var SecA = function SecA() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "guided-field-step guided-climate".concat(clima ? ' is-complete' : '')
   }, /*#__PURE__*/React.createElement(GuidedHead, {
-    number: "4",
+    number: "5",
     title: "Condici\xF3n clim\xE1tica dominante",
     complete: !!clima
   }), /*#__PURE__*/React.createElement(Radios, {
@@ -1773,7 +1797,7 @@ var SecA = function SecA() {
   })), /*#__PURE__*/React.createElement("div", {
     className: "guided-field-step guided-restriction is-complete"
   }, /*#__PURE__*/React.createElement(GuidedHead, {
-    number: "5",
+    number: "6",
     title: "Restricci\xF3n de uso p\xFAblico",
     complete: true
   }), /*#__PURE__*/React.createElement(Radios, {
@@ -7942,7 +7966,7 @@ var buildDocx = /*#__PURE__*/function () {
           }), docxPara(' '),
           // A. Control
           // El oficio se captura en M y la celda del Word permanece editable si se completa después.
-          docxHeading('A. Control del reporte', 2), docxTable(['Campo', 'Valor'], [['Número de oficio', m.oficio || a.oficio || ''], ['ASP', 'Parque Nacional Los Quetzales'], ['Sendero', sendero || '—'], ['Tipo de intervención', joinSet(a.tipoInterv)], ['Origen de la solicitud', joinSet(a.origen)], ['Condición climática', joinSet(a.clima)], ['Restricción uso público', (a.restriccion || 'No') + (a.restriccion && a.restriccion !== 'No' && a.restrDet ? " \u2014 ".concat(a.restrDet) : '')]]), docxPara(' '),
+          docxHeading('A. Control del reporte', 2), docxTable(['Campo', 'Valor'], [['Número de oficio', m.oficio || a.oficio || ''], ['Sector', a.sector || 'Los Quetzales'], ['ASP', 'Parque Nacional Los Quetzales'], ['Sendero', sendero || '—'], ['Tipo de intervención', joinSet(a.tipoInterv)], ['Origen de la solicitud', joinSet(a.origen)], ['Condición climática', joinSet(a.clima)], ['Restricción uso público', (a.restriccion || 'No') + (a.restriccion && a.restriccion !== 'No' && a.restrDet ? " \u2014 ".concat(a.restrDet) : '')]]), docxPara(' '),
           // B. Personal
           docxHeading('B. Registro de participantes', 2), docxPara("Horario general de la jornada: ".concat(bs.ini || '—', " – ").concat(bs.fin || '—'), {
             bold: true,
@@ -8489,6 +8513,8 @@ var InformeModal = function InformeModal(_ref46) {
       borderBottom: "2px solid ".concat(G.pale)
     }
   }, "A. Control del reporte"), /*#__PURE__*/React.createElement("div", {
+    style: rowStyle
+  }, lbl('Sector'), val(a.sector || 'Los Quetzales')), /*#__PURE__*/React.createElement("div", {
     style: rowStyle
   }, lbl('ASP'), val('Parque Nacional Los Quetzales')), /*#__PURE__*/React.createElement("div", {
     style: rowStyle
@@ -9845,10 +9871,20 @@ function App() {
       section: 'A',
       test: function test() {
         var a = report.a_data || {};
+        if (!a.sector) return {
+          message: 'Seleccione el sector para continuar.',
+          shortMessage: 'Falta seleccionar el sector',
+          selector: '#section-panel-A .sector-field .sendero-picker'
+        };
+        if (a.sector !== SECTOR_ACTIVO) return {
+          message: 'El sector ' + a.sector + ' est\xE1 en desarrollo. Seleccione ' + SECTOR_ACTIVO + ' para registrar una jornada.',
+          shortMessage: 'Sector en desarrollo',
+          selector: '#section-panel-A .sector-field .sendero-picker'
+        };
         if (!(a.sendero || senderoRef.current)) return {
           message: 'Seleccione el sendero oficial para continuar.',
           shortMessage: 'Falta seleccionar el sendero',
-          selector: '#section-panel-A .sendero-picker'
+          selector: '#section-panel-A .sendero-field .sendero-picker'
         };
         if (!hasChoice(a.tipoInterv)) return {
           message: 'Elija un único tipo de intervención para continuar.',
@@ -10362,7 +10398,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.46.1'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.47'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];
