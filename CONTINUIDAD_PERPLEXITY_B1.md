@@ -247,6 +247,16 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - La barra lateral incorpora `Nuevo informe · limpiar memoria`, disponible aunque el aviso inicial ya no esté visible.
 - Este cambio no modifica recolectores, vista previa ni generación del Word.
 
+## Refinamiento visual de escritorio (versión 1.43)
+
+- El contenido y los metadatos de cabecera pueden ocupar hasta 1280 px en monitores amplios, manteniéndose centrados y alineados entre sí.
+- B.1 distribuye las acciones principales y los participantes contraídos en dos columnas; una tarjeta abierta usa el ancho completo para editar sin estrechez.
+- D y E usan tarjetas más compactas y cinco columnas en escritorio amplio; una tarjeta abierta ocupa dos columnas para presentar nivel y acciones sin truncar texto.
+- H presenta cuatro columnas en pantallas amplias y conserva tres columnas en escritorio compacto.
+- La navegación inferior, los radios de las tarjetas, las sombras y los espacios internos se uniformaron para mejorar balance visual.
+- Se verificó ausencia de desbordamiento horizontal en 390, 768, 1024, 1280 y 1920 px.
+- La variante móvil, los recolectores y el informe Word no cambian.
+
 ## Precauciones
 
 - No convertir `index.html` a un proyecto npm durante esta etapa.

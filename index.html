@@ -17,7 +17,7 @@
   <link rel="manifest" href="./manifest.webmanifest"/>
   <link rel="icon" href="./icons/icon.svg" type="image/svg+xml"/>
   <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
-  <link rel="stylesheet" href="./responsive.css?v=142"/>
+  <link rel="stylesheet" href="./responsive.css?v=143"/>
   <script src="./vendor/react.production.min.js"></script>
   <script src="./vendor/react-dom.production.min.js"></script>
   <script src="./vendor/jszip.min.js"></script>
@@ -2544,7 +2544,7 @@ var SecB = function SecB() {
       return !excludedNames.has(normB1Name(name));
     });
     return /*#__PURE__*/React.createElement("article", {
-      className: "b1-person-card".concat(r.encargado ? ' is-leader' : ''),
+      className: "b1-person-card".concat(r.encargado ? ' is-leader' : '').concat(cerrada ? ' is-collapsed' : ' is-expanded'),
       key: r.id
     }, /*#__PURE__*/React.createElement("div", {
       className: "b1-person-header"
@@ -10273,7 +10273,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.42'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.43'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];

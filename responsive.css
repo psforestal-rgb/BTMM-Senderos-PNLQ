@@ -4654,3 +4654,107 @@ body.preview-mobile .closing-review-overlay {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* ==========================================================================
+   Refinamiento de escritorio · versión 1.43
+   Mayor equilibrio horizontal y densidad, sin alterar la variante móvil.
+   ========================================================================== */
+
+@container (min-width: 781px) {
+  .app-header > div {
+    width: min(100%, 1280px);
+    margin-inline: auto;
+  }
+
+  .app-content {
+    width: 100%;
+    max-width: 1280px !important;
+    padding: 24px 32px 30px !important;
+  }
+
+  .section-card {
+    border-radius: 12px !important;
+    box-shadow: 0 5px 18px rgba(2, 26, 83, 0.08) !important;
+  }
+
+  .section-body {
+    padding: 24px !important;
+  }
+
+  .section-navigation {
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .section-navigation > button {
+    min-height: 48px;
+    border-radius: 8px !important;
+  }
+
+  .b1-add-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .b1-add-actions button {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .b1-participant-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .b1-person-card.is-expanded {
+    grid-column: 1 / -1;
+  }
+
+  .icon-choice-grid {
+    gap: 12px;
+    align-items: start;
+  }
+
+  .icon-choice-card {
+    min-height: 184px;
+    padding: 12px 11px;
+  }
+
+  .icon-choice-toggle {
+    min-height: 148px;
+    justify-content: center;
+  }
+
+  .icon-choice-card-expanded .icon-choice-toggle {
+    min-height: 140px;
+  }
+
+  .icon-choice-card-expanded {
+    grid-column: span 2;
+  }
+
+  .icon-choice-name {
+    min-height: 32px;
+    font-size: 13px;
+  }
+
+  .photo-empty {
+    min-height: 190px;
+    align-content: center;
+  }
+}
+
+@container (min-width: 1200px) {
+  .icon-choice-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .section-body .resources-option-grid,
+  #informe-preview .resources-option-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  .section-body .checkbox-group[style*="repeat(1"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+}
