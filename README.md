@@ -8,7 +8,7 @@ Abra la aplicación publicada en GitHub Pages. En navegadores compatibles puede 
 
 Los borradores se guardan localmente en el navegador del dispositivo.
 
-Para revisar temporalmente las vistas de teléfono y PC, agregue `?preview=1` al final de la dirección de la aplicación; aparecerá el botón de alternancia del modo de diseño.
+El botón flotante **Vista móvil / Vista PC** permite alternar temporalmente ambos diseños durante las pruebas realizadas desde una computadora.
 
 ## Publicación
 
