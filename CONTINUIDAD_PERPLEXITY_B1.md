@@ -267,6 +267,14 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - El informe Word y la vista previa **conservan la fila ASP** con `Parque Nacional Los Quetzales` y **añaden** una fila `Sector`; el cambio es aditivo y no retira ninguna fila del machote.
 - `a_data` incorpora `sector`. Los borradores anteriores no lo traen: al restaurarlos, un borrador con `sendero` adopta `Los Quetzales`, por lo que no se pierde información guardada.
 
+## Bloqueo total en sectores en desarrollo (versión 1.48)
+
+- Con `Tapantí` o `Rondas Cortafuegos`, la sección A devuelve únicamente el selector de sector y el aviso **En desarrollo**; el resto de la sección (sendero, tipo de intervención, origen, clima, restricción y oficio) no se renderiza.
+- Lo único posible es cambiar de sector: el panel de la sección A pasa de 25 controles a los 3 del selector.
+- La navegación hacia B–M sigue bloqueada por `findBlockingRequirement`, y `Revisar y generar` queda deshabilitado.
+- El aviso lateral muestra `Sector en desarrollo` en lugar de `Seleccione sendero para activar`, que no aplicaba al no existir selector de sendero visible.
+- `updateShared` publica ahora `sector` para que la barra lateral pueda consultarlo.
+
 ## Precauciones
 
 - No convertir `index.html` a un proyecto npm durante esta etapa.

@@ -1608,13 +1608,12 @@ var SecA = function SecA() {
   useEffect(function () {
     updateShared({
       restriccion: restriccion,
+      sector: sector,
       aRequiredReady: !!(sectorActivo && sendero && tipoInterv && origen && clima)
     });
   }, [restriccion, sector, sectorActivo, sendero, tipoInterv, origen, clima]); // eslint-disable-line
 
-  return /*#__PURE__*/React.createElement("div", {
-    className: "closing-start"
-  }, /*#__PURE__*/React.createElement("div", {
+  var sectorPicker = /*#__PURE__*/React.createElement("div", {
     className: "sector-field".concat(sectorActivo ? ' is-complete' : sectorEnDesarrollo ? ' is-blocked' : ' is-required')
   }, /*#__PURE__*/React.createElement(Lbl, {
     c: "1. Seleccione el sector (obligatorio)"
@@ -1643,7 +1642,8 @@ var SecA = function SecA() {
   })), /*#__PURE__*/React.createElement("div", {
     id: "sector-help",
     className: "field-help"
-  }, sector ? sectorActivo ? "\u2713 Sector seleccionado. Contin\xFAe con el sendero." : "Este sector todav\xEDa no est\xE1 habilitado." : "Este es el primer paso. Debe elegir el sector para continuar.")), sectorEnDesarrollo && /*#__PURE__*/React.createElement("div", {
+  }, sector ? sectorActivo ? "\u2713 Sector seleccionado. Contin\xFAe con el sendero." : "Este sector todav\xEDa no est\xE1 habilitado." : "Este es el primer paso. Debe elegir el sector para continuar."));
+  var sectorDevNote = sectorEnDesarrollo && /*#__PURE__*/React.createElement("div", {
     className: "sector-dev-note",
     role: "status"
   }, /*#__PURE__*/React.createElement("span", {
@@ -1651,7 +1651,14 @@ var SecA = function SecA() {
     "aria-hidden": "true"
   }, "\uD83D\uDEA7"), /*#__PURE__*/React.createElement("div", {
     className: "sector-dev-copy"
-  }, /*#__PURE__*/React.createElement("strong", null, "En desarrollo"), /*#__PURE__*/React.createElement("p", null, "El sector ".concat(sector, " a\xFAn no est\xE1 habilitado en esta herramienta. Seleccione ").concat(SECTOR_ACTIVO, " para registrar una jornada.")))), sectorActivo && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("strong", null, "En desarrollo"), /*#__PURE__*/React.createElement("p", null, "El sector ".concat(sector, " a\xFAn no est\xE1 habilitado en esta herramienta. Seleccione ").concat(SECTOR_ACTIVO, " para registrar una jornada."))));
+  // Un sector en desarrollo bloquea el resto del formulario: lo unico posible es cambiar de sector.
+  if (sectorEnDesarrollo) return /*#__PURE__*/React.createElement("div", {
+    className: "closing-start"
+  }, sectorPicker, sectorDevNote);
+  return /*#__PURE__*/React.createElement("div", {
+    className: "closing-start"
+  }, sectorPicker, sectorActivo && /*#__PURE__*/React.createElement("div", {
     className: "sendero-field".concat(sendero ? ' is-complete' : ' is-required')
   }, /*#__PURE__*/React.createElement(Lbl, {
     c: "2. Seleccione el sendero (obligatorio)"
@@ -10247,7 +10254,7 @@ function App() {
       textAlign: 'center',
       marginTop: 4
     }
-  }, "Seleccione sendero para activar")), /*#__PURE__*/React.createElement("div", {
+  }, (shared === null || shared === void 0 ? void 0 : shared.sector) && shared.sector !== SECTOR_ACTIVO ? "Sector en desarrollo" : "Seleccione sendero para activar")), /*#__PURE__*/React.createElement("div", {
     className: "sidebar-drafts",
     style: {
       padding: '10px 13px',
@@ -10398,7 +10405,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.47'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.48'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];
