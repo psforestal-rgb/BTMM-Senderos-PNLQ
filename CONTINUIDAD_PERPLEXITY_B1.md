@@ -283,6 +283,14 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - El estado de contracción vive en `kCerradas`, aparte de las filas: `k_data.rows` no cambia y el informe Word tampoco.
 - En móvil los botones muestran la etiqueta `Guardar`; en escritorio la columna de acciones pasa de 28 px a 84 px para alojar ambos.
 
+## Número de oficio en la vista previa (versión 1.50)
+
+- El número de oficio se captura en M, pero pertenece al cuadro **A. Control del reporte** del informe.
+- El DOCX ya lo colocaba ahí como primera fila (`m.oficio || a.oficio`); la vista previa en pantalla era la única que no lo mostraba.
+- Se agregó la fila **Número de oficio** al inicio de A en la vista previa, con la misma expresión y la misma posición que el Word.
+- No se modificó el generador DOCX ni ningún recolector: el cambio solo alinea la vista previa con el informe.
+- Verificado abriendo la vista previa real: A muestra Número de oficio, Sector, ASP, Sendero, Tipo de intervención, Origen, Condición climática y Restricción, en ese orden.
+
 ## Precauciones
 
 - No convertir `index.html` a un proyecto npm durante esta etapa.
