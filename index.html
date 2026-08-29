@@ -1630,30 +1630,7 @@ var SecA = function SecA() {
   })), /*#__PURE__*/React.createElement("div", {
     id: "sendero-help",
     className: "field-help"
-  }, sendero ? "\u2713 Sendero seleccionado. Ya puede completar los datos de la jornada." : "Este es el primer paso. Debe elegir el sendero para continuar al siguiente m\xF3dulo.")), /*#__PURE__*/React.createElement("div", {
-    className: "closing-summary-chips",
-    "aria-label": "Resumen inicial de la jornada"
-  }, /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "closing-chip".concat(sendero ? ' is-ready' : ''),
-    onClick: function onClick() {
-      var el = document.querySelector('.sendero-pick.is-selected') || document.querySelector('.sendero-pick');
-      if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      if (el && el.focus) el.focus();
-    }
-  }, sendero || 'Sendero pendiente'), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "closing-chip".concat(bVisited ? ' is-ready' : ''),
-    onClick: function onClick() {
-      if (goToSection) goToSection('B');
-    }
-  }, bVisited ? (fechaIni || fechaFin || TODAY) + " · " + ((sharedA === null || sharedA === void 0 ? void 0 : sharedA.jornadaIni) || '08:00') + "–" + ((sharedA === null || sharedA === void 0 ? void 0 : sharedA.jornadaFin) || '16:00') : 'Horario predeterminado · confirmar en B'), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "closing-chip".concat((participantsA || []).length ? ' is-ready' : ''),
-    onClick: function onClick() {
-      if (goToSection) goToSection('B');
-    }
-  }, (sharedA === null || sharedA === void 0 ? void 0 : sharedA.crewLeader) ? "".concat(sharedA.crewLeader, " · ").concat((participantsA || []).length, " persona(s)") : (participantsA || []).length ? "".concat((participantsA || []).length, " persona(s) · Falta encargado") : 'Equipo en el paso B'))), /*#__PURE__*/React.createElement(Gr, {
+  }, sendero ? "\u2713 Sendero seleccionado. Ya puede completar los datos de la jornada." : "Este es el primer paso. Debe elegir el sendero para continuar al siguiente m\xF3dulo.")), /*#__PURE__*/React.createElement(Gr, {
     cols: 2
   }, /*#__PURE__*/React.createElement("div", {
     className: "office-field is-removed"
@@ -10385,7 +10362,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.45.1'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.46.1'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];
