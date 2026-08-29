@@ -4903,11 +4903,11 @@ var SecC_sec = function SecC_sec() {
 
 // ── Lista canónica de problemas D.1 ─────────────────────────────────────────
 // Musgo/líquenes ahora es ítem independiente; "Basura" separado
-var PROB_LIST = ['Vegetación invade el sendero', 'Árbol caído o ramas bloquean paso', 'Raíces / piedras expuestas con riesgo de caída', 'Huella erosionada o acanalada', 'Cárcavas o pérdida acelerada de suelo', 'Drenaje obstruido, encharcamiento o cuneta colmatada', 'Talud inestable / deslizamiento', 'Puente, pasarela, baranda o escalón dañado', 'Señalización dañada, ausente o confusa', 'Basura, grafiti, residuos o vandalismo', 'Crecimiento de musgo o líquenes en losas y estructuras', 'Evidencia de atajos / ampliación de huella', 'Riesgo por fauna, enjambres u otro factor biológico', 'Daño por evento climático reciente', 'Otro'];
+var PROB_LIST = ['Crecimiento vegetal en el sendero', 'Árbol caído o ramas bloquean paso', 'Raíces / piedras expuestas con riesgo de caída', 'Huella erosionada o acanalada', 'Cárcavas o pérdida acelerada de suelo', 'Drenaje obstruido, encharcamiento o cuneta colmatada', 'Talud inestable / deslizamiento', 'Puente, pasarela, baranda o escalón dañado', 'Señalización dañada, ausente o confusa', 'Basura, grafiti, residuos o vandalismo', 'Crecimiento de musgo o líquenes en losas y estructuras', 'Evidencia de atajos / ampliación de huella', 'Riesgo por fauna, enjambres u otro factor biológico', 'Daño por evento climático reciente', 'Otro'];
 var SEV_OPTS = ['Alta', 'Media', 'Baja'];
 var ICON_ASSET_BASE = './assets/icons-d-e/';
 var ITEM_VISUALS = {
-  'Vegetación invade el sendero': ['🌿', 'Vegetación invasora', 'd01-vegetacion-invasora'],
+  'Crecimiento vegetal en el sendero': ['🌿', 'Crecimiento vegetal', 'd01-vegetacion-invasora'],
   'Árbol caído o ramas bloquean paso': ['🪵', 'Árbol o ramas caídas', 'd02-arbol-caido'],
   'Raíces / piedras expuestas con riesgo de caída': ['🪨', 'Raíces o piedras expuestas', 'd03-raices-piedras'],
   'Huella erosionada o acanalada': ['🥾', 'Huella erosionada', 'd04-huella-erosionada'],
@@ -5007,8 +5007,17 @@ var SecD = function SecD() {
       };
     });
     rrD('d_data', function (d) {
-      if (d.activeProbs) setChecked(new Set(d.activeProbs));
-      if (d.sevs) setSevs(d.sevs);
+      if (d.activeProbs) setChecked(new Set(d.activeProbs.map(function (item) {
+        return item === 'Vegetaci\xF3n invade el sendero' ? 'Crecimiento vegetal en el sendero' : item;
+      })));
+      if (d.sevs) {
+        var restoredSevsD = _objectSpread({}, d.sevs);
+        if (restoredSevsD['Vegetaci\xF3n invade el sendero'] && !restoredSevsD['Crecimiento vegetal en el sendero']) {
+          restoredSevsD['Crecimiento vegetal en el sendero'] = restoredSevsD['Vegetaci\xF3n invade el sendero'];
+        }
+        delete restoredSevsD['Vegetaci\xF3n invade el sendero'];
+        setSevs(restoredSevsD);
+      }
       if (d.otroText != null) setOtroText(d.otroText);
     });
   }, []); // eslint-disable-line
@@ -10454,7 +10463,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.50'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.51'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];

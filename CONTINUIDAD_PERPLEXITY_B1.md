@@ -291,6 +291,13 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - No se modificó el generador DOCX ni ningún recolector: el cambio solo alinea la vista previa con el informe.
 - Verificado abriendo la vista previa real: A muestra Número de oficio, Sector, ASP, Sendero, Tipo de intervención, Origen, Condición climática y Restricción, en ese orden.
 
+## Crecimiento vegetal en D.1 (versión 1.51)
+
+- El primer problema de D.1 pasa de **Vegetación invade el sendero** a **Crecimiento vegetal en el sendero**; la tarjeta muestra **Crecimiento vegetal** en lugar de *Vegetación invasora*.
+- El identificador de la ilustración sigue siendo `d01-vegetacion-invasora`: es el nombre del archivo WebP listado en el `APP_SHELL` del service worker y renombrarlo no aportaba nada.
+- `PROB_LIST` filtra `activeProbs` en el colector, así que un borrador anterior habría perdido el registro. Se añadió migración en el restaurador de `d_data`, igual que se hizo con `Chapia lateral de vegetación` en E.1: el nombre antiguo se traduce al nuevo en `activeProbs` y en `sevs`, conservando la gravedad.
+- Verificado en el navegador: la tarjeta y el colector usan el nombre nuevo, y un borrador con el nombre anterior se restaura con sus dos problemas y la gravedad `Alta` intactos.
+
 ## Precauciones
 
 - No convertir `index.html` a un proyecto npm durante esta etapa.
