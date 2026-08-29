@@ -893,16 +893,6 @@ textarea {
   letter-spacing: 0.09em;
 }
 
-.sendero-field .sendero-select {
-  min-height: 56px !important;
-  border: 2px solid #a46f00 !important;
-  border-radius: 9px !important;
-  background: #fff !important;
-  color: var(--brand-navy) !important;
-  font-size: 16px !important;
-  font-weight: 750;
-}
-
 .sendero-field.is-required {
   animation: sendero-attention 1.8s ease-in-out 2;
 }
@@ -916,10 +906,6 @@ textarea {
 .sendero-field.is-complete::before {
   content: "✓ LISTO";
   background: #2e7344;
-}
-
-.sendero-field.is-complete .sendero-select {
-  border-color: #4f8b62 !important;
 }
 
 @keyframes sendero-attention {
@@ -1138,11 +1124,6 @@ textarea {
 @media (max-width: 700px) {
   .sendero-field {
     padding: 12px;
-  }
-
-  .sendero-field .sendero-select {
-    min-height: 58px !important;
-    font-size: 16px !important;
   }
 
   .b1-team-builder-head {
@@ -5057,5 +5038,489 @@ body.preview-mobile .closing-review-overlay {
   .section-body .checkbox-group[style*="repeat(1"] {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 10px !important;
+  }
+}
+
+/* ==========================================================================
+   Capa de uso 1.45 · organización y apariencia (sin quitar variables)
+   ========================================================================== */
+
+.sendero-picker {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0 8px;
+}
+
+.sendero-pick {
+  min-height: 64px;
+  padding: 10px 8px;
+  border: 2px solid #d7b56a;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--brand-navy);
+  font: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(2, 26, 83, 0.06);
+}
+
+.sendero-pick strong {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.sendero-pick span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ui-muted);
+}
+
+.sendero-pick.is-selected {
+  border-color: #2e7344;
+  background: #edf9f0;
+  box-shadow: 0 0 0 3px rgba(46, 115, 68, 0.18);
+}
+
+.sendero-pick.is-selected span {
+  color: #2e7344;
+}
+
+.closing-chip {
+  appearance: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 6px 12px;
+  border: 1px dashed #9aa7b5;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--brand-navy);
+}
+
+.closing-chip.is-ready {
+  border-style: solid;
+  border-color: #4f8b62;
+  background: #edf9f0;
+}
+
+.closing-welcome-card.is-compact {
+  margin-bottom: 14px;
+}
+
+.nav-button.is-done span::after {
+  content: " ✓";
+  color: #cfac65;
+  font-weight: 800;
+}
+
+.app-header.app-chrome {
+  padding: 14px 22px !important;
+}
+
+.app-header.app-chrome .header-meta {
+  margin-top: 8px !important;
+}
+
+#viewport-toggle[hidden] {
+  display: none !important;
+}
+
+@container (max-width: 700px) {
+  .closing-welcome-card.is-compact {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .closing-welcome-card.is-compact .closing-welcome-illustration {
+    display: none;
+  }
+
+  .closing-welcome-card.is-compact .closing-welcome-copy p {
+    display: none;
+  }
+
+  .closing-welcome-card.is-compact .closing-welcome-copy strong {
+    font-size: 16px;
+    line-height: 1.25;
+  }
+
+  .sendero-picker {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .sendero-pick {
+    min-height: 56px;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 12px 14px;
+  }
+
+  .sendero-pick strong {
+    font-size: 16px;
+  }
+
+  .section-body {
+    padding-bottom: 108px !important;
+  }
+
+  .section-navigation {
+    margin-bottom: 0 !important;
+  }
+
+  .draft-banner.is-compact {
+    padding: 8px 10px !important;
+    gap: 8px !important;
+  }
+
+  .app-header.app-chrome {
+    display: none;
+  }
+}
+
+@container (min-width: 701px) {
+  .app-shell {
+    background: #e7ebf1 !important;
+  }
+
+  .app-sidebar {
+    box-shadow: 8px 0 24px rgba(2, 26, 83, 0.18) !important;
+  }
+
+  .section-card {
+    border-radius: 12px;
+  }
+
+  .sendero-picker {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ===========================================================================
+   Capa de uso 1.45 · correcciones de navegación y accesibilidad
+   ========================================================================== */
+
+.sendero-picker {
+  scroll-margin-top: 90px;
+}
+
+.sendero-pick {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  justify-items: start;
+  gap: 10px;
+  min-height: 64px;
+  padding: 9px 12px;
+}
+
+.sendero-pick-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #f4f0e5;
+  color: var(--brand-navy) !important;
+  font-size: 24px !important;
+  line-height: 1 !important;
+  text-transform: none !important;
+  place-items: center;
+}
+
+.sendero-pick-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
+.sendero-pick-copy > strong {
+  font-size: 15px;
+  text-align: left;
+}
+
+.sendero-pick-copy > span {
+  font-size: 10px;
+  line-height: 1.1;
+}
+
+.sendero-pick.is-selected .sendero-pick-icon {
+  background: #dff1e4;
+  box-shadow: inset 0 0 0 1px rgba(46, 115, 68, 0.28);
+}
+
+.sendero-field:focus-within {
+  box-shadow: 0 0 0 4px rgba(229, 173, 30, 0.24), 0 6px 18px rgba(2, 26, 83, 0.12);
+}
+
+.guided-field-step {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #d5dde8;
+  border-radius: 11px;
+  background: #fbfcfe;
+  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.guided-field-step.is-complete {
+  border-color: #91b79c;
+  background: #f7fcf8;
+}
+
+.guided-field-heading {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.guided-field-number {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--brand-blue);
+  color: #fff;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 900;
+  place-items: center;
+}
+
+.guided-field-heading strong {
+  color: var(--brand-navy);
+  font-size: 13px;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.guided-field-heading em {
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: #fff0dc;
+  color: #8a5100;
+  font-size: 9.5px;
+  font-style: normal;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.guided-field-heading.is-complete em {
+  background: #e1f2e6;
+  color: #24683b;
+}
+
+.draft-banner.is-compact {
+  display: flex !important;
+  min-height: 46px;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 5px 12px !important;
+  border-bottom: 2px solid #2e7d32 !important;
+  background: #eaf6ed !important;
+  flex-wrap: nowrap !important;
+}
+
+.draft-banner.is-compact .draft-banner-copy {
+  display: flex;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+  align-items: center;
+  gap: 7px;
+  color: #1b5e20;
+  white-space: nowrap;
+}
+
+.draft-banner-copy strong {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+}
+
+.draft-banner-copy small {
+  color: #4a7754;
+  font-size: 10px;
+}
+
+.draft-banner-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 7px;
+}
+
+.draft-banner-actions button {
+  min-height: 38px;
+  padding: 6px 10px;
+  border-radius: 7px;
+  font: 750 11px/1.15 "Segoe UI", system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.draft-restore-button {
+  border: 1px solid #2e7d32;
+  background: #2e7d32;
+  color: #fff;
+}
+
+.draft-discard-button {
+  border: 1px solid #9bc8a4;
+  background: transparent;
+  color: #2e6f3d;
+}
+
+.nav-next-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  text-align: left;
+}
+
+.nav-next-copy strong,
+.nav-next-copy small {
+  display: block;
+}
+
+.nav-next-copy small {
+  max-width: 300px;
+  overflow: hidden;
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1.2;
+  opacity: 0.8;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-next-badge {
+  display: grid;
+  min-width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 10px;
+  place-items: center;
+}
+
+.nav-next.is-blocked .nav-next-badge {
+  background: rgba(197, 139, 0, 0.18);
+}
+
+.app-header.app-chrome {
+  padding: 11px 20px !important;
+}
+
+.app-header.app-chrome > div:nth-child(2) {
+  font-size: 18px !important;
+}
+
+.app-header.app-chrome .header-meta {
+  margin-top: 6px !important;
+}
+
+.sendero-pick:focus-visible,
+.closing-chip:focus-visible,
+.guided-field-step input:focus-visible,
+.draft-banner button:focus-visible,
+.nav-next:focus-visible,
+.nav-review:focus-visible {
+  outline: 3px solid var(--focus-ring) !important;
+  outline-offset: 3px;
+}
+
+@media (max-width: 700px) {
+  .sendero-pick {
+    min-height: 56px;
+    padding: 8px 12px;
+  }
+
+  .sendero-pick-icon {
+    width: 34px;
+    height: 34px;
+    font-size: 21px !important;
+  }
+
+  .guided-field-step {
+    padding: 10px;
+  }
+
+  .draft-banner.is-compact {
+    min-height: 50px;
+    padding: 5px 8px !important;
+  }
+
+  .draft-banner-copy small {
+    display: none;
+  }
+
+  .draft-banner-actions {
+    gap: 5px;
+  }
+
+  .draft-banner-actions button {
+    min-height: 40px;
+    padding: 5px 8px !important;
+  }
+
+  .section-navigation .nav-next {
+    justify-content: flex-start !important;
+  }
+
+  .nav-next-copy small {
+    max-width: min(46vw, 180px);
+  }
+}
+
+@media (max-width: 390px) {
+  .draft-banner-copy strong {
+    max-width: 92px;
+  }
+
+  .draft-discard-button {
+    width: 42px;
+    overflow: hidden;
+    color: transparent;
+    font-size: 0 !important;
+  }
+
+  .draft-discard-button::before {
+    content: "\1F5D1";
+    color: #2e6f3d;
+    font-size: 17px;
+  }
+
+  .guided-field-heading {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .guided-field-heading em {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sendero-field.is-required,
+  .guided-field-step,
+  .sendero-pick {
+    animation: none !important;
+    scroll-behavior: auto !important;
+    transition: none !important;
   }
 }

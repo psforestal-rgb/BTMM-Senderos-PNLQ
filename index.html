@@ -17,7 +17,7 @@
   <link rel="manifest" href="./manifest.webmanifest"/>
   <link rel="icon" href="./icons/icon.svg" type="image/svg+xml"/>
   <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
-  <link rel="stylesheet" href="./responsive.css?v=144"/>
+  <link rel="stylesheet" href="./responsive.css?v=145"/>
   <script src="./vendor/react.production.min.js"></script>
   <script src="./vendor/react-dom.production.min.js"></script>
   <script src="./vendor/jszip.min.js"></script>
@@ -135,11 +135,14 @@ var FormCtx = createContext({
     jornadaIni: '08:00',
     jornadaFin: '16:00',
     crewLeader: '',
-    participantCount: 0
+    participantCount: 0,
+    aRequiredReady: false
   },
   updateShared: function updateShared() {},
   participants: [],
   setParticipants: function setParticipants() {},
+  goToSection: function goToSection() {},
+  visitedSections: new Set(),
   registerCollector: function registerCollector() {},
   getReportData: function getReportData() {
     return {};
@@ -841,8 +844,8 @@ var CLOSING_GUIDE = {
   A: {
     icon: '📋',
     asset: 'ui-a-datos-jornada',
-    phase: 'Preparar el cierre',
-    prompt: 'Identifique el sendero y el motivo de la jornada.'
+    phase: 'Datos de la jornada',
+    prompt: 'Elija el sendero y complete el motivo de la jornada.'
   },
   B: {
     icon: '👥',
@@ -1511,12 +1514,22 @@ var dateInpStyle = {
   outline: 'none',
   flex: 1
 };
+var GuidedHead = function GuidedHead(props) {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "guided-field-heading".concat(props.complete ? ' is-complete' : ' is-pending')
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "guided-field-number",
+    "aria-hidden": "true"
+  }, props.number), /*#__PURE__*/React.createElement("strong", null, props.title), /*#__PURE__*/React.createElement("em", null, props.complete ? '\u2713 Listo' : 'Pendiente'));
+};
 var SecA = function SecA() {
   var _useContext = useContext(FormCtx),
     sendero = _useContext.sendero,
     setSendero = _useContext.setSendero,
     sharedA = _useContext.shared,
-    participantsA = _useContext.participants;
+    participantsA = _useContext.participants,
+    goToSection = _useContext.goToSection,
+    visitedSections = _useContext.visitedSections;
   var _useState3 = useState('No'),
     _useState4 = _slicedToArray(_useState3, 2),
     restriccion = _useState4[0],
@@ -1544,6 +1557,7 @@ var SecA = function SecA() {
   // Período: se deriva automáticamente de las fechas registradas en la Sección B
   var fechaIni = (sharedA === null || sharedA === void 0 ? void 0 : sharedA.periodIni) || '';
   var fechaFin = (sharedA === null || sharedA === void 0 ? void 0 : sharedA.periodFin) || '';
+  var bVisited = !!(visitedSections && visitedSections.has && visitedSections.has('B'));
 
   var oficioFull = oficioNum.trim();
   var _useContext2 = useContext(FormCtx),
@@ -1577,17 +1591,47 @@ var SecA = function SecA() {
       if (d.restrDet) setRestrDet(d.restrDet);
     });
   }, []); // eslint-disable-line
-  // Publicar restricción al contexto compartido (el período lo publica la Sección B)
+  // Publicar el avance de A para mantener la guía inferior sincronizada.
   useEffect(function () {
     updateShared({
-      restriccion: restriccion
+      restriccion: restriccion,
+      aRequiredReady: !!(sendero && tipoInterv && origen && clima)
     });
-  }, [restriccion]); // eslint-disable-line
+  }, [restriccion, sendero, tipoInterv, origen, clima]); // eslint-disable-line
 
   return /*#__PURE__*/React.createElement("div", {
     className: "closing-start"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "closing-welcome-card"
+    className: "sendero-field".concat(sendero ? ' is-complete' : ' is-required')
+  }, /*#__PURE__*/React.createElement(Lbl, {
+    c: "1. Seleccione el sendero (obligatorio)"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "sendero-picker",
+    role: "radiogroup",
+    tabIndex: -1,
+    "aria-describedby": "sendero-help",
+    "aria-label": "Senderos oficiales del PNLQ"
+  }, SENDEROS.map(function (s, senderoIndex) {
+    return /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      key: s,
+      role: "radio",
+      className: "sendero-pick".concat(sendero === s ? ' is-selected' : ''),
+      "aria-checked": sendero === s ? 'true' : 'false',
+      onClick: function onClick() {
+        setSendero(s);
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "sendero-pick-icon",
+      "aria-hidden": "true"
+    }, ['\uD83E\uDD7E', '\uD83C\uDF3F', '\u26F0\uFE0F'][senderoIndex] || '\uD83E\uDDED'), /*#__PURE__*/React.createElement("span", {
+      className: "sendero-pick-copy"
+    }, /*#__PURE__*/React.createElement("strong", null, s), /*#__PURE__*/React.createElement("span", null, sendero === s ? '\u2713 Seleccionado' : 'Elegir')));
+  })), /*#__PURE__*/React.createElement("div", {
+    id: "sendero-help",
+    className: "field-help"
+  }, sendero ? "\u2713 Sendero seleccionado. Ya puede completar los datos de la jornada." : "Este es el primer paso. Debe elegir el sendero para continuar al siguiente m\xF3dulo.")), /*#__PURE__*/React.createElement("div", {
+    className: "closing-welcome-card is-compact"
   }, /*#__PURE__*/React.createElement(UiIcon, {
     className: "closing-welcome-illustration",
     asset: "ui-l-conclusion-jornada",
@@ -1597,13 +1641,27 @@ var SecA = function SecA() {
   }, /*#__PURE__*/React.createElement("span", null, "Cierre de jornada"), /*#__PURE__*/React.createElement("strong", null, "Convirtamos el trabajo de hoy en un reporte claro"), /*#__PURE__*/React.createElement("p", null, "Complete el recorrido con calma al regresar a la infraestructura. La herramienta guardará el avance en este dispositivo.")), /*#__PURE__*/React.createElement("div", {
     className: "closing-summary-chips",
     "aria-label": "Resumen inicial de la jornada"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: sendero ? 'is-ready' : ''
-  }, "🧭 ", sendero || 'Sendero pendiente'), /*#__PURE__*/React.createElement("span", {
-    className: fechaIni || fechaFin ? 'is-ready' : ''
-  }, "📅 ", fechaIni || fechaFin || TODAY, " · ", (sharedA === null || sharedA === void 0 ? void 0 : sharedA.jornadaIni) || '08:00', "–", (sharedA === null || sharedA === void 0 ? void 0 : sharedA.jornadaFin) || '16:00'), /*#__PURE__*/React.createElement("span", {
-    className: (participantsA || []).length ? 'is-ready' : ''
-  }, "👥 ", (sharedA === null || sharedA === void 0 ? void 0 : sharedA.crewLeader) ? "".concat(sharedA.crewLeader, " · ").concat((participantsA || []).length, " persona(s)") : (participantsA || []).length ? "".concat((participantsA || []).length, " persona(s) · Falta encargado") : 'Equipo en el paso B'))), /*#__PURE__*/React.createElement(Gr, {
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "closing-chip".concat(sendero ? ' is-ready' : ''),
+    onClick: function onClick() {
+      var el = document.querySelector('.sendero-pick.is-selected') || document.querySelector('.sendero-pick');
+      if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (el && el.focus) el.focus();
+    }
+  }, sendero || 'Sendero pendiente'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "closing-chip".concat(bVisited ? ' is-ready' : ''),
+    onClick: function onClick() {
+      if (goToSection) goToSection('B');
+    }
+  }, bVisited ? (fechaIni || fechaFin || TODAY) + " · " + ((sharedA === null || sharedA === void 0 ? void 0 : sharedA.jornadaIni) || '08:00') + "–" + ((sharedA === null || sharedA === void 0 ? void 0 : sharedA.jornadaFin) || '16:00') : 'Horario predeterminado · confirmar en B'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "closing-chip".concat((participantsA || []).length ? ' is-ready' : ''),
+    onClick: function onClick() {
+      if (goToSection) goToSection('B');
+    }
+  }, (sharedA === null || sharedA === void 0 ? void 0 : sharedA.crewLeader) ? "".concat(sharedA.crewLeader, " · ").concat((participantsA || []).length, " persona(s)") : (participantsA || []).length ? "".concat((participantsA || []).length, " persona(s) · Falta encargado") : 'Equipo en el paso B'))), /*#__PURE__*/React.createElement(Gr, {
     cols: 2
   }, /*#__PURE__*/React.createElement("div", {
     className: "office-field is-removed"
@@ -1706,52 +1764,25 @@ var SecA = function SecA() {
       color: G.mid,
       fontWeight: 700
     }
-  }, "Parque Nacional Los Quetzales")), /*#__PURE__*/React.createElement("div", {
-    className: "sendero-field".concat(sendero ? ' is-complete' : ' is-required')
-  }, /*#__PURE__*/React.createElement(Lbl, {
-    c: "1. Seleccione el sendero (obligatorio)",
-    htmlFor: "sendero-oficial"
-  }), /*#__PURE__*/React.createElement("select", {
-    id: "sendero-oficial",
-    className: "field-select sendero-select",
-    "aria-describedby": "sendero-help",
-    value: sendero,
-    onChange: function onChange(e) {
-      return setSendero(e.target.value);
-    },
-    style: {
-      border: "1px solid ".concat(G.border),
-      borderRadius: 4,
-      padding: '7px 10px',
-      fontSize: 13,
-      fontFamily: 'inherit',
-      color: sendero ? G.text : G.muted,
-      background: G.white,
-      width: '100%',
-      outline: 'none',
-      cursor: 'pointer'
-    }
-  }, /*#__PURE__*/React.createElement("option", {
-    value: ""
-  }, "\u2014 Seleccionar sendero \u2014"), SENDEROS.map(function (s) {
-    return /*#__PURE__*/React.createElement("option", {
-      key: s,
-      value: s
-    }, s);
-  })), /*#__PURE__*/React.createElement("div", {
-    id: "sendero-help",
-    className: "field-help"
-  }, sendero ? "\u2713 Sendero seleccionado. Ya puede completar los datos de la jornada." : "Este es el primer paso. Debe elegir el sendero para continuar al siguiente m\xF3dulo."))), /*#__PURE__*/React.createElement(Sep, null), /*#__PURE__*/React.createElement(Gr, {
+  }, "Parque Nacional Los Quetzales"))), /*#__PURE__*/React.createElement(Sep, null), /*#__PURE__*/React.createElement(Gr, {
     cols: 2
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Lbl, {
-    c: "Tipo de intervenci\xF3n"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "guided-field-step guided-type".concat(tipoInterv ? ' is-complete' : '')
+  }, /*#__PURE__*/React.createElement(GuidedHead, {
+    number: "2",
+    title: "Tipo de intervenci\xF3n",
+    complete: !!tipoInterv
   }), /*#__PURE__*/React.createElement(Radios, {
     name: "tipo-intervencion",
     opts: ['Preventiva', 'Correctiva', 'Emergencia', 'Seguimiento'],
     value: tipoInterv,
     onChange: setTipoInterv
-  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Lbl, {
-    c: "Origen de la solicitud"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "guided-field-step guided-origin".concat(origen ? ' is-complete' : '')
+  }, /*#__PURE__*/React.createElement(GuidedHead, {
+    number: "3",
+    title: "Origen de la solicitud",
+    complete: !!origen
   }), /*#__PURE__*/React.createElement(Radios, {
     name: "origen-solicitud",
     opts: ['Programación anual', 'Reporte visitante', 'Iniciativa del funcionario', 'Evento climático', 'Orden superior'],
@@ -1759,15 +1790,23 @@ var SecA = function SecA() {
     onChange: setOrigen
   }))), /*#__PURE__*/React.createElement(Sep, null), /*#__PURE__*/React.createElement(Gr, {
     cols: 2
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Lbl, {
-    c: "Condici\xF3n clim\xE1tica dominante"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "guided-field-step guided-climate".concat(clima ? ' is-complete' : '')
+  }, /*#__PURE__*/React.createElement(GuidedHead, {
+    number: "4",
+    title: "Condici\xF3n clim\xE1tica dominante",
+    complete: !!clima
   }), /*#__PURE__*/React.createElement(Radios, {
     name: "condicion-climatica",
     opts: ['Seco', 'Lluvia', 'Neblina', 'Viento', 'Tormenta previa', 'Variable'],
     value: clima,
     onChange: setClima
-  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Lbl, {
-    c: "Restricci\xF3n de uso p\xFAblico"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "guided-field-step guided-restriction is-complete"
+  }, /*#__PURE__*/React.createElement(GuidedHead, {
+    number: "5",
+    title: "Restricci\xF3n de uso p\xFAblico",
+    complete: true
   }), /*#__PURE__*/React.createElement(Radios, {
     name: "restriccion",
     opts: ['No', 'Parcial', 'Total'],
@@ -9571,7 +9610,8 @@ function App() {
       jornadaIni: '08:00',
       jornadaFin: '16:00',
       crewLeader: '',
-      participantCount: 0
+      participantCount: 0,
+      aRequiredReady: false
     }),
     _useState96 = _slicedToArray(_useState95, 2),
     shared = _useState96[0],
@@ -9838,18 +9878,22 @@ function App() {
         var a = report.a_data || {};
         if (!(a.sendero || senderoRef.current)) return {
           message: 'Seleccione el sendero oficial para continuar.',
-          selector: '#section-panel-A #sendero-oficial'
+          shortMessage: 'Falta seleccionar el sendero',
+          selector: '#section-panel-A .sendero-picker'
         };
         if (!hasChoice(a.tipoInterv)) return {
           message: 'Elija un único tipo de intervención para continuar.',
+          shortMessage: 'Falta el tipo de intervención',
           selector: '#section-panel-A input[name="tipo-intervencion"]'
         };
         if (!hasChoice(a.origen)) return {
           message: 'Elija un único origen de la solicitud para continuar.',
+          shortMessage: 'Falta el origen de la solicitud',
           selector: '#section-panel-A input[name="origen-solicitud"]'
         };
         if (!hasChoice(a.clima)) return {
           message: 'Elija una única condición climática dominante para continuar.',
+          shortMessage: 'Falta la condición climática',
           selector: '#section-panel-A input[name="condicion-climatica"]'
         };
         return null;
@@ -9862,6 +9906,7 @@ function App() {
         }) : [];
         return people.length ? null : {
           message: 'Seleccione el nombre de al menos una persona; puede ser encargado o participante.',
+          shortMessage: 'Falta agregar una persona',
           selector: '#section-panel-B .b1-add-actions'
         };
       }
@@ -9871,6 +9916,7 @@ function App() {
         var d = report.d_data || {};
         return Array.isArray(d.activeProbs) && d.activeProbs.length ? null : {
           message: 'Marque al menos un problema observado antes de intervenir.',
+          shortMessage: 'Falta marcar un problema',
           selector: '#section-panel-D .icon-choice-grid'
         };
       }
@@ -9880,6 +9926,7 @@ function App() {
         var e = report.e_data || {};
         return Array.isArray(e.checked) && e.checked.length ? null : {
           message: 'Marque al menos una labor ejecutada en E.1, E.2 o E.3.',
+          shortMessage: 'Falta marcar una labor ejecutada',
           selector: '#section-panel-E .icon-choice-grid'
         };
       }
@@ -9973,6 +10020,7 @@ function App() {
   var idx = ALL_IDS.indexOf(active);
   var prev = idx > 0 ? ALL_IDS[idx - 1] : null;
   var next = idx < ALL_IDS.length - 1 ? ALL_IDS[idx + 1] : null;
+  var nextBlock = next ? findBlockingRequirement(ALL_IDS.indexOf(next)) : null;
   var activeSec = ALL_SECS.find(function (s) {
     return s.id === active;
   });
@@ -9990,6 +10038,8 @@ function App() {
       updateShared: updateShared,
       participants: participants,
       setParticipants: setParticipants,
+      goToSection: go,
+      visitedSections: visited,
       registerCollector: registerCollector,
       getReportData: getReportData,
       registerRestorer: registerRestorer,
@@ -10041,64 +10091,26 @@ function App() {
       "aria-hidden": "true"
     }, "›"));
   })))), bannerVisible && /*#__PURE__*/React.createElement("div", {
-    className: "draft-banner",
-    style: {
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      zIndex: 9998,
-      background: '#E8F5E9',
-      borderBottom: '3px solid #2E7D32',
-      padding: '10px 20px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: 16,
-      flexWrap: 'wrap'
-    }
+    className: "draft-banner is-compact",
+    role: "status",
+    "aria-label": "Borrador guardado disponible"
   }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      flex: 1,
-      minWidth: 180
-    }
+    className: "draft-banner-copy"
   }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontWeight: 700,
-      color: '#1B5E20',
-      fontSize: 13
-    }
-  }, "\uD83D\uDCCB Borrador guardado detectado"), draftTs && /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 11,
-      color: '#388E3C',
-      marginLeft: 8
-    }
-  }, new Date(draftTs).toLocaleString('es-CR'))), /*#__PURE__*/React.createElement("button", {
+    "aria-hidden": "true"
+  }, "\uD83D\uDCCB"), /*#__PURE__*/React.createElement("strong", null, "Borrador disponible"), draftTs && /*#__PURE__*/React.createElement("small", null, new Date(draftTs).toLocaleString('es-CR'))), /*#__PURE__*/React.createElement("div", {
+    className: "draft-banner-actions"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "draft-restore-button",
     onClick: handleRestoreDraft,
-    style: {
-      padding: '7px 16px',
-      background: '#2E7D32',
-      border: 'none',
-      borderRadius: 5,
-      color: 'white',
-      fontFamily: 'inherit',
-      fontSize: 13,
-      fontWeight: 700,
-      cursor: 'pointer'
-    }
-  }, "\u21BA Restaurar borrador"), /*#__PURE__*/React.createElement("button", {
+    "aria-label": "Restaurar borrador guardado"
+  }, "\u21BA Restaurar"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "draft-discard-button",
     onClick: handleDiscardDraft,
-    style: {
-      padding: '7px 12px',
-      background: 'transparent',
-      border: '1px solid #A5D6A7',
-      borderRadius: 5,
-      color: '#388E3C',
-      fontFamily: 'inherit',
-      fontSize: 12,
-      cursor: 'pointer'
-    }
-  }, "\uD83D\uDDD1 Descartar")), /*#__PURE__*/React.createElement("div", {
+    "aria-label": "Descartar borrador guardado"
+  }, "\uD83D\uDDD1 Descartar"))), /*#__PURE__*/React.createElement("div", {
     className: "app-shell",
     style: {
       display: 'flex',
@@ -10348,7 +10360,7 @@ function App() {
     role: "status",
     "aria-live": "polite"
   }, journeyNotice), /*#__PURE__*/React.createElement("div", {
-    className: "app-header",
+    className: "app-header app-chrome",
     style: {
       background: G.mid,
       color: 'white',
@@ -10381,7 +10393,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.44'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.45'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];
@@ -10534,49 +10546,53 @@ function App() {
       color: G.muted
     }
   }, idx + 1, " / ", ALL_IDS.length), next ? /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: function onClick() {
       return go(next);
     },
+    title: nextBlock ? nextBlock.message : 'Continuar al siguiente paso',
+    className: "nav-next".concat(nextBlock ? ' is-blocked' : ''),
     style: {
       display: 'flex',
       alignItems: 'center',
       gap: 8,
       padding: '9px 18px',
-      background: G.mid,
-      border: "1px solid ".concat(G.mid),
+      background: nextBlock ? '#FFF7DF' : G.mid,
+      border: "1px solid ".concat(nextBlock ? G.amber : G.mid),
       borderRadius: 6,
       cursor: 'pointer',
       fontSize: 13,
       fontFamily: 'inherit',
       fontWeight: 600,
-      color: 'white'
+      color: nextBlock ? G.mid : 'white'
     }
   }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 11,
-      opacity: 0.8
-    }
-  }, (_ALL_SECS$find2 = ALL_SECS.find(function (s) {
+    className: "nav-next-badge",
+    "aria-hidden": "true"
+  }, nextBlock ? '\uD83D\uDD12' : (_ALL_SECS$find2 = ALL_SECS.find(function (s) {
     return s.id === next;
-  })) === null || _ALL_SECS$find2 === void 0 ? void 0 : _ALL_SECS$find2.badge), " Siguiente \u2192") : /*#__PURE__*/React.createElement("button", {
+  })) === null || _ALL_SECS$find2 === void 0 ? void 0 : _ALL_SECS$find2.badge), /*#__PURE__*/React.createElement("span", {
+    className: "nav-next-copy"
+  }, /*#__PURE__*/React.createElement("strong", null, nextBlock ? 'Complete este paso' : 'Siguiente \u2192'), /*#__PURE__*/React.createElement("small", null, nextBlock ? nextBlock.shortMessage || nextBlock.message : 'Continuar con el reporte'))) : /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: function onClick() {
       return openReview();
     },
-    disabled: !sendero,
-    title: !sendero ? 'Seleccione un sendero para habilitar' : 'Generar vista previa y DOCX',
+    title: 'Revisar requisitos y generar el informe',
+    className: "nav-review",
     style: {
       display: 'flex',
       alignItems: 'center',
       gap: 8,
       padding: '9px 18px',
-      background: sendero ? G.amber : 'transparent',
-      border: "1px solid ".concat(sendero ? G.amber : G.border),
+      background: G.amber,
+      border: "1px solid ".concat(G.amber),
       borderRadius: 6,
-      cursor: sendero ? 'pointer' : 'not-allowed',
+      cursor: 'pointer',
       fontSize: 13,
       fontFamily: 'inherit',
       fontWeight: 700,
-      color: sendero ? 'white' : G.muted
+      color: 'white'
     }
   }, "\uD83D\uDCCB Revisar reporte"))))), showReview && /*#__PURE__*/React.createElement(ClosingReview, {
     data: getReportData(),
@@ -10610,6 +10626,12 @@ ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(
   (function () {
     var button = document.getElementById('viewport-toggle');
     var root = document.getElementById('root');
+    if (!button) return;
+    if (!/[?&]preview=1(?:&|$)/.test(window.location.search)) {
+      button.hidden = true;
+      button.style.display = 'none';
+      return;
+    }
     function naturalMode() {
       return window.matchMedia('(max-width: 700px)').matches ? 'mobile' : 'desktop';
     }

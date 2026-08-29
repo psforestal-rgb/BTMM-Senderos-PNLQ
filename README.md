@@ -8,6 +8,8 @@ Abra la aplicación publicada en GitHub Pages. En navegadores compatibles puede 
 
 Los borradores se guardan localmente en el navegador del dispositivo.
 
+Para revisar temporalmente las vistas de teléfono y PC, agregue `?preview=1` al final de la dirección de la aplicación; aparecerá el botón de alternancia del modo de diseño.
+
 ## Publicación
 
 El sitio es estático y se publica directamente desde la raíz del repositorio mediante GitHub Pages.
