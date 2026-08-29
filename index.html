@@ -17,7 +17,7 @@
   <link rel="manifest" href="./manifest.webmanifest"/>
   <link rel="icon" href="./icons/icon.svg" type="image/svg+xml"/>
   <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
-  <link rel="stylesheet" href="./responsive.css?v=143"/>
+  <link rel="stylesheet" href="./responsive.css?v=144"/>
   <script src="./vendor/react.production.min.js"></script>
   <script src="./vendor/react-dom.production.min.js"></script>
   <script src="./vendor/jszip.min.js"></script>
@@ -1525,21 +1525,15 @@ var SecA = function SecA() {
     _useState6 = _slicedToArray(_useState5, 2),
     oficioNum = _useState6[0],
     setOficioNum = _useState6[1]; // número de oficio completo
-  var _useState7 = useState(function () {
-      return new Set();
-    }),
+  var _useState7 = useState(''),
     _useState8 = _slicedToArray(_useState7, 2),
     tipoInterv = _useState8[0],
     setTipoInterv = _useState8[1];
-  var _useState9 = useState(function () {
-      return new Set();
-    }),
+  var _useState9 = useState(''),
     _useState0 = _slicedToArray(_useState9, 2),
     origen = _useState0[0],
     setOrigen = _useState0[1];
-  var _useState1 = useState(function () {
-      return new Set();
-    }),
+  var _useState1 = useState(''),
     _useState10 = _slicedToArray(_useState1, 2),
     clima = _useState10[0],
     setClima = _useState10[1];
@@ -1547,16 +1541,6 @@ var SecA = function SecA() {
     _useState12 = _slicedToArray(_useState11, 2),
     restrDet = _useState12[0],
     setRestrDet = _useState12[1];
-  var tog = function tog(setter) {
-    return function (v) {
-      return setter(function (s) {
-        var n = new Set(s);
-        n.has(v) ? n.delete(v) : n.add(v);
-        return n;
-      });
-    };
-  };
-
   // Período: se deriva automáticamente de las fechas registradas en la Sección B
   var fechaIni = (sharedA === null || sharedA === void 0 ? void 0 : sharedA.periodIni) || '';
   var fechaFin = (sharedA === null || sharedA === void 0 ? void 0 : sharedA.periodFin) || '';
@@ -1574,9 +1558,9 @@ var SecA = function SecA() {
     restriccion: restriccion,
     oficio: oficioFull,
     oficioNum: oficioNum,
-    tipoInterv: _toConsumableArray(tipoInterv),
-    origen: _toConsumableArray(origen),
-    clima: _toConsumableArray(clima),
+    tipoInterv: tipoInterv ? [tipoInterv] : [],
+    origen: origen ? [origen] : [],
+    clima: clima ? [clima] : [],
     restrDet: restrDet
   };
   useEffect(function () {
@@ -1587,9 +1571,9 @@ var SecA = function SecA() {
       if (d.restriccion) setRestriccion(d.restriccion);
       if (d.sendero) setSendero(d.sendero);
       if (d.oficio || d.oficioNum) setOficioNum(d.oficio || d.oficioNum);
-      if (d.tipoInterv) setTipoInterv(new Set(d.tipoInterv));
-      if (d.origen) setOrigen(new Set(d.origen));
-      if (d.clima) setClima(new Set(d.clima));
+      if (d.tipoInterv) setTipoInterv(Array.isArray(d.tipoInterv) ? d.tipoInterv[0] || '' : d.tipoInterv);
+      if (d.origen) setOrigen(Array.isArray(d.origen) ? d.origen[0] || '' : d.origen);
+      if (d.clima) setClima(Array.isArray(d.clima) ? d.clima[0] || '' : d.clima);
       if (d.restrDet) setRestrDet(d.restrDet);
     });
   }, []); // eslint-disable-line
@@ -1723,9 +1707,9 @@ var SecA = function SecA() {
       fontWeight: 700
     }
   }, "Parque Nacional Los Quetzales")), /*#__PURE__*/React.createElement("div", {
-    className: "sendero-field"
+    className: "sendero-field".concat(sendero ? ' is-complete' : ' is-required')
   }, /*#__PURE__*/React.createElement(Lbl, {
-    c: "Sendero \u2014 nombre oficial",
+    c: "1. Seleccione el sendero (obligatorio)",
     htmlFor: "sendero-oficial"
   }), /*#__PURE__*/React.createElement("select", {
     id: "sendero-oficial",
@@ -1757,31 +1741,31 @@ var SecA = function SecA() {
   })), /*#__PURE__*/React.createElement("div", {
     id: "sendero-help",
     className: "field-help"
-  }, "Seleccione el sendero oficial para habilitar el informe y la ubicaci\xF3n."))), /*#__PURE__*/React.createElement(Sep, null), /*#__PURE__*/React.createElement(Gr, {
+  }, sendero ? "\u2713 Sendero seleccionado. Ya puede completar los datos de la jornada." : "Este es el primer paso. Debe elegir el sendero para continuar al siguiente m\xF3dulo."))), /*#__PURE__*/React.createElement(Sep, null), /*#__PURE__*/React.createElement(Gr, {
     cols: 2
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Lbl, {
     c: "Tipo de intervenci\xF3n"
-  }), /*#__PURE__*/React.createElement(CbsCtrl, {
+  }), /*#__PURE__*/React.createElement(Radios, {
+    name: "tipo-intervencion",
     opts: ['Preventiva', 'Correctiva', 'Emergencia', 'Seguimiento'],
-    cols: 1,
-    checked: tipoInterv,
-    onToggle: tog(setTipoInterv)
+    value: tipoInterv,
+    onChange: setTipoInterv
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Lbl, {
     c: "Origen de la solicitud"
-  }), /*#__PURE__*/React.createElement(CbsCtrl, {
+  }), /*#__PURE__*/React.createElement(Radios, {
+    name: "origen-solicitud",
     opts: ['Programación anual', 'Reporte visitante', 'Iniciativa del funcionario', 'Evento climático', 'Orden superior'],
-    cols: 1,
-    checked: origen,
-    onToggle: tog(setOrigen)
+    value: origen,
+    onChange: setOrigen
   }))), /*#__PURE__*/React.createElement(Sep, null), /*#__PURE__*/React.createElement(Gr, {
     cols: 2
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Lbl, {
     c: "Condici\xF3n clim\xE1tica dominante"
-  }), /*#__PURE__*/React.createElement(CbsCtrl, {
+  }), /*#__PURE__*/React.createElement(Radios, {
+    name: "condicion-climatica",
     opts: ['Seco', 'Lluvia', 'Neblina', 'Viento', 'Tormenta previa', 'Variable'],
-    cols: 2,
-    checked: clima,
-    onToggle: tog(setClima)
+    value: clima,
+    onChange: setClima
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Lbl, {
     c: "Restricci\xF3n de uso p\xFAblico"
   }), /*#__PURE__*/React.createElement(Radios, {
@@ -2417,6 +2401,10 @@ var SecB = function SecB() {
   var encargadoRow = rows.find(function (r) {
     return r.encargado;
   });
+  var registeredTeam = rows.filter(function (r) {
+    return r.nombre && r.nombre.trim();
+  });
+  var teamReady = registeredTeam.length > 0;
   var normB1Name = function normB1Name(value) {
     return String(value || '').trim().toLocaleLowerCase('es');
   };
@@ -2425,6 +2413,10 @@ var SecB = function SecB() {
   }, /*#__PURE__*/React.createElement("section", {
     className: "b1-shift-card"
   }, /*#__PURE__*/React.createElement("div", {
+    className: "b1-shift-heading"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "b1-step-badge"
+  }, "1"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("strong", null, "Confirme la jornada"), /*#__PURE__*/React.createElement("small", null, "Revise la fecha y ajuste el horario solamente si fue diferente"))), /*#__PURE__*/React.createElement("div", {
     className: "b1-shift-grid"
   }, /*#__PURE__*/React.createElement("div", {
     className: "b1-field"
@@ -2509,20 +2501,31 @@ var SecB = function SecB() {
   }, "Deslice los marcadores. Cada paso equivale a 30 minutos.")), /*#__PURE__*/React.createElement("div", {
     className: "b1-shift-footer"
   }, /*#__PURE__*/React.createElement("span", null, fechaNueva ? fmtDia(fechaNueva) : 'Seleccione la fecha'), /*#__PURE__*/React.createElement("strong", null, jornadaMin > 0 ? "Jornada de ".concat(fmtMin(jornadaMin), " h") : 'Horario pendiente'))), /*#__PURE__*/React.createElement("div", {
+    className: "b1-team-builder-head"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "b1-step-badge"
+  }, "2"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("strong", null, "Agregue las personas que participaron"), /*#__PURE__*/React.createElement("p", null, "Puede registrar un encargado, participantes o ambos. Basta con una persona para continuar.")), /*#__PURE__*/React.createElement("span", {
+    className: "b1-team-status".concat(teamReady ? ' is-ready' : ' is-pending'),
+    role: "status"
+  }, teamReady ? "✓ ".concat(registeredTeam.length, " registrada(s)") : "Falta agregar una persona")), /*#__PURE__*/React.createElement("div", {
     className: "b1-add-actions"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: addLeaderRow,
     disabled: !fechaNueva || jornadaMin <= 0 || !!encargadoRow,
     className: "b1-primary-button b1-add-leader-main"
-  }, encargadoRow ? "✓ Encargado de cuadrilla agregado" : "＋ Adicionar encargado de cuadrilla"), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "⭐"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("strong", null, encargadoRow ? "Encargado agregado" : "Agregar encargado"), /*#__PURE__*/React.createElement("small", null, encargadoRow ? "Ya existe un encargado en la jornada" : "Opcional · persona responsable de la cuadrilla"))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function onClick() {
       return addRow(fechaNueva);
     },
     disabled: !fechaNueva || jornadaMin <= 0,
     className: "b1-primary-button b1-add-participant-main"
-  }, "＋ Adicionar persona")), savedNotice && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "👤"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("strong", null, "Agregar participante"), /*#__PURE__*/React.createElement("small", null, "Seleccione el nombre y guarde; puede repetir para cada persona")))), savedNotice && /*#__PURE__*/React.createElement("div", {
     className: "b1-save-notice",
     role: "status",
     "aria-live": "polite"
@@ -2530,7 +2533,7 @@ var SecB = function SecB() {
     className: "b1-empty-state"
   }, /*#__PURE__*/React.createElement("div", {
     "aria-hidden": "true"
-  }, "👥"), /*#__PURE__*/React.createElement("strong", null, "Aún no hay personas registradas"), /*#__PURE__*/React.createElement("span", null, "Use los botones anteriores para agregar al encargado y a los participantes.")) : /*#__PURE__*/React.createElement("div", {
+  }, "👥"), /*#__PURE__*/React.createElement("strong", null, "¿Quién participó en la jornada?"), /*#__PURE__*/React.createElement("span", null, "Toque «Agregar participante» o, si corresponde, «Agregar encargado».")) : /*#__PURE__*/React.createElement("div", {
     className: "b1-participant-list"
   }, rows.map(function (r, idx) {
     var cerrada = !!personasCerradas[r.id];
@@ -2566,7 +2569,7 @@ var SecB = function SecB() {
       className: "b1-field b1-name-field"
     }, /*#__PURE__*/React.createElement("label", {
       htmlFor: "b1-nombre-simple-".concat(r.id)
-    }, r.encargado ? "Nombre del encargado" : "Nombre completo"), /*#__PURE__*/React.createElement("select", {
+    }, r.encargado ? "Nombre del encargado" : "Nombre del participante"), /*#__PURE__*/React.createElement("select", {
       id: "b1-nombre-simple-".concat(r.id),
       value: r.nombreMode === 'custom' ? '__custom__' : SINAC_STAFF.includes(r.nombre) ? r.nombre : '',
       onChange: function onChange(e) {
@@ -4867,7 +4870,7 @@ var ICON_ASSET_BASE = './assets/icons-d-e/';
 var ITEM_VISUALS = {
   'Vegetación invade el sendero': ['🌿', 'Vegetación invasora', 'd01-vegetacion-invasora'],
   'Árbol caído o ramas bloquean paso': ['🪵', 'Árbol o ramas caídas', 'd02-arbol-caido'],
-  'Raíces / piedras expuestas con riesgo de caída': ['🪨', 'Raíces o piedras', 'd03-raices-piedras'],
+  'Raíces / piedras expuestas con riesgo de caída': ['🪨', 'Raíces o piedras expuestas', 'd03-raices-piedras'],
   'Huella erosionada o acanalada': ['🥾', 'Huella erosionada', 'd04-huella-erosionada'],
   'Cárcavas o pérdida acelerada de suelo': ['〽️', 'Cárcavas', 'd05-carcavas'],
   'Drenaje obstruido, encharcamiento o cuneta colmatada': ['💧', 'Drenaje obstruido', 'd06-drenaje-obstruido'],
@@ -4991,7 +4994,7 @@ var SecD = function SecD() {
 
   // Etiqueta que aparece en la tabla (Otro usa el texto escrito)
   var tabLabel = function tabLabel(p) {
-    return p === 'Otro' ? otroText.trim() ? "Otro: ".concat(otroText.trim()) : 'Otro — (sin detalle)' : p;
+    return p === 'Otro' ? otroText.trim() ? "Otro: ".concat(otroText.trim()) : 'Otro — (sin detalle)' : ITEM_VISUALS[p] ? ITEM_VISUALS[p][1] : p;
   };
   var sevColor = function sevColor(s) {
     return s === 'Alta' ? '#C62828' : s === 'Media' ? '#E65100' : s === 'Baja' ? '#2E7D32' : G.muted;
@@ -5428,7 +5431,8 @@ var CbSec = function CbSec(_ref36) {
   }));
 };
 var G1_VISITOR_INFO = 'Rotulación o información al visitante';
-var G1_ITEMS = ['Medio de comunicación disponible', 'Herramientas revisadas antes de uso', 'Al menos una persona con primeros auxilios', G1_VISITOR_INFO, 'Zona de trabajo delimitada cuando corresponde', 'Residuos retirados o dispuestos correctamente', 'Se evitó afectación innecesaria de vegetación, suelo o fauna', 'Otro'];
+var G1_FINAL_TOOLS = 'Herramientas revisadas, limpias y ordenadas al finalizar';
+var G1_ITEMS = ['Medio de comunicación disponible', 'Herramientas revisadas antes de uso', 'Al menos una persona con primeros auxilios', G1_VISITOR_INFO, 'Zona de trabajo delimitada cuando corresponde', 'Residuos retirados o dispuestos correctamente', 'Se evitó afectación innecesaria de vegetación, suelo o fauna', G1_FINAL_TOOLS, 'Otro'];
 var G1_ICON_ASSETS = {
   'Medio de comunicación disponible': 'g1-comunicacion',
   'Herramientas revisadas antes de uso': 'g1-herramientas-revisadas',
@@ -5437,14 +5441,13 @@ var G1_ICON_ASSETS = {
   'Zona de trabajo delimitada cuando corresponde': 'g1-zona-delimitada',
   'Residuos retirados o dispuestos correctamente': 'g1-residuos-retirados',
   'Se evitó afectación innecesaria de vegetación, suelo o fauna': 'g1-proteccion-ambiente',
+  'Herramientas revisadas, limpias y ordenadas al finalizar': 'g1-herramientas-ordenadas',
   'Otro': 'g1-otro'
 };
 var SecG = function SecG() {
-  // G.1: todos pre-marcados por defecto — el funcionario desmarca los que NO se cumplieron
+  // G.1 inicia sin respuestas: el funcionario confirma cada cumplimiento.
   var _useState39 = useState(function () {
-      return new Set(G1_ITEMS.filter(function (x) {
-        return x !== 'Otro';
-      }));
+      return new Set();
     }),
     _useState40 = _slicedToArray(_useState39, 2),
     g1 = _useState40[0],
@@ -5558,7 +5561,7 @@ var SecG = function SecG() {
     title: "G.1 \u2014 Verificaci\xF3n previa y durante la jornada"
   }, /*#__PURE__*/React.createElement(InfoBox, {
     t: "amber",
-    c: "Todos los \xEDtems aparecen marcados por defecto (cumplimiento est\xE1ndar). Desmarque los que NO se cumplieron durante la jornada."
+    c: "Toque cada tarjeta que s\xED se cumpli\xF3. Las tarjetas sin marcar quedan claramente identificadas como NO CUMPLIDO."
   }), /*#__PURE__*/React.createElement("div", {
     className: "mobile-option-grid",
     style: {
@@ -5599,13 +5602,9 @@ var SecG = function SecG() {
       fallback: g1.has(item) ? '✓' : '!'
     }), /*#__PURE__*/React.createElement("span", {
       className: "visual-option-text"
-    }, item), !g1.has(item) && /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 10,
-        color: '#CC4444',
-        marginLeft: 4
-      }
-    }, "\u2717 no cumplido")), item === 'Otro' && g1.has('Otro') && /*#__PURE__*/React.createElement("input", {
+    }, item), /*#__PURE__*/React.createElement("span", {
+      className: "g1-status-badge".concat(g1.has(item) ? ' is-complete' : ' is-incomplete')
+    }, g1.has(item) ? "\u2713 CUMPLIDO" : "\u2715 NO CUMPLIDO")), item === 'Otro' && g1.has('Otro') && /*#__PURE__*/React.createElement("input", {
       type: "text",
       value: otroG1,
       onChange: function onChange(e) {
@@ -6244,7 +6243,6 @@ var SecI = function SecI() {
       estructuras: '',
       senales: '',
       residuos: '',
-      visitantes: '',
       otroDetalle: '',
       otroCantidad: ''
     }),
@@ -6317,11 +6315,6 @@ var SecI = function SecI() {
   useEffect(function () {
     if (kAlertCount > 0 && !seguimiento) setSeguimiento('Sí');
   }, [kAlertCount]); // eslint-disable-line
-
-  // Si restriccion pasa a 'No' y visitantes estaba vacío, pre-llenar
-  useEffect(function () {
-    if (restriccion === 'No' && !mf.visitantes) updMf('visitantes', 'No aplica');
-  }, [restriccion]); // eslint-disable-line
 
   var EBadge = function EBadge(_ref39) {
     var active = _ref39.active,
@@ -6434,12 +6427,6 @@ var SecI = function SecI() {
     label: "Residuos retirados (kg / bolsas)",
     type: "text",
     ph: "0 kg / 0 bolsas"
-  }), MfInput({
-    fkey: "visitantes",
-    label: "Visitantes afectados por restricci\xF3n",
-    type: "text",
-    ph: "0 / No aplica",
-    warn: restriccion !== 'No' ? "\u26A0 Restricci\xF3n ".concat(restriccion, " en A") : null
   })), !otherManualOpen ? /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "manual-other-add".concat(hasOtherManual ? ' has-value' : ''),
@@ -6868,8 +6855,10 @@ var CriterioTecnico = function CriterioTecnico(_ref41) {
       return n;
     });
   };
-  var opts = ['No', 'Ingeniería forestal', 'Arboricultura', 'Otros riesgos', 'Discapacidad', 'Otro'];
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  var opts = ['No', 'Ingeniería forestal', 'Arboricultura', 'Otros riesgos', 'Discapacidad', 'Constructor', 'ACC-DR-DASP', 'Otro'];
+  return /*#__PURE__*/React.createElement("div", {
+    className: "technical-criteria"
+  }, /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
       flexDirection: 'column',
@@ -6877,6 +6866,7 @@ var CriterioTecnico = function CriterioTecnico(_ref41) {
     }
   }, opts.map(function (o) {
     return /*#__PURE__*/React.createElement("div", {
+      className: "technical-criteria-option".concat(o === 'Otro' ? ' is-other' : ''),
       key: o
     }, /*#__PURE__*/React.createElement("label", {
       style: {
@@ -6905,10 +6895,10 @@ var CriterioTecnico = function CriterioTecnico(_ref41) {
         return setOtroK1(e.target.value);
       },
       placeholder: "Especifique el tipo de criterio t\xE9cnico requerido\u2026",
+      className: "technical-criteria-other",
       style: {
         marginTop: 5,
-        marginLeft: 22,
-        width: 'calc(100% - 22px)',
+        width: '100%',
         border: "1px solid ".concat(G.light),
         borderRadius: 4,
         padding: '5px 9px',
@@ -7295,12 +7285,12 @@ var CONDITION_RATING_LABELS = {
   4: 'Bueno',
   5: 'Excelente'
 };
-var CONDITION_RATING_FACES = {
-  1: '😭',
-  2: '🙁',
-  3: '😐',
-  4: '🙂',
-  5: '😄'
+var CONDITION_RATING_SPRITE_POSITION = {
+  1: '0%',
+  2: '25%',
+  3: '50%',
+  4: '75%',
+  5: '100%'
 };
 var PENDING_JUSTIFICATION_OPTIONS = ['Requiere más tiempo', 'Condiciones atmosféricas', 'Emergencias o accidente', 'Cambio de actividad', 'Daño en equipo', 'Equipo insuficiente', 'Otro'];
 var LEGACY_PENDING_JUSTIFICATION_MAP = {
@@ -7459,7 +7449,14 @@ var SecL = function SecL() {
     return /*#__PURE__*/React.createElement("span", {
       key: rating,
       className: conditionRating === rating ? 'is-selected' : ''
-    }, /*#__PURE__*/React.createElement("strong", null, CONDITION_RATING_FACES[rating]), /*#__PURE__*/React.createElement("small", null, CONDITION_RATING_LABELS[rating]));
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "condition-danta-face",
+      role: "img",
+      "aria-label": "Danta con expresi\xF3n ".concat(CONDITION_RATING_LABELS[rating]),
+      style: {
+        backgroundPosition: "".concat(CONDITION_RATING_SPRITE_POSITION[rating], " center")
+      }
+    }), /*#__PURE__*/React.createElement("small", null, CONDITION_RATING_LABELS[rating]));
   })), /*#__PURE__*/React.createElement("input", {
     className: "condition-slider",
     type: "range",
@@ -7475,7 +7472,13 @@ var SecL = function SecL() {
   }), /*#__PURE__*/React.createElement("div", {
     className: "condition-rating-label",
     "aria-live": "polite"
-  }, conditionRating ? "".concat(CONDITION_RATING_FACES[conditionRating], " ").concat(CONDITION_RATING_LABELS[conditionRating], " \xB7 ").concat(conditionRating, "/5") : 'Deslice la barra para calificar')), /*#__PURE__*/React.createElement("div", {
+  }, conditionRating && /*#__PURE__*/React.createElement("span", {
+    className: "condition-danta-face is-inline",
+    "aria-hidden": "true",
+    style: {
+      backgroundPosition: "".concat(CONDITION_RATING_SPRITE_POSITION[conditionRating], " center")
+    }
+  }), conditionRating ? "".concat(CONDITION_RATING_LABELS[conditionRating], " \xB7 ").concat(conditionRating, "/5") : 'Deslice la barra para calificar')), /*#__PURE__*/React.createElement("div", {
     className: "pending-justification-field"
   }, /*#__PURE__*/React.createElement(Lbl, {
     c: "Justificaci\xF3n de pendientes no resueltos"
@@ -7985,7 +7988,7 @@ var buildDocx = /*#__PURE__*/function () {
           }), mapParagraph, docxPara(' ')] : []), [
           // D. Diagnóstico
           docxHeading('D. Diagnóstico inicial', 2), docxTable(['ID', 'Problema', 'Gravedad'], (d.activeProbs || []).map(function (p, i) {
-            return ["P-".concat(String(i + 1).padStart(2, '0')), p === 'Otro' && d.otroText ? "Otro: ".concat(d.otroText) : p, (d.sevs || {})[p] || '—'];
+            return ["P-".concat(String(i + 1).padStart(2, '0')), p === 'Otro' && d.otroText ? "Otro: ".concat(d.otroText) : ITEM_VISUALS[p] ? ITEM_VISUALS[p][1] : p, (d.sevs || {})[p] || '—'];
           })), docxPara(' '),
           // E. Labores
           docxHeading('E. Labores realizadas', 2)], _toConsumableArray(laborLines.length > 0 ? laborLines.map(function (l, i) {
@@ -8029,7 +8032,7 @@ var buildDocx = /*#__PURE__*/function () {
             return resourceBlocks;
           }()), [docxPara(' '),
           // I. Resultados
-          docxHeading('I. Resultados e indicadores', 2), docxTable(['Indicador', 'Valor'], [['Metros de sendero atendidos', calc.totalMetros ? "".concat(calc.totalMetros, " m") : '—'], ['Horas-persona totales', calc.horasPersonaMin ? "".concat(Math.floor(calc.horasPersonaMin / 60), ":").concat(String(calc.horasPersonaMin % 60).padStart(2, '0')) : '—'], ['Días efectivos', String(calc.diasEfectivos || '—')], ['Participantes únicos', String(calc.participantesUnicos || '—')], ['Promedio personas/día', String(calc.promPersonasDia || '—')], ['Puntos críticos (con gravedad)', String(calc.puntosAtendidos || '—')], ['Drenajes limpiados/reparados', String(mf.drenajes || '—')], ['Árboles / ramas grandes retiradas', String(mf.arboles || '—')], ['Estructuras menores reparadas', String(mf.estructuras || '—')], ['Señales revisadas o corregidas', String(mf.senales || '—')], ['Residuos retirados', String(mf.residuos || '—')], ['Visitantes afectados', String(mf.visitantes || '—')], mf.otroDetalle || mf.otroCantidad ? [mf.otroDetalle ? "Otro: ".concat(mf.otroDetalle) : 'Otro dato de campo', String(mf.otroCantidad || '—')] : null, ['¿Requiere seguimiento?', String(mf.seguimiento || '—')]].filter(Boolean)), docxPara(' '),
+          docxHeading('I. Resultados e indicadores', 2), docxTable(['Indicador', 'Valor'], [['Metros de sendero atendidos', calc.totalMetros ? "".concat(calc.totalMetros, " m") : '—'], ['Horas-persona totales', calc.horasPersonaMin ? "".concat(Math.floor(calc.horasPersonaMin / 60), ":").concat(String(calc.horasPersonaMin % 60).padStart(2, '0')) : '—'], ['Días efectivos', String(calc.diasEfectivos || '—')], ['Participantes únicos', String(calc.participantesUnicos || '—')], ['Promedio personas/día', String(calc.promPersonasDia || '—')], ['Puntos críticos (con gravedad)', String(calc.puntosAtendidos || '—')], ['Drenajes limpiados/reparados', String(mf.drenajes || '—')], ['Árboles / ramas grandes retiradas', String(mf.arboles || '—')], ['Estructuras menores reparadas', String(mf.estructuras || '—')], ['Señales revisadas o corregidas', String(mf.senales || '—')], ['Residuos retirados', String(mf.residuos || '—')], mf.otroDetalle || mf.otroCantidad ? [mf.otroDetalle ? "Otro: ".concat(mf.otroDetalle) : 'Otro dato de campo', String(mf.otroCantidad || '—')] : null, ['¿Requiere seguimiento?', String(mf.seguimiento || '—')]].filter(Boolean)), docxPara(' '),
           // J. Evidencia fotográfica
           docxHeading('J. Evidencia fotográfica', 2)], _toConsumableArray(fotoData.length > 0 ? fotoData.flatMap(function (fd) {
             return [docxPara("Foto ".concat(String(fd.n).padStart(2, '0')).concat(fd.categoria ? ' — ' + fd.categoria : '').concat(fd.desc ? ': ' + fd.desc : ''), {
@@ -8731,7 +8734,7 @@ var InformeModal = function InformeModal(_ref46) {
         padding: '5px 8px',
         background: i % 2 === 0 ? 'white' : G.soft
       }
-    }, p === 'Otro' && d.otroText ? "Otro: ".concat(d.otroText) : p), /*#__PURE__*/React.createElement("td", {
+    }, p === 'Otro' && d.otroText ? "Otro: ".concat(d.otroText) : ITEM_VISUALS[p] ? ITEM_VISUALS[p][1] : p), /*#__PURE__*/React.createElement("td", {
       style: {
         border: '1px solid #E0DDD5',
         padding: '5px 8px',
@@ -8876,7 +8879,7 @@ var InformeModal = function InformeModal(_ref46) {
       borderCollapse: 'collapse',
       fontSize: 12
     }
-  }, [['Drenajes limpiados/reparados', mf.drenajes || '—'], ['Árboles / ramas grandes retiradas', mf.arboles || '—'], ['Estructuras menores reparadas', mf.estructuras || '—'], ['Señales revisadas o corregidas', mf.senales || '—'], ['Residuos retirados', mf.residuos || '—'], ['Visitantes afectados', mf.visitantes || '—'], mf.otroDetalle || mf.otroCantidad ? [mf.otroDetalle ? "Otro: ".concat(mf.otroDetalle) : 'Otro dato de campo', String(mf.otroCantidad || '—')] : null, ['¿Requiere seguimiento?', mf.seguimiento || '—']].filter(Boolean).map(function (_ref52, i) {
+  }, [['Drenajes limpiados/reparados', mf.drenajes || '—'], ['Árboles / ramas grandes retiradas', mf.arboles || '—'], ['Estructuras menores reparadas', mf.estructuras || '—'], ['Señales revisadas o corregidas', mf.senales || '—'], ['Residuos retirados', mf.residuos || '—'], mf.otroDetalle || mf.otroCantidad ? [mf.otroDetalle ? "Otro: ".concat(mf.otroDetalle) : 'Otro dato de campo', String(mf.otroCantidad || '—')] : null, ['¿Requiere seguimiento?', mf.seguimiento || '—']].filter(Boolean).map(function (_ref52, i) {
     var _ref53 = _slicedToArray(_ref52, 2),
       l = _ref53[0],
       v = _ref53[1];
@@ -9824,8 +9827,108 @@ function App() {
     setBannerVisible(false);
     window.location.reload();
   }, []);
+  var findBlockingRequirement = function findBlockingRequirement(targetIndex) {
+    var report = getReportData();
+    var hasChoice = function hasChoice(value) {
+      return Array.isArray(value) ? value.length > 0 : !!value;
+    };
+    var requirements = [{
+      section: 'A',
+      test: function test() {
+        var a = report.a_data || {};
+        if (!(a.sendero || senderoRef.current)) return {
+          message: 'Seleccione el sendero oficial para continuar.',
+          selector: '#section-panel-A #sendero-oficial'
+        };
+        if (!hasChoice(a.tipoInterv)) return {
+          message: 'Elija un único tipo de intervención para continuar.',
+          selector: '#section-panel-A input[name="tipo-intervencion"]'
+        };
+        if (!hasChoice(a.origen)) return {
+          message: 'Elija un único origen de la solicitud para continuar.',
+          selector: '#section-panel-A input[name="origen-solicitud"]'
+        };
+        if (!hasChoice(a.clima)) return {
+          message: 'Elija una única condición climática dominante para continuar.',
+          selector: '#section-panel-A input[name="condicion-climatica"]'
+        };
+        return null;
+      }
+    }, {
+      section: 'B',
+      test: function test() {
+        var people = Array.isArray(report.b_rows) ? report.b_rows.filter(function (row) {
+          return row && row.nombre && row.nombre.trim();
+        }) : [];
+        return people.length ? null : {
+          message: 'Seleccione el nombre de al menos una persona; puede ser encargado o participante.',
+          selector: '#section-panel-B .b1-add-actions'
+        };
+      }
+    }, {
+      section: 'D',
+      test: function test() {
+        var d = report.d_data || {};
+        return Array.isArray(d.activeProbs) && d.activeProbs.length ? null : {
+          message: 'Marque al menos un problema observado antes de intervenir.',
+          selector: '#section-panel-D .icon-choice-grid'
+        };
+      }
+    }, {
+      section: 'E',
+      test: function test() {
+        var e = report.e_data || {};
+        return Array.isArray(e.checked) && e.checked.length ? null : {
+          message: 'Marque al menos una labor ejecutada en E.1, E.2 o E.3.',
+          selector: '#section-panel-E .icon-choice-grid'
+        };
+      }
+    }];
+    for (var r = 0; r < requirements.length; r += 1) {
+      var requirement = requirements[r];
+      var requirementIndex = ALL_IDS.indexOf(requirement.section);
+      if (requirementIndex >= targetIndex) continue;
+      var issue = requirement.test();
+      if (issue) return _objectSpread({
+        section: requirement.section
+      }, issue);
+    }
+    return null;
+  };
+  var showBlockingRequirement = function showBlockingRequirement(block) {
+    setActive(block.section);
+    setShowRoute(false);
+    setShowReview(false);
+    setVisited(function (current) {
+      var nextVisited = new Set(current);
+      nextVisited.add(block.section);
+      return nextVisited;
+    });
+    setJourneyNotice("⚠ ".concat(block.message));
+    window.setTimeout(function () {
+      var target = document.querySelector(block.selector);
+      if (target) {
+        target.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+        if (typeof target.focus === 'function') target.focus({
+          preventScroll: true
+        });
+      }
+    }, 120);
+  };
   var go = function go(id) {
     if (!id) return;
+    var targetIndex = ALL_IDS.indexOf(id);
+    var currentIndex = ALL_IDS.indexOf(active);
+    if (targetIndex > currentIndex) {
+      var block = findBlockingRequirement(targetIndex);
+      if (block) {
+        showBlockingRequirement(block);
+        return;
+      }
+    }
     var previous = active;
     setVisited(function (current) {
       var nextVisited = new Set(current);
@@ -9854,6 +9957,11 @@ function App() {
     });
   };
   var openReview = function openReview() {
+    var block = findBlockingRequirement(ALL_IDS.length);
+    if (block) {
+      showBlockingRequirement(block);
+      return;
+    }
     setVisited(function (current) {
       var nextVisited = new Set(current);
       nextVisited.add(active);
@@ -10236,7 +10344,7 @@ function App() {
       width: "".concat(progressPercent, "%")
     }
   }))), journeyNotice && /*#__PURE__*/React.createElement("div", {
-    className: "journey-notice",
+    className: "journey-notice".concat(journeyNotice.indexOf('⚠') === 0 ? ' is-warning' : ''),
     role: "status",
     "aria-live": "polite"
   }, journeyNotice), /*#__PURE__*/React.createElement("div", {
@@ -10273,7 +10381,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.43'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.44'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];
@@ -10377,6 +10485,7 @@ function App() {
     var Comp = SEC_MAP[id];
     return /*#__PURE__*/React.createElement("div", {
       key: id,
+      id: "section-panel-".concat(id),
       style: {
         display: active === id ? 'block' : 'none'
       }

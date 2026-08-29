@@ -865,6 +865,307 @@ textarea {
   }
 }
 
+/* ==========================================================================
+   Flujo obligatorio e interacción guiada · versión 1.44
+   ========================================================================== */
+
+.sendero-field {
+  position: relative;
+  grid-column: 1 / -1;
+  padding: 15px;
+  border: 2px solid #c58b00;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fff8df 0%, #fffdf7 100%);
+  box-shadow: 0 4px 14px rgba(154, 109, 0, 0.12);
+  transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.sendero-field::before {
+  content: "PRIMER PASO";
+  display: inline-flex;
+  margin-bottom: 8px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #9a6d00;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+}
+
+.sendero-field .sendero-select {
+  min-height: 56px !important;
+  border: 2px solid #a46f00 !important;
+  border-radius: 9px !important;
+  background: #fff !important;
+  color: var(--brand-navy) !important;
+  font-size: 16px !important;
+  font-weight: 750;
+}
+
+.sendero-field.is-required {
+  animation: sendero-attention 1.8s ease-in-out 2;
+}
+
+.sendero-field.is-complete {
+  border-color: #4f8b62;
+  background: linear-gradient(135deg, #edf9f0 0%, #fbfffc 100%);
+  box-shadow: 0 4px 14px rgba(39, 111, 62, 0.1);
+}
+
+.sendero-field.is-complete::before {
+  content: "✓ LISTO";
+  background: #2e7344;
+}
+
+.sendero-field.is-complete .sendero-select {
+  border-color: #4f8b62 !important;
+}
+
+@keyframes sendero-attention {
+  0%, 100% { box-shadow: 0 4px 14px rgba(154, 109, 0, 0.12); }
+  50% { box-shadow: 0 0 0 5px rgba(229, 173, 30, 0.2), 0 6px 18px rgba(154, 109, 0, 0.18); }
+}
+
+.b1-team-builder-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 14px;
+  border: 1px solid #b9c8d8;
+  border-radius: 11px;
+  background: #f7f9fc;
+}
+
+.b1-shift-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #c8d4e1;
+}
+
+.b1-shift-heading strong,
+.b1-shift-heading small {
+  display: block;
+}
+
+.b1-shift-heading strong {
+  color: var(--brand-navy);
+  font-size: 15px;
+}
+
+.b1-shift-heading small {
+  margin-top: 2px;
+  color: var(--ui-muted);
+  font-size: 11.5px;
+}
+
+.b1-step-badge {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--brand-blue);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 900;
+  place-items: center;
+}
+
+.b1-team-builder-head strong,
+.b1-team-builder-head p {
+  display: block;
+  margin: 0;
+}
+
+.b1-team-builder-head > div > strong {
+  color: var(--brand-navy);
+  font-size: 15px;
+}
+
+.b1-team-builder-head p {
+  margin-top: 3px;
+  color: var(--ui-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.b1-team-status {
+  padding: 6px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.b1-team-status.is-pending {
+  border: 1px solid #d9a1a1;
+  background: #fff1f1;
+  color: #991f1f;
+}
+
+.b1-team-status.is-ready {
+  border: 1px solid #7bb18a;
+  background: #eaf7ee;
+  color: #236539;
+}
+
+.b1-add-actions > button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 11px;
+  min-height: 66px;
+  padding: 10px 14px;
+  text-align: left;
+}
+
+.b1-add-actions > button > span:first-child {
+  font-size: 25px;
+  line-height: 1;
+}
+
+.b1-add-actions > button strong,
+.b1-add-actions > button small {
+  display: block;
+}
+
+.b1-add-actions > button strong {
+  margin-bottom: 3px;
+  font-size: 14px;
+}
+
+.b1-add-actions > button small {
+  font-size: 11px;
+  font-weight: 550;
+  line-height: 1.3;
+  opacity: 0.86;
+}
+
+.g1-visual-option {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center !important;
+  gap: 7px 9px !important;
+  min-height: 78px;
+}
+
+.g1-visual-option .g1-status-badge {
+  grid-column: 2;
+  justify-self: start;
+  padding: 4px 7px;
+  border-radius: 999px;
+  font-size: 9.5px;
+  font-weight: 950;
+  letter-spacing: 0.035em;
+  line-height: 1.15;
+}
+
+.g1-status-badge.is-incomplete {
+  border: 1px solid #cf7777;
+  background: #a91f1f;
+  color: #fff;
+}
+
+.g1-status-badge.is-complete {
+  border: 1px solid #5b956c;
+  background: #2f7546;
+  color: #fff;
+}
+
+.g1-visual-option.is-alert {
+  border: 2px solid #c95d5d;
+  background: #fff0f0;
+  color: #811c1c !important;
+}
+
+.technical-criteria,
+.technical-criteria > div,
+.technical-criteria-option {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.technical-criteria-option.is-other {
+  padding-bottom: 2px;
+}
+
+.technical-criteria-other {
+  display: block;
+  box-sizing: border-box;
+  max-width: 100%;
+  margin-left: 0 !important;
+  min-height: 46px;
+}
+
+.condition-danta-face {
+  display: block;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background-color: #f7f5ef;
+  background-image: url("./assets/icons-ui/l-danta-expresiones.webp");
+  background-repeat: no-repeat;
+  background-size: 500% auto;
+  box-shadow: inset 0 0 0 1px rgba(23, 42, 77, 0.12);
+}
+
+.condition-danta-face.is-inline {
+  display: inline-block;
+  width: 34px;
+  height: 34px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.condition-rating-label {
+  display: flex;
+  align-items: center;
+}
+
+.journey-notice.is-warning {
+  width: min(92vw, 620px);
+  border-color: #d89a39;
+  border-radius: 12px;
+  background: #fff4dc;
+  color: #713d00;
+  text-align: center;
+}
+
+@media (max-width: 700px) {
+  .sendero-field {
+    padding: 12px;
+  }
+
+  .sendero-field .sendero-select {
+    min-height: 58px !important;
+    font-size: 16px !important;
+  }
+
+  .b1-team-builder-head {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .b1-team-status {
+    grid-column: 1 / -1;
+    justify-self: stretch;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .condition-danta-face {
+    width: 46px;
+    height: 46px;
+  }
+
+  .condition-slider-scale small {
+    font-size: 9.5px;
+  }
+}
+
 @container (max-width: 780px) {
   .app-shell {
     display: flex !important;
