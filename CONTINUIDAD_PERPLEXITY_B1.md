@@ -237,6 +237,16 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - El contenido generado del Word usa Arial, texto normal de 11 pt y azul marino oscuro `#0B1F3A` en títulos y encabezados de tablas.
 - La estructura gráfica, relaciones, logos y geometría del membrete institucional se mantienen; su texto también se normaliza a Arial.
 
+## Limpieza segura de borradores (versión 1.42)
+
+- El aviso de borrador usa ahora la acción explícita `Descartar`; ya no se limita a ocultar el aviso.
+- Al descartar o iniciar un informe nuevo se eliminan solamente `pnlq_form_draft`, `pnlq_form_draft_ts` y `senderos_pnlq_b1_memory_v1`.
+- La app se reinicia después de limpiar para retirar también los participantes que ya estaban cargados en el estado de React.
+- Una protección temporal suspende el autoguardado durante el reinicio e impide que `beforeunload` recree el informe eliminado.
+- El autoguardado vuelve a activarse con la primera interacción real dentro del formulario o mediante `Guardar borrador`.
+- La barra lateral incorpora `Nuevo informe · limpiar memoria`, disponible aunque el aviso inicial ya no esté visible.
+- Este cambio no modifica recolectores, vista previa ni generación del Word.
+
 ## Precauciones
 
 - No convertir `index.html` a un proyecto npm durante esta etapa.

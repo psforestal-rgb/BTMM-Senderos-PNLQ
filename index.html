@@ -17,7 +17,7 @@
   <link rel="manifest" href="./manifest.webmanifest"/>
   <link rel="icon" href="./icons/icon.svg" type="image/svg+xml"/>
   <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
-  <link rel="stylesheet" href="./responsive.css?v=141"/>
+  <link rel="stylesheet" href="./responsive.css?v=142"/>
   <script src="./vendor/react.production.min.js"></script>
   <script src="./vendor/react-dom.production.min.js"></script>
   <script src="./vendor/jszip.min.js"></script>
@@ -1865,6 +1865,9 @@ var SINAC_STAFF = [
 // Grupo 3
 'Yolanda Elizondo', 'Mariano Solis', 'Guillermo Perez', 'Carlos Cordero'];
 var B1_MEMORY_KEY = 'senderos_pnlq_b1_memory_v1';
+var FORM_DRAFT_KEY = 'pnlq_form_draft';
+var FORM_DRAFT_TS_KEY = 'pnlq_form_draft_ts';
+var FORM_RESET_GUARD_KEY = 'pnlq_form_reset_guard';
 var SecB = function SecB() {
   var mkRow = function mkRow(fecha) {
     var encargado = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
@@ -9500,6 +9503,19 @@ function NavBtn(_ref58) {
 // ─── COMPONENTE PRINCIPAL ─────────────────────────────────────────────────────
 function App() {
   var _ALL_SECS$find, _ALL_SECS$find2;
+  // Al descartar un informe, suspende el autoguardado hasta que exista una
+  // nueva interacción real. Así el evento beforeunload no recrea el borrador.
+  var autosaveSuspendedRef = useRef(false);
+  useEffect(function () {
+    try {
+      if (sessionStorage.getItem(FORM_RESET_GUARD_KEY) === '1') {
+        autosaveSuspendedRef.current = true;
+        sessionStorage.removeItem(FORM_RESET_GUARD_KEY);
+      }
+    } catch (e) {
+      console.warn('No se pudo consultar la protección de reinicio:', e);
+    }
+  }, []);
   var _useState85 = useState('A'),
     _useState86 = _slicedToArray(_useState85, 2),
     active = _useState86[0],
@@ -9627,6 +9643,8 @@ function App() {
     lastSavedAt = _useState100[0],
     setLastSavedAt = _useState100[1];
   var performSave = useCallback(function () {
+    var force = arguments.length > 0 && arguments[0] === true;
+    if (autosaveSuspendedRef.current && !force) return false;
     var sections = getReportData();
     // Para localStorage: quitar base64 de fotos (puede exceder la cuota del navegador).
     // Las fotos se conservan en memoria, en el DOCX y en el JSON exportado.
@@ -9649,15 +9667,17 @@ function App() {
       sections: sections
     };
     try {
-      localStorage.setItem('pnlq_form_draft', JSON.stringify(payload));
-      localStorage.setItem('pnlq_form_draft_ts', payload.timestamp);
+      localStorage.setItem(FORM_DRAFT_KEY, JSON.stringify(payload));
+      localStorage.setItem(FORM_DRAFT_TS_KEY, payload.timestamp);
       setLastSavedAt(new Date());
+      return true;
     } catch (e) {
       console.warn('AutoSave:', e);
+      return false;
     }
   }, [getReportData]);
 
-  // Guardado periódico cada 45 s y al cerrar la pestaña
+  // Guardado periódico cada 10 s y al cerrar la pestaña
   useEffect(function () {
     // Respaldo periódico cada 10 s (por si el usuario no interactúa)
     var id = setInterval(performSave, 10000);
@@ -9667,16 +9687,22 @@ function App() {
     // — cubre apagones, crashes y cierre sin beforeunload
     var debounce = null;
     var onActivity = function onActivity() {
+      autosaveSuspendedRef.current = false;
       if (debounce) clearTimeout(debounce);
       debounce = setTimeout(performSave, 1500);
     };
+    var onContentAction = function onContentAction(event) {
+      if (event.target && event.target.closest && event.target.closest('.app-content button, .app-content [role="button"]')) onActivity();
+    };
     document.addEventListener('input', onActivity, true);
     document.addEventListener('change', onActivity, true);
+    document.addEventListener('click', onContentAction, true);
     return function () {
       clearInterval(id);
       window.removeEventListener('beforeunload', performSave);
       document.removeEventListener('input', onActivity, true);
       document.removeEventListener('change', onActivity, true);
+      document.removeEventListener('click', onContentAction, true);
       if (debounce) clearTimeout(debounce);
     };
   }, [performSave]);
@@ -9733,7 +9759,10 @@ function App() {
   // ── Banner de borrador guardado ────────────────────────────────
   var _useState101 = useState(function () {
       try {
-        return localStorage.getItem('pnlq_form_draft_ts');
+        var generalTimestamp = localStorage.getItem(FORM_DRAFT_TS_KEY);
+        if (generalTimestamp) return generalTimestamp;
+        var participantMemory = localStorage.getItem(B1_MEMORY_KEY);
+        return participantMemory ? JSON.parse(participantMemory).savedAt || null : null;
       } catch (e) {
         return null;
       }
@@ -9743,7 +9772,7 @@ function App() {
     setDraftTs = _useState102[1];
   var _useState103 = useState(function () {
       try {
-        return !!localStorage.getItem('pnlq_form_draft');
+        return !!(localStorage.getItem(FORM_DRAFT_KEY) || localStorage.getItem(B1_MEMORY_KEY));
       } catch (e) {
         return false;
       }
@@ -9753,19 +9782,48 @@ function App() {
     setBannerVisible = _useState104[1];
   var handleRestoreDraft = useCallback(function () {
     try {
-      var raw = localStorage.getItem('pnlq_form_draft');
+      var raw = localStorage.getItem(FORM_DRAFT_KEY);
       if (!raw) {
+        if (localStorage.getItem(B1_MEMORY_KEY)) {
+          autosaveSuspendedRef.current = false;
+          setBannerVisible(false);
+          alert('✓ Los participantes guardados ya fueron recuperados en la sección B.');
+          return;
+        }
         alert('No se encontró borrador guardado.');
         return;
       }
       var data = JSON.parse(raw);
       restoreFormData(data);
+      autosaveSuspendedRef.current = false;
       setBannerVisible(false);
       alert('✓ Borrador restaurado correctamente.');
     } catch (e) {
       alert('Error al restaurar: ' + e.message);
     }
   }, [restoreFormData]);
+  var handleDiscardDraft = useCallback(function () {
+    var confirmed = window.confirm('Se borrarán el borrador actual y los participantes guardados en este navegador. Esta acción deja la app lista para un informe nuevo. ¿Continuar?');
+    if (!confirmed) return;
+    autosaveSuspendedRef.current = true;
+    try {
+      localStorage.removeItem(FORM_DRAFT_KEY);
+      localStorage.removeItem(FORM_DRAFT_TS_KEY);
+      localStorage.removeItem(B1_MEMORY_KEY);
+      try {
+        sessionStorage.setItem(FORM_RESET_GUARD_KEY, '1');
+      } catch (sessionError) {
+        console.warn('No se pudo guardar la protección de reinicio:', sessionError);
+      }
+    } catch (error) {
+      autosaveSuspendedRef.current = false;
+      alert('No fue posible limpiar los datos guardados en este navegador: ' + error.message);
+      return;
+    }
+    setDraftTs(null);
+    setBannerVisible(false);
+    window.location.reload();
+  }, []);
   var go = function go(id) {
     if (!id) return;
     var previous = active;
@@ -9921,9 +9979,7 @@ function App() {
       cursor: 'pointer'
     }
   }, "\u21BA Restaurar borrador"), /*#__PURE__*/React.createElement("button", {
-    onClick: function onClick() {
-      return setBannerVisible(false);
-    },
+    onClick: handleDiscardDraft,
     style: {
       padding: '7px 12px',
       background: 'transparent',
@@ -9934,7 +9990,7 @@ function App() {
       fontSize: 12,
       cursor: 'pointer'
     }
-  }, "\xD7 Cerrar")), /*#__PURE__*/React.createElement("div", {
+  }, "\uD83D\uDDD1 Descartar")), /*#__PURE__*/React.createElement("div", {
     className: "app-shell",
     style: {
       display: 'flex',
@@ -10077,7 +10133,7 @@ function App() {
     }
   }, /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
-      performSave();
+      performSave(true);
     },
     style: {
       width: '100%',
@@ -10135,7 +10191,22 @@ function App() {
     style: {
       display: 'none'
     }
-  })))), /*#__PURE__*/React.createElement("div", {
+  })), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: handleDiscardDraft,
+    style: {
+      width: '100%',
+      padding: '8px',
+      background: 'rgba(180,45,45,0.18)',
+      border: '1px solid rgba(255,190,190,0.28)',
+      borderRadius: 6,
+      color: '#FFE2E2',
+      fontFamily: 'inherit',
+      fontSize: 12,
+      cursor: 'pointer',
+      textAlign: 'left'
+    }
+  }, "\uD83E\uDDF9 Nuevo informe · limpiar memoria"))), /*#__PURE__*/React.createElement("div", {
     className: "app-main",
     style: {
       marginLeft: 210,
@@ -10202,7 +10273,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.41'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.42'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];
