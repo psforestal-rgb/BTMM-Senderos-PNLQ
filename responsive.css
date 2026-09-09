@@ -1087,18 +1087,6 @@ textarea {
   min-height: 46px;
 }
 
-.condition-danta-face {
-  display: block;
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  background-color: #f7f5ef;
-  background-image: url("./assets/icons-ui/l-danta-expresiones.webp");
-  background-repeat: no-repeat;
-  background-size: 500% auto;
-  box-shadow: inset 0 0 0 1px rgba(23, 42, 77, 0.12);
-}
-
 .condition-rating-label {
   display: flex;
   align-items: center;
@@ -4768,13 +4756,14 @@ body.preview-mobile .closing-review-overlay {
   font-weight: 800;
 }
 
-/* ── Carrusel de condición final ──────────────────────────────────────────────
-   Sustituye a la escala estática de cinco caras + deslizador. La cara elegida
-   queda grande al centro y las demás giran a los lados en tamaño decreciente.
-   Las imágenes son las de siempre (sprite l-danta-expresiones.webp): solo cambia
-   el método de selección.                                                     */
+/* ── Tambor de condición final ────────────────────────────────────────────────
+   Sustituye a la escala de caras de danta. Los cinco paneles son radios de una
+   rueda cuyo eje es horizontal: el elegido queda de frente y los vecinos se ven
+   de canto arriba y abajo. Se gira arrastrando en vertical, con las flechas o
+   tocando un panel. Cinco radios de 72 grados cierran la vuelta, así que el
+   movimiento es cíclico y del nivel 5 se pasa al 1 sin rebobinar.            */
 .condition-carousel {
-  --condition-slot: 92px;
+  --condition-panel: 150px;
   margin-top: 2px;
 }
 
@@ -4786,6 +4775,8 @@ body.preview-mobile .closing-review-overlay {
 }
 
 .condition-carousel-arrow {
+  position: relative;
+  z-index: 5;
   width: 44px;
   min-width: 44px;
   height: 44px;
@@ -4801,19 +4792,15 @@ body.preview-mobile .closing-review-overlay {
   touch-action: manipulation;
 }
 
-.condition-carousel-arrow:disabled {
-  border-color: #d6dbe2;
-  background: #fafbfc;
-  color: #aab2bd;
-  cursor: default;
-}
-
 .condition-carousel-viewport {
-  overflow: hidden;
   min-width: 0;
+  overflow: hidden;
+  perspective: 760px;
+  perspective-origin: 50% 50%;
   cursor: grab;
-  /* pan-y: el giro horizontal no secuestra el desplazamiento vertical */
-  touch-action: pan-y;
+  /* pan-x: el giro vertical del tambor no le quita a la página su
+     desplazamiento horizontal, y el vertical queda para el gesto. */
+  touch-action: pan-x;
   -webkit-user-select: none;
   user-select: none;
 }
@@ -4823,50 +4810,50 @@ body.preview-mobile .closing-review-overlay {
 }
 
 .condition-carousel-track {
-  display: flex;
-  align-items: center;
-  /* El relleno izquierdo lleva la primera cara al centro del visor; el
-     translateX que fija el componente desplaza una ranura por cada paso. */
-  padding: 8px calc(50% - var(--condition-slot) / 2);
-  transition: transform 0.34s cubic-bezier(0.22, 0.61, 0.36, 1);
+  position: relative;
+  height: 300px;
+  transform-style: preserve-3d;
+  transition: transform 0.42s cubic-bezier(0.25, 0.8, 0.35, 1);
   will-change: transform;
 }
 
+/* Cada panel cuelga de su radio: el componente le fija el ángulo y la distancia
+   al eje, y aquí solo va lo que no depende de la posición en la rueda. */
 .condition-carousel-item {
-  flex: 0 0 var(--condition-slot);
-  width: var(--condition-slot);
-  display: grid;
-  place-items: center;
-  padding: 4px 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--condition-panel);
+  height: var(--condition-panel);
+  margin: calc(var(--condition-panel) / -2) 0 0 calc(var(--condition-panel) / -2);
+  padding: 0;
   border: 0;
-  background: none;
+  border-radius: 18px;
+  background: #141a12;
+  overflow: hidden;
   cursor: pointer;
-  transition: transform 0.34s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.34s ease;
+  backface-visibility: hidden;
+  transition: opacity 0.42s ease, box-shadow 0.2s ease;
 }
 
-/* Tamaño decreciente hacia los extremos: el centro es la calificación activa. */
-.condition-carousel-item .condition-danta-face {
-  width: 40px;
-  height: 40px;
-  opacity: 0.5;
-  transition: width 0.34s ease, height 0.34s ease, opacity 0.34s ease, box-shadow 0.2s ease;
+.condition-carousel-item img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Sin esto, arrastrar sobre la ilustración dispara el arrastre de imagen del
+     navegador, que cancela el gesto a mitad de camino. */
+  pointer-events: none;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
 }
 
-.condition-carousel-item.is-near .condition-danta-face {
-  width: 54px;
-  height: 54px;
-  opacity: 0.85;
+.condition-carousel-item.is-center {
+  box-shadow: inset 0 0 0 1px rgba(23, 42, 77, 0.16), 0 10px 24px rgba(23, 42, 77, 0.22);
 }
 
-.condition-carousel-item.is-center .condition-danta-face {
-  width: 84px;
-  height: 84px;
-  opacity: 1;
-  box-shadow: inset 0 0 0 1px rgba(23, 42, 77, 0.16), 0 6px 16px rgba(23, 42, 77, 0.16);
-}
-
-.condition-carousel-item.is-chosen .condition-danta-face {
-  box-shadow: inset 0 0 0 1px rgba(23, 42, 77, 0.16), 0 0 0 4px #fff1bd, 0 0 0 6px #b98400;
+.condition-carousel-item.is-chosen {
+  box-shadow: 0 0 0 4px #fff1bd, 0 0 0 6px #b98400, 0 10px 24px rgba(23, 42, 77, 0.22);
 }
 
 .condition-carousel .condition-rating-label {
@@ -4874,45 +4861,66 @@ body.preview-mobile .closing-review-overlay {
   text-align: center;
 }
 
+/* Detalle del nivel elegido, bajo el tambor. */
+.condition-detail {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid #d6dbe2;
+  border-left: 3px solid #b98400;
+  border-radius: 8px;
+  background: #fffbea;
+}
+
+.condition-detail strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #6b5a00;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.condition-detail ul {
+  margin: 0;
+  padding-left: 17px;
+}
+
+.condition-detail li {
+  margin-bottom: 3px;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.condition-detail-empty {
+  color: #4b5563;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
 @media (max-width: 700px) {
   .condition-carousel {
-    --condition-slot: 74px;
+    --condition-panel: 132px;
   }
 
-  .condition-carousel-item .condition-danta-face {
-    width: 34px;
-    height: 34px;
-  }
-
-  .condition-carousel-item.is-near .condition-danta-face {
-    width: 46px;
-    height: 46px;
-  }
-
-  .condition-carousel-item.is-center .condition-danta-face {
-    width: 68px;
-    height: 68px;
+  .condition-carousel-track {
+    height: 272px;
   }
 }
 
-/* El anillo de foco general del formulario es un rectángulo alrededor del botón:
-   sobre una cara redonda de 84 px queda un cuadrado que choca con el aro dorado de
-   la selección. Se traslada a la propia cara, que ya es circular, conservando color
-   y grosor. Sigue siendo un outline, así que el modo de alto contraste lo respeta. */
+/* El anillo de foco general del formulario es un rectángulo alrededor del botón.
+   Aquí el panel ya es rectangular, así que basta con separarlo del borde para
+   que no se pierda contra la ilustración. Sigue siendo un outline, de modo que
+   el modo de alto contraste lo respeta. */
 .condition-carousel-item:focus-visible {
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-.condition-carousel-item:focus-visible .condition-danta-face {
-  outline: 3px solid var(--focus-ring);
-  outline-offset: 3px;
+  outline: 3px solid var(--focus-ring) !important;
+  outline-offset: -6px !important;
+  box-shadow: inset 0 0 0 2px var(--brand-navy) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .condition-carousel-track,
-  .condition-carousel-item,
-  .condition-carousel-item .condition-danta-face {
+  .condition-carousel-item {
     transition: none !important;
   }
 }
