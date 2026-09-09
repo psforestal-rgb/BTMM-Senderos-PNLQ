@@ -21,6 +21,7 @@
   <script src="./vendor/react.production.min.js"></script>
   <script src="./vendor/react-dom.production.min.js"></script>
   <script src="./vendor/jszip.min.js"></script>
+  <script src="./respaldo-config.js?v=1"></script>
   <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',system-ui,sans-serif}#root:empty::after{content:"Cargando formulario…";display:block;padding:40px;font-size:15px;color:#7a756a;text-align:center}@media print{body>*:not(#root){display:none}#root>div>div:first-child{display:none!important}#informe-preview{box-shadow:none!important;max-width:100%!important}}</style>
 </head>
 <body><div id="root"></div><script>var _excluded = ["seguimiento"];
@@ -116,6 +117,359 @@ var G = {
   text: '#021A53',
   muted: '#4B5563',
   soft: '#F7F8FA'
+};
+
+// ─── RESPALDO EN GOOGLE SHEETS ───────────────────────────────────────────────
+// El informe se envía a una hoja de cálculo del parque mediante un Apps Script.
+// Todo pasa por una cola local: en el campo casi nunca hay señal, así que lo que
+// no se pudo enviar queda guardado y sale solo cuando vuelve la conexión.
+var Respaldo = function () {
+  var COLA_KEY = 'pnlq_respaldo_cola_v1';
+  var JORNADA_KEY = 'pnlq_jornada_id_v1';
+  var ENVIADAS_KEY = 'pnlq_respaldo_enviadas_v1';
+  var MAX_COLA = 20;
+  var ESPERA_BASE = 30000; // 30 s tras el primer fallo
+  var ESPERA_MAX = 600000; // sin pasar de 10 min entre reintentos
+
+  var suscriptores = [];
+  var enviando = false;
+  var estadoJornada = 'borrador';
+  var ultimoEnvio = null;
+  var ultimoError = '';
+  var temporizador = null;
+
+  function cfg() {
+    return window.PNLQ_RESPALDO || {};
+  }
+  function configurado() {
+    var c = cfg();
+    return !!(c.activo && c.url);
+  }
+
+  function leer(clave, respaldo) {
+    try {
+      var raw = localStorage.getItem(clave);
+      return raw ? JSON.parse(raw) : respaldo;
+    } catch (e) {
+      return respaldo;
+    }
+  }
+  function escribir(clave, valor) {
+    try {
+      localStorage.setItem(clave, JSON.stringify(valor));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function cola() {
+    var c = leer(COLA_KEY, []);
+    return Object.prototype.toString.call(c) === '[object Array]' ? c : [];
+  }
+  function guardarCola(c) {
+    escribir(COLA_KEY, c.slice(-MAX_COLA));
+  }
+
+  // Huella del contenido: evita reenviar un informe que no cambió.
+  function firma(texto) {
+    var h = 5381;
+    for (var i = 0; i < texto.length; i++) h = (h * 33 ^ texto.charCodeAt(i)) >>> 0;
+    return texto.length + '-' + h.toString(36);
+  }
+
+  function dispositivo() {
+    var ua = navigator.userAgent || '';
+    var so = /Android/i.test(ua) ? 'Android' : /iPhone|iPad|iPod/i.test(ua) ? 'iOS' :
+      /Windows/i.test(ua) ? 'Windows' : /Mac OS/i.test(ua) ? 'Mac' : 'Otro';
+    var nav = /Edg\//.test(ua) ? 'Edge' : /Chrome\//.test(ua) ? 'Chrome' :
+      /Firefox\//.test(ua) ? 'Firefox' : /Safari\//.test(ua) ? 'Safari' : 'Navegador';
+    return so + ' · ' + nav;
+  }
+
+  /** Identificador estable del informe en curso: es la llave del respaldo. */
+  function jornadaId() {
+    var id = '';
+    try {
+      id = localStorage.getItem(JORNADA_KEY) || '';
+    } catch (e) { /* almacenamiento bloqueado */ }
+    if (!id) {
+      var f = new Date();
+      var fecha = f.getFullYear() + ('0' + (f.getMonth() + 1)).slice(-2) + ('0' + f.getDate()).slice(-2);
+      var azar = Math.random().toString(36).slice(2, 8).toUpperCase();
+      id = 'JR-' + fecha + '-' + azar;
+      try {
+        localStorage.setItem(JORNADA_KEY, id);
+      } catch (e2) { /* sin persistencia: el id vive solo en esta sesión */ }
+    }
+    return id;
+  }
+
+  /** Comienza un informe nuevo. Lo pendiente de la jornada anterior sigue en la cola. */
+  function nuevaJornada() {
+    try {
+      localStorage.removeItem(JORNADA_KEY);
+    } catch (e) { /* nada que limpiar */ }
+    estadoJornada = 'borrador';
+    notificar();
+  }
+
+  /** Retoma el identificador de un borrador importado, para no duplicarlo en la hoja. */
+  function adoptarJornada(id) {
+    if (!id) return;
+    try {
+      localStorage.setItem(JORNADA_KEY, String(id));
+    } catch (e) { /* sin persistencia */ }
+    notificar();
+  }
+
+  function marcarFinal() {
+    estadoJornada = 'final';
+  }
+
+  function estado() {
+    return {
+      configurado: configurado(),
+      pendientes: cola().length,
+      ultimoEnvio: ultimoEnvio,
+      ultimoError: ultimoError,
+      enviando: enviando,
+      enLinea: navigator.onLine !== false,
+      jornadaId: jornadaId()
+    };
+  }
+
+  function suscribir(fn) {
+    suscriptores.push(fn);
+    return function () {
+      var i = suscriptores.indexOf(fn);
+      if (i >= 0) suscriptores.splice(i, 1);
+    };
+  }
+  function notificar() {
+    var e = estado();
+    suscriptores.forEach(function (fn) {
+      try {
+        fn(e);
+      } catch (err) {
+        console.warn('Respaldo: suscriptor', err);
+      }
+    });
+  }
+
+  /**
+   * Deja el informe listo para enviar. Recibe el mismo objeto que la aplicación
+   * ya guarda como borrador, así que no duplica la lógica del formulario.
+   */
+  function encolar(borrador) {
+    if (!configurado() || !borrador || !borrador.sections) return false;
+    var id = jornadaId();
+    var cuerpo = {
+      app: borrador.app,
+      version: borrador.version,
+      jornada_id: id,
+      estado: estadoJornada,
+      dispositivo: dispositivo(),
+      timestamp: borrador.timestamp || new Date().toISOString(),
+      context: borrador.context || {},
+      sections: borrador.sections || {}
+    };
+    // La huella ignora la marca de tiempo: solo cambia si cambió el contenido.
+    var huella = firma(JSON.stringify({
+      estado: cuerpo.estado, context: cuerpo.context, sections: cuerpo.sections
+    }));
+
+    var enviadas = leer(ENVIADAS_KEY, {});
+    if (enviadas[id] === huella) return false; // sin cambios desde el último envío
+
+    var c = cola();
+    var pos = -1;
+    for (var i = 0; i < c.length; i++) {
+      if (c[i].jornada_id === id) { pos = i; break; }
+    }
+    var entrada = {
+      jornada_id: id,
+      firma: huella,
+      cuerpo: cuerpo,
+      intentos: pos >= 0 ? c[pos].intentos || 0 : 0,
+      proximoIntento: 0,
+      creado: pos >= 0 ? c[pos].creado : new Date().toISOString()
+    };
+    if (pos >= 0) c[pos] = entrada; else c.push(entrada);
+    guardarCola(c);
+    notificar();
+    return true;
+  }
+
+  function esperaTras(intentos) {
+    return Math.min(ESPERA_MAX, ESPERA_BASE * Math.pow(2, Math.max(0, intentos - 1)));
+  }
+
+  /** Envía una entrada. Devuelve una promesa con la respuesta del Apps Script. */
+  function enviarEntrada(entrada) {
+    var c = cfg();
+    var cuerpo = entrada.cuerpo;
+    cuerpo.token = c.token || '';
+    return fetch(c.url, {
+      method: 'POST',
+      // text/plain evita la verificación previa CORS, que Apps Script no atiende.
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(cuerpo)
+    }).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    });
+  }
+
+  /** Vacía la cola, una entrada a la vez. */
+  function enviar(forzar) {
+    if (enviando || !configurado()) return Promise.resolve(estado());
+    var c = cola();
+    if (!c.length) return Promise.resolve(estado());
+    if (navigator.onLine === false && !forzar) return Promise.resolve(estado());
+
+    enviando = true;
+    notificar();
+    var ahora = Date.now();
+
+    var paso = function paso() {
+      var pendiente = cola();
+      if (!pendiente.length) return Promise.resolve();
+      var entrada = null;
+      for (var i = 0; i < pendiente.length; i++) {
+        if (forzar || !pendiente[i].proximoIntento || pendiente[i].proximoIntento <= ahora) {
+          entrada = pendiente[i];
+          break;
+        }
+      }
+      if (!entrada) return Promise.resolve();
+
+      return enviarEntrada(entrada).then(function (resp) {
+        var actual = cola().filter(function (x) { return x.jornada_id !== entrada.jornada_id; });
+        if (resp && resp.ok) {
+          var enviadas = leer(ENVIADAS_KEY, {});
+          enviadas[entrada.jornada_id] = entrada.firma;
+          escribir(ENVIADAS_KEY, enviadas);
+          guardarCola(actual);
+          ultimoEnvio = new Date().toISOString();
+          ultimoError = '';
+          notificar();
+          return paso();
+        }
+        // El servidor respondió pero rechazó el informe: reintentar no lo arregla.
+        ultimoError = (resp && (resp.mensaje || resp.error)) || 'rechazado';
+        if (resp && (resp.error === 'token_invalido' || resp.error === 'formato_desconocido')) {
+          guardarCola(actual);
+        } else {
+          marcarFallo(entrada);
+        }
+        notificar();
+      }, function (err) {
+        // Sin red, o el envío se cortó: se conserva para el próximo intento.
+        ultimoError = err && err.message ? err.message : 'sin conexión';
+        marcarFallo(entrada);
+        notificar();
+      });
+    };
+
+    return paso().then(function () {
+      enviando = false;
+      notificar();
+      return estado();
+    }, function () {
+      enviando = false;
+      notificar();
+      return estado();
+    });
+  }
+
+  function marcarFallo(entrada) {
+    var c = cola();
+    for (var i = 0; i < c.length; i++) {
+      if (c[i].jornada_id === entrada.jornada_id) {
+        c[i].intentos = (c[i].intentos || 0) + 1;
+        c[i].proximoIntento = Date.now() + esperaTras(c[i].intentos);
+        c[i].ultimoError = ultimoError;
+      }
+    }
+    guardarCola(c);
+  }
+
+  /**
+   * Carga en la hoja el catálogo de sectores, senderos y su geometría.
+   * Se ejecuta una sola vez desde la consola del navegador: PNLQ_sembrarCatalogo().
+   */
+  function sembrarCatalogo(sectorActivo, senderos, datosSenderos) {
+    if (!configurado()) return Promise.reject(new Error('El respaldo no está configurado.'));
+    // Se envían todos los trazados conocidos. Los que no aparecen en el selector
+    // de senderos son ramales (por ejemplo el desvío al mirador) y se marcan
+    // como tales para no confundirlos con un sendero que se pueda escoger.
+    var lista = Object.keys(datosSenderos).map(function (nombre) {
+      var t = datosSenderos[nombre] || {};
+      return {
+        area: 'Parque Nacional Los Quetzales',
+        sector: sectorActivo,
+        nombre: nombre,
+        estado: senderos.indexOf(nombre) >= 0 ? 'activo' : 'ramal',
+        longitud_m: t.total_m || '',
+        puntos: t.pts || []
+      };
+    });
+    return fetch(cfg().url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ tipo: 'catalogo', token: cfg().token || '', senderos: lista })
+    }).then(function (r) { return r.json(); });
+  }
+
+  /** Arranca los reintentos automáticos. Se llama una sola vez al cargar la aplicación. */
+  function iniciar() {
+    if (temporizador || !configurado()) return;
+    var minutos = parseFloat(cfg().autoMinutos) || 3;
+    temporizador = setInterval(function () { enviar(false); }, minutos * 60000);
+    window.addEventListener('online', function () { enviar(true); });
+    setTimeout(function () { enviar(false); }, 4000);
+  }
+
+  return {
+    configurado: configurado,
+    jornadaId: jornadaId,
+    nuevaJornada: nuevaJornada,
+    adoptarJornada: adoptarJornada,
+    marcarFinal: marcarFinal,
+    encolar: encolar,
+    enviar: enviar,
+    estado: estado,
+    suscribir: suscribir,
+    iniciar: iniciar,
+    sembrarCatalogo: sembrarCatalogo
+  };
+}();
+
+/** Rótulo del estado del respaldo para la barra lateral. */
+var textoRespaldo = function textoRespaldo(e) {
+  if (!e.configurado) return '';
+  if (e.enviando) return 'Enviando respaldo…';
+  if (e.pendientes > 0) {
+    if (!e.enLinea) return 'Sin señal · se enviará solo';
+    return 'Pendiente de respaldo' + (e.ultimoError ? ' · ' + e.ultimoError : '');
+  }
+  if (e.ultimoEnvio) return 'Respaldado ' + new Date(e.ultimoEnvio).toLocaleTimeString('es-CR');
+  return 'Sin respaldar todavía';
+};
+
+/**
+ * Carga por única vez el catálogo de senderos y su geometría en la hoja.
+ * Se ejecuta desde la consola del navegador: PNLQ_sembrarCatalogo()
+ */
+window.PNLQ_sembrarCatalogo = function () {
+  return Respaldo.sembrarCatalogo(SECTOR_ACTIVO, SENDEROS, TRAIL_DATA).then(function (r) {
+    console.log('Catálogo enviado a la hoja:', r);
+    return r;
+  }, function (err) {
+    console.error('No se pudo enviar el catálogo:', err);
+    throw err;
+  });
 };
 
 // ─── CONTEXTO COMPARTIDO (sendero seleccionado en A → leído en C) ────────────
@@ -8258,6 +8612,11 @@ var buildDocx = /*#__PURE__*/function () {
           dlLink.download = "Reporte_Mantenimiento_".concat((sendero || 'PNLQ').replace(/\s+/g, '_'), "_").concat(fechaStr, ".docx");
           document.body.appendChild(dlLink);
           dlLink.click();
+          try {
+            Respaldo.marcarFinal();
+          } catch (respaldoError) {
+            console.warn('Respaldo:', respaldoError);
+          }
           setTimeout(function () {
             URL.revokeObjectURL(blobUrl);
             document.body.removeChild(dlLink);
@@ -9745,6 +10104,18 @@ function App() {
     _useState100 = _slicedToArray(_useState99, 2),
     lastSavedAt = _useState100[0],
     setLastSavedAt = _useState100[1];
+  // ── Estado del respaldo en la hoja de cálculo ───────────────────
+  var _useStateResp = useState(function () {
+      return Respaldo.estado();
+    }),
+    _useStateResp2 = _slicedToArray(_useStateResp, 2),
+    respaldo = _useStateResp2[0],
+    setRespaldo = _useStateResp2[1];
+  useEffect(function () {
+    var dejarDeEscuchar = Respaldo.suscribir(setRespaldo);
+    Respaldo.iniciar();
+    return dejarDeEscuchar;
+  }, []);
   var performSave = useCallback(function () {
     var force = arguments.length > 0 && arguments[0] === true;
     if (autosaveSuspendedRef.current && !force) return false;
@@ -9773,6 +10144,12 @@ function App() {
       localStorage.setItem(FORM_DRAFT_KEY, JSON.stringify(payload));
       localStorage.setItem(FORM_DRAFT_TS_KEY, payload.timestamp);
       setLastSavedAt(new Date());
+      // El respaldo nunca debe estorbar al guardado local: si falla, se ignora.
+      try {
+        Respaldo.encolar(payload);
+      } catch (respaldoError) {
+        console.warn('Respaldo:', respaldoError);
+      }
       return true;
     } catch (e) {
       console.warn('AutoSave:', e);
@@ -9815,6 +10192,7 @@ function App() {
     var payload = {
       version: '1.0',
       app: 'PNLQ-Mantenimiento-Senderos',
+      jornada_id: Respaldo.jornadaId(),
       timestamp: new Date().toISOString(),
       context: {
         sendero: senderoRef.current
@@ -9847,6 +10225,7 @@ function App() {
       try {
         var data = JSON.parse(ev.target.result);
         if (data.app !== 'PNLQ-Mantenimiento-Senderos' || !data.sections) throw new Error('Archivo no es un borrador válido de esta herramienta.');
+        Respaldo.adoptarJornada(data.jornada_id);
         restoreFormData(data);
         setDraftTs(data.timestamp);
         setBannerVisible(false);
@@ -9923,6 +10302,7 @@ function App() {
       alert('No fue posible limpiar los datos guardados en este navegador: ' + error.message);
       return;
     }
+    Respaldo.nuevaJornada();
     setDraftTs(null);
     setBannerVisible(false);
     window.location.reload();
@@ -10345,7 +10725,34 @@ function App() {
       textAlign: 'center',
       marginTop: -3
     }
-  }, "Guardado ", lastSavedAt.toLocaleTimeString('es-CR')), /*#__PURE__*/React.createElement("button", {
+  }, "Guardado ", lastSavedAt.toLocaleTimeString('es-CR')), respaldo.configurado && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function onClick() {
+      performSave(true);
+      Respaldo.enviar(true);
+    },
+    disabled: respaldo.enviando,
+    title: "Env\xEDa el informe a la hoja de c\xE1lculo del parque",
+    style: {
+      width: '100%',
+      padding: '8px',
+      background: respaldo.pendientes > 0 ? 'rgba(207,172,101,0.20)' : 'rgba(255,255,255,0.08)',
+      border: '1px solid ' + (respaldo.pendientes > 0 ? 'rgba(207,172,101,0.45)' : 'rgba(255,255,255,0.15)'),
+      borderRadius: 6,
+      color: respaldo.pendientes > 0 ? '#F3E4C4' : 'rgba(255,255,255,0.8)',
+      fontFamily: 'inherit',
+      fontSize: 12,
+      cursor: respaldo.enviando ? 'wait' : 'pointer',
+      textAlign: 'left'
+    }
+  }, respaldo.enviando ? "\u2601 Enviando\u2026" : "\u2601 Respaldar en la hoja"), respaldo.configurado && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 9.5,
+      color: respaldo.pendientes > 0 ? 'rgba(207,172,101,0.85)' : 'rgba(255,255,255,0.4)',
+      textAlign: 'center',
+      marginTop: -3
+    }
+  }, textoRespaldo(respaldo)), /*#__PURE__*/React.createElement("button", {
     onClick: exportDraft,
     style: {
       width: '100%',
