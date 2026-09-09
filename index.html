@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
   <meta http-equiv="Pragma" content="no-cache"/>
   <meta http-equiv="Expires" content="0"/>
-  <!-- PNLQ · v20260615_225405 -->
+  <!-- PNLQ · v20260909_170500 -->
   <title>Reporte Mantenimiento Senderos — PNLQ</title>
   <meta name="description" content="Formulario para reportar el mantenimiento de senderos del Parque Nacional Los Quetzales."/>
   <meta name="theme-color" content="#021A53"/>
@@ -17,12 +17,12 @@
   <link rel="manifest" href="./manifest.webmanifest"/>
   <link rel="icon" href="./icons/icon.svg" type="image/svg+xml"/>
   <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
-  <link rel="stylesheet" href="./responsive.css?v=1451"/>
+  <link rel="stylesheet" href="./responsive.css?v=1453"/>
   <script src="./vendor/react.production.min.js"></script>
   <script src="./vendor/react-dom.production.min.js"></script>
   <script src="./vendor/jszip.min.js"></script>
   <script src="./respaldo-config.js?v=1"></script>
-  <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',system-ui,sans-serif}#root:empty::after{content:"Cargando formulario…";display:block;padding:40px;font-size:15px;color:#7a756a;text-align:center}@media print{body>*:not(#root){display:none}#root>div>div:first-child{display:none!important}#informe-preview{box-shadow:none!important;max-width:100%!important}}</style>
+  <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',system-ui,sans-serif}#root:empty::after{content:"Cargando formulario…";display:block;padding:40px;font-size:15px;color:#4B5563;text-align:center}@media print{body>*:not(#root){display:none}#root>div>div:first-child{display:none!important}#informe-preview{box-shadow:none!important;max-width:100%!important}}</style>
 </head>
 <body><div id="root"></div><script>var _excluded = ["seguimiento"];
 function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i.return) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
@@ -445,6 +445,244 @@ var Respaldo = function () {
     sembrarCatalogo: sembrarCatalogo
   };
 }();
+
+// ─── ALMACÉN DE FOTOGRAFÍAS (IndexedDB) ──────────────────────────────────────
+// Las fotos no caben en localStorage: cada una pesa 250-400 KB y la cuota del
+// navegador ronda los 5 MB, así que el autoguardado siempre las retiró y al
+// recargar la aplicación se perdía la evidencia de la jornada. Aquí se guardan
+// como Blob, sin el inflado del base64, con clave jornada + foto. El borrador de
+// localStorage conserva solo el identificador, el nombre, la descripción y la
+// categoría, y al restaurar cada ficha se vuelve a unir con su imagen.
+var FotoStore = function () {
+  var BASE = 'pnlq_fotos_v1';
+  var ALMACEN = 'fotos';
+  var INDICE = 'por_jornada';
+  var DIAS_MAX = 45; // fotos de jornadas antiguas: se purgan para no crecer sin fin
+  var bd = null;
+  var soportado = null;
+
+  function disponible() {
+    if (soportado === null) {
+      try {
+        soportado = typeof indexedDB !== 'undefined' && !!indexedDB;
+      } catch (e) {
+        soportado = false; // navegación privada o almacenamiento bloqueado
+      }
+    }
+    return soportado;
+  }
+
+  function abrir() {
+    if (!disponible()) return Promise.reject(new Error('IndexedDB no disponible'));
+    if (bd) return Promise.resolve(bd);
+    return new Promise(function (resolve, reject) {
+      var pet;
+      try {
+        pet = indexedDB.open(BASE, 1);
+      } catch (e) {
+        soportado = false;
+        return reject(e);
+      }
+      pet.onupgradeneeded = function () {
+        var d = pet.result;
+        if (!d.objectStoreNames.contains(ALMACEN)) {
+          var almacen = d.createObjectStore(ALMACEN, { keyPath: 'clave' });
+          almacen.createIndex(INDICE, 'jornada_id', { unique: false });
+        }
+      };
+      pet.onsuccess = function () {
+        bd = pet.result;
+        // Si otra pestaña pide una versión nueva hay que soltar la conexión.
+        bd.onversionchange = function () {
+          try { bd.close(); } catch (e) { /* ya cerrada */ }
+          bd = null;
+        };
+        resolve(bd);
+      };
+      pet.onerror = function () {
+        soportado = false;
+        reject(pet.error || new Error('No se pudo abrir IndexedDB'));
+      };
+      pet.onblocked = function () {
+        reject(new Error('IndexedDB bloqueada por otra pestaña'));
+      };
+    });
+  }
+
+  function almacen(modo) {
+    return abrir().then(function (d) {
+      return d.transaction(ALMACEN, modo).objectStore(ALMACEN);
+    });
+  }
+
+  function promesa(pet) {
+    return new Promise(function (resolve, reject) {
+      pet.onsuccess = function () { resolve(pet.result); };
+      pet.onerror = function () { reject(pet.error); };
+    });
+  }
+
+  function clave(jornadaId, fotoId) {
+    return String(jornadaId) + '::' + String(fotoId);
+  }
+
+  /** El lienzo ya entrega un data URL; se pasa a Blob sin recomprimir la imagen. */
+  function aBlob(dataUrl) {
+    var partes = String(dataUrl || '').split(',');
+    if (partes.length < 2 || !/;base64/.test(partes[0])) return null;
+    var tipo = (partes[0].match(/data:([^;]+)/) || [])[1] || 'image/jpeg';
+    var binario;
+    try {
+      binario = atob(partes[1]);
+    } catch (e) {
+      return null;
+    }
+    var bytes = new Uint8Array(binario.length);
+    for (var i = 0; i < binario.length; i++) bytes[i] = binario.charCodeAt(i);
+    return new Blob([bytes], { type: tipo });
+  }
+
+  function aDataUrl(blob) {
+    return new Promise(function (resolve, reject) {
+      var lector = new FileReader();
+      lector.onload = function () { resolve(lector.result); };
+      lector.onerror = function () { reject(lector.error || new Error('lectura fallida')); };
+      lector.readAsDataURL(blob);
+    });
+  }
+
+  /** Guarda o reemplaza una foto. Nunca rechaza: el fallo no debe cortar el flujo. */
+  function guardar(jornadaId, fotoId, dataUrl) {
+    var blob = aBlob(dataUrl);
+    if (!blob) return Promise.resolve(false);
+    return almacen('readwrite').then(function (a) {
+      return promesa(a.put({
+        clave: clave(jornadaId, fotoId),
+        jornada_id: String(jornadaId),
+        foto_id: String(fotoId),
+        blob: blob,
+        bytes: blob.size,
+        creado: Date.now()
+      }));
+    }).then(function () {
+      return true;
+    }, function (e) {
+      console.warn('FotoStore.guardar:', e);
+      return false;
+    });
+  }
+
+  /** Devuelve el data URL de una foto, o null si no está. */
+  function leer(jornadaId, fotoId) {
+    return almacen('readonly').then(function (a) {
+      return promesa(a.get(clave(jornadaId, fotoId)));
+    }).then(function (reg) {
+      return reg && reg.blob ? aDataUrl(reg.blob) : null;
+    }).then(null, function () {
+      return null;
+    });
+  }
+
+  function borrar(jornadaId, fotoId) {
+    return almacen('readwrite').then(function (a) {
+      return promesa(a['delete'](clave(jornadaId, fotoId)));
+    }).then(function () {
+      return true;
+    }, function () {
+      return false;
+    });
+  }
+
+  /** Recorre con cursor por el índice de jornada: compatible con navegadores viejos. */
+  function recorrerJornada(jornadaId, modo, porCada) {
+    return almacen(modo).then(function (a) {
+      return new Promise(function (resolve, reject) {
+        var pet = a.index(INDICE).openCursor(IDBKeyRange.only(String(jornadaId)));
+        pet.onsuccess = function () {
+          var cur = pet.result;
+          if (!cur) return resolve();
+          porCada(cur);
+          cur['continue']();
+        };
+        pet.onerror = function () { reject(pet.error); };
+      });
+    });
+  }
+
+  function borrarJornada(jornadaId) {
+    if (!jornadaId) return Promise.resolve(0);
+    var n = 0;
+    return recorrerJornada(jornadaId, 'readwrite', function (cur) {
+      cur['delete']();
+      n++;
+    }).then(function () {
+      return n;
+    }, function () {
+      return n;
+    });
+  }
+
+  /** Cuántas de estas fotos están realmente guardadas para la jornada. */
+  function contarClaves(jornadaId, ids) {
+    if (!ids || !ids.length || !disponible()) return Promise.resolve(0);
+    var buscados = {};
+    ids.forEach(function (id) { buscados[String(id)] = true; });
+    var n = 0;
+    return recorrerJornada(jornadaId, 'readonly', function (cur) {
+      if (buscados[String(cur.value.foto_id)]) n++;
+    }).then(function () {
+      return n;
+    }, function () {
+      return 0;
+    });
+  }
+
+  /**
+   * Purga las fotos de jornadas viejas. Nunca toca la jornada en curso, aunque
+   * su fecha sea antigua: un informe puede quedar a medias durante semanas.
+   */
+  function purgar(jornadaActual) {
+    if (!disponible()) return Promise.resolve(0);
+    var limite = Date.now() - DIAS_MAX * 86400000;
+    var actual = String(jornadaActual || '');
+    var n = 0;
+    return almacen('readwrite').then(function (a) {
+      return new Promise(function (resolve, reject) {
+        var pet = a.openCursor();
+        pet.onsuccess = function () {
+          var cur = pet.result;
+          if (!cur) return resolve();
+          var v = cur.value;
+          if (String(v.jornada_id) !== actual && (v.creado || 0) < limite) {
+            cur['delete']();
+            n++;
+          }
+          cur['continue']();
+        };
+        pet.onerror = function () { reject(pet.error); };
+      });
+    }).then(function () {
+      return n;
+    }, function () {
+      return n;
+    });
+  }
+
+  return {
+    disponible: disponible,
+    guardar: guardar,
+    leer: leer,
+    borrar: borrar,
+    borrarJornada: borrarJornada,
+    contarClaves: contarClaves,
+    purgar: purgar
+  };
+}();
+
+/** Identificador estable de una foto: sobrevive a la recarga y es la clave del almacén. */
+var nuevoIdFoto = function nuevoIdFoto() {
+  return 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+};
 
 /** Rótulo del estado del respaldo para la barra lateral. */
 var textoRespaldo = function textoRespaldo(e) {
@@ -4380,6 +4618,11 @@ var SecC_sec = function SecC_sec() {
     return t.id;
   });
   var showAutoSegments = segmentMode || selectedAutoTramos.length > 0;
+  // Tramos reales: cada grupo de secciones contiguas cuenta como uno, más los
+  // tramos capturados a mano. Coincide con el encabezado del panel de tramos.
+  var totalTramos = selectedSectionGroups.length + tramos.filter(function (t) {
+    return !t.autoSegment;
+  }).length;
   var fullTrailSelected = tramos.some(function (t) {
     return !t.autoSegment && t.estIni !== '' && t.estFin !== '';
   });
@@ -4750,6 +4993,13 @@ var SecC_sec = function SecC_sec() {
     setActiveTramoGroup(1);
     setTramos([newTr]);
   };
+  // Deja la sección C en blanco: quita secciones marcadas, tramos manuales y modos activos.
+  var handleLimpiarSeleccion = function handleLimpiarSeleccion() {
+    setSelecting(null);
+    setSegmentMode(false);
+    setActiveTramoGroup(1);
+    setTramos([]);
+  };
   var TH = function TH(_ref34) {
     var c = _ref34.c,
       w = _ref34.w;
@@ -4893,13 +5143,16 @@ var SecC_sec = function SecC_sec() {
     }
   }, /*#__PURE__*/React.createElement("button", {
     onClick: handleSenderoCompleto,
-    className: "trail-mode-button",
+    className: "trail-mode-button".concat(fullTrailSelected ? ' is-active' : ''),
+    "aria-pressed": fullTrailSelected,
     style: {
       padding: '10px 14px',
-      background: G.mid,
-      border: 'none',
+      // Amarillo fluor idéntico al del modo secciones y al resaltado del mapa:
+      // en toda la aplicación ese color significa "selección activa".
+      background: fullTrailSelected ? '#FFEA00' : G.mid,
+      border: "1px solid ".concat(fullTrailSelected ? '#B79E00' : G.mid),
       borderRadius: 4,
-      color: 'white',
+      color: fullTrailSelected ? G.dark : 'white',
       fontSize: 12,
       fontFamily: 'inherit',
       fontWeight: 700,
@@ -4935,7 +5188,32 @@ var SecC_sec = function SecC_sec() {
       fontWeight: 700,
       cursor: 'pointer'
     }
-  }, "\u2715 Cancelar selecci\xF3n")), showAutoSegments && /*#__PURE__*/React.createElement("section", {
+  }, "\u2715 Cancelar selecci\xF3n"), tramos.length > 0 && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: handleLimpiarSeleccion,
+    className: "trail-mode-button trail-clear-button",
+    style: {
+      padding: '10px 14px',
+      background: '#FFF5F4',
+      border: '1px solid #B42318',
+      borderRadius: 4,
+      color: '#B42318',
+      fontSize: 12,
+      fontFamily: 'inherit',
+      fontWeight: 700,
+      cursor: 'pointer'
+    }
+  }, "\uD83E\uDDF9 Limpiar selecci\xF3n")), sendero && activeTrail && /*#__PURE__*/React.createElement("div", {
+    className: "trail-accumulated",
+    role: "status",
+    "aria-live": "polite"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "trail-accumulated-label"
+  }, "Distancia acumulada"), /*#__PURE__*/React.createElement("strong", {
+    className: "trail-accumulated-value"
+  }, totalM, " m"), /*#__PURE__*/React.createElement("small", {
+    className: "trail-accumulated-detail"
+  }, tramos.length ? "".concat(totalTramos, " ").concat(totalTramos === 1 ? 'tramo' : 'tramos', " \xB7 ").concat(Math.min(100, Math.round(totalM / (activeTrail.total_m || 1) * 100)), "% de los ").concat(activeTrail.total_m, " m del sendero") : 'Toque secciones en el mapa o agregue el sendero completo')), showAutoSegments && /*#__PURE__*/React.createElement("section", {
     className: "trail-selected-panel",
     "aria-live": "polite"
   }, /*#__PURE__*/React.createElement("div", {
@@ -6924,6 +7202,9 @@ var SecJ = function SecJ() {
     rcJ('j_fotos', function () {
       return fotosRef.current.map(function (f) {
         return {
+          // El id viaja con la ficha: es la clave con la que se recupera la
+          // imagen del almacén cuando el borrador se restaura sin el base64.
+          id: f.id,
           url: f.url,
           nombre: f.nombre,
           desc: f.desc,
@@ -6932,17 +7213,72 @@ var SecJ = function SecJ() {
       });
     });
     rrJ('j_fotos', function (saved) {
-      if (Array.isArray(saved)) setFotos(saved.filter(function (f) {
-        return f.url;
-      }).map(function (f) {
-        return _objectSpread(_objectSpread({}, f), {}, {
-          id: Math.random(),
+      if (!Array.isArray(saved)) return;
+      var jornada = Respaldo.jornadaId();
+      var fichas = saved.map(function (f) {
+        return {
+          // Un borrador anterior a la 1.53 no trae id: se le asigna uno nuevo.
+          // Si además viene sin imagen, esa foto ya se había perdido y no hay
+          // nada que recuperar; se descarta más abajo como se hacía antes.
+          id: f.id || nuevoIdFoto(),
+          url: f.url || '',
+          nombre: f.nombre || '',
+          desc: f.desc || '',
           categoria: f.categoria || ''
+        };
+      });
+      var conImagen = fichas.filter(function (f) {
+        return f.url;
+      });
+      // Un .json exportado sí trae las imágenes: se ingresan al almacén para que
+      // sobrevivan a la siguiente recarga igual que las tomadas en esta sesión.
+      conImagen.forEach(function (f) {
+        FotoStore.guardar(jornada, f.id, f.url);
+      });
+      setFotos(conImagen);
+      var sinImagen = fichas.filter(function (f) {
+        return !f.url;
+      });
+      if (!sinImagen.length || !FotoStore.disponible()) return;
+      Promise.all(sinImagen.map(function (f) {
+        return FotoStore.leer(jornada, f.id).then(function (url) {
+          return {
+            id: f.id,
+            url: url
+          };
         });
-      }));
+      })).then(function (leidas) {
+        var recuperadas = {};
+        leidas.forEach(function (r) {
+          if (r.url) recuperadas[r.id] = r.url;
+        });
+        if (!Object.keys(recuperadas).length) return;
+        // Se rearma la lista completa desde el borrador para conservar el orden.
+        setFotos(fichas.filter(function (f) {
+          return f.url || recuperadas[f.id];
+        }).map(function (f) {
+          return f.url ? f : _objectSpread(_objectSpread({}, f), {}, {
+            url: recuperadas[f.id]
+          });
+        }));
+      });
     });
   }, []); // eslint-disable-line
 
+  // Alta de una foto: entra en la lista y se guarda en el almacén con su id.
+  var agregarFoto = function agregarFoto(dataUrl, nombre) {
+    var id = nuevoIdFoto();
+    FotoStore.guardar(Respaldo.jornadaId(), id, dataUrl);
+    setFotos(function (fs) {
+      return [].concat(_toConsumableArray(fs), [{
+        id: id,
+        url: dataUrl,
+        nombre: nombre,
+        desc: '',
+        categoria: ''
+      }]);
+    });
+  };
   var handleFiles = function handleFiles(e) {
     Array.from(e.target.files).forEach(function (file) {
       if (!file.type.startsWith('image/')) return;
@@ -6976,27 +7312,11 @@ var SecJ = function SecJ() {
           } catch (err) {
             dataUrl = ev.target.result;
           } // fallback al original
-          setFotos(function (fs) {
-            return [].concat(_toConsumableArray(fs), [{
-              id: Math.random(),
-              url: dataUrl,
-              nombre: file.name,
-              desc: '',
-              categoria: ''
-            }]);
-          });
+          agregarFoto(dataUrl, file.name);
         };
         img.onerror = function () {
           // Si el navegador no puede decodificar (p.ej. HEIC), usar el original tal cual
-          setFotos(function (fs) {
-            return [].concat(_toConsumableArray(fs), [{
-              id: Math.random(),
-              url: ev.target.result,
-              nombre: file.name,
-              desc: '',
-              categoria: ''
-            }]);
-          });
+          agregarFoto(ev.target.result, file.name);
         };
         img.src = ev.target.result;
       };
@@ -7023,6 +7343,9 @@ var SecJ = function SecJ() {
     });
   };
   var removeFoto = function removeFoto(id) {
+    // Quitar la ficha y su imagen a la vez: si no, el almacén acumularía fotos
+    // que ya nadie referencia y que volverían a aparecer al restaurar.
+    FotoStore.borrar(Respaldo.jornadaId(), id);
     return setFotos(function (fs) {
       return fs.filter(function (x) {
         return x.id !== id;
@@ -7044,7 +7367,10 @@ var SecJ = function SecJ() {
     className: "photo-guide"
   }, /*#__PURE__*/React.createElement("div", {
     className: "photo-guide-copy"
-  }, /*#__PURE__*/React.createElement("span", null, "Galería guiada"), /*#__PURE__*/React.createElement("strong", null, "Seleccione las fotos tomadas durante la jornada"), /*#__PURE__*/React.createElement("p", null, "Puede cargar varias a la vez y clasificarlas después. La categoría identificará cada evidencia en el informe Word.")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", null, "Galería guiada"), /*#__PURE__*/React.createElement("strong", null, "Seleccione las fotos tomadas durante la jornada"), /*#__PURE__*/React.createElement("p", null, "Puede cargar varias a la vez y clasificarlas después. La categoría identificará cada evidencia en el informe Word."), /*#__PURE__*/React.createElement("p", {
+    className: "photo-persistence-note",
+    role: "note"
+  }, "\uD83D\uDCF7 Las fotograf\xEDas quedan guardadas en este tel\xE9fono y se recuperan al volver a abrir la aplicaci\xF3n. Para llevarlas a otro equipo, genere el Word o exporte el borrador (.json).")), /*#__PURE__*/React.createElement("div", {
     className: "photo-guide-types",
     "aria-label": "Tipos de evidencia sugeridos"
   }, PHOTO_CATEGORIES.map(function (category) {
@@ -7763,6 +8089,8 @@ var SecL = function SecL() {
     _useStateLRating2 = _slicedToArray(_useStateLRating, 2),
     conditionRating = _useStateLRating2[0],
     setConditionRating = _useStateLRating2[1];
+  // Arrastre horizontal del carrusel de condición final: guarda el X inicial.
+  var carouselDragRef = useRef(null);
   var _useStateLJustification = useState([]),
     _useStateLJustification2 = _slicedToArray(_useStateLJustification, 2),
     justifChoices = _useStateLJustification2[0],
@@ -7875,6 +8203,62 @@ var SecL = function SecL() {
       });
     });
   };
+  // ── Carrusel de condición final ─────────────────────────────────────────────
+  // El centro es la calificación elegida (3 mientras no se califica). Las caras
+  // giran a izquierda y derecha: la del centro va grande y las vecinas pequeñas.
+  // Las imágenes de la escala no cambian, solo el método de selección.
+  var conditionCenter = conditionRating || 3;
+  var moveCondition = function moveCondition(next) {
+    var value = Math.min(5, Math.max(1, next));
+    setConditionRating(value);
+    // Mover también el foco: el patrón radiogroup usa tabindex itinerante.
+    var face = document.getElementById("condition-face-".concat(value));
+    // preventScroll: el visor del carrusel es overflow:hidden, así que enfocar una
+    // cara que todavía no llegó al centro hace que el navegador lo desplace
+    // lateralmente y pelee con el translateX de la pista.
+    if (face && typeof face.focus === 'function') face.focus({
+      preventScroll: true
+    });
+  };
+  var onCarouselKey = function onCarouselKey(e, rating) {
+    var key = e.key;
+    if (key === 'ArrowRight' || key === 'ArrowDown') {
+      e.preventDefault();
+      moveCondition(rating + 1);
+    } else if (key === 'ArrowLeft' || key === 'ArrowUp') {
+      e.preventDefault();
+      moveCondition(rating - 1);
+    } else if (key === 'Home') {
+      e.preventDefault();
+      moveCondition(1);
+    } else if (key === 'End') {
+      e.preventDefault();
+      moveCondition(5);
+    } else if (key === ' ' || key === 'Enter') {
+      e.preventDefault();
+      setConditionRating(rating);
+    }
+  };
+  var onCarouselPointerDown = function onCarouselPointerDown(e) {
+    carouselDragRef.current = e.clientX;
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch (_) {}
+  };
+  var onCarouselPointerUp = function onCarouselPointerUp(e) {
+    if (carouselDragRef.current === null) return;
+    var dx = e.clientX - carouselDragRef.current;
+    carouselDragRef.current = null;
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch (_) {}
+    // Por debajo del umbral fue un toque sobre una cara, que ya resuelve onClick.
+    if (Math.abs(dx) < 28) return;
+    moveCondition(conditionCenter + (dx < 0 ? 1 : -1));
+  };
+  var onCarouselPointerCancel = function onCarouselPointerCancel() {
+    carouselDragRef.current = null;
+  };
   var toggleJustification = function toggleJustification(option) {
     return setJustifChoices(function (choices) {
       return choices.indexOf(option) >= 0 ? choices.filter(function (choice) {
@@ -7892,12 +8276,50 @@ var SecL = function SecL() {
   }, /*#__PURE__*/React.createElement(Lbl, {
     c: "Condici\xF3n final del sendero / tramo"
   }), /*#__PURE__*/React.createElement("div", {
-    className: "condition-slider-scale",
+    className: "condition-carousel",
+    role: "radiogroup",
+    "aria-label": "Condici\xF3n final del sendero o tramo"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "condition-carousel-row"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "condition-carousel-arrow",
+    onClick: function onClick() {
+      return moveCondition(conditionCenter - 1);
+    },
+    disabled: conditionCenter <= 1,
+    tabIndex: -1,
     "aria-hidden": "true"
+  }, "\u2039"), /*#__PURE__*/React.createElement("div", {
+    className: "condition-carousel-viewport",
+    onPointerDown: onCarouselPointerDown,
+    onPointerUp: onCarouselPointerUp,
+    onPointerCancel: onCarouselPointerCancel
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "condition-carousel-track",
+    style: {
+      transform: "translateX(calc(".concat(1 - conditionCenter, " * var(--condition-slot)))")
+    }
   }, [1, 2, 3, 4, 5].map(function (rating) {
-    return /*#__PURE__*/React.createElement("span", {
+    var offset = Math.abs(rating - conditionCenter);
+    return /*#__PURE__*/React.createElement("button", {
       key: rating,
-      className: conditionRating === rating ? 'is-selected' : ''
+      id: "condition-face-".concat(rating),
+      type: "button",
+      role: "radio",
+      className: "condition-carousel-item".concat(rating === conditionCenter ? ' is-center' : offset === 1 ? ' is-near' : ' is-far').concat(rating === conditionCenter && conditionRating ? ' is-chosen' : ''),
+      "aria-checked": conditionRating === rating,
+      tabIndex: rating === conditionCenter ? 0 : -1,
+      onClick: function onClick() {
+        // moveCondition (y no setConditionRating a secas) para que el foco siga a
+        // la selección también con toque: quien usa lector de pantalla necesita
+        // que la cara elegida quede enfocada.
+        return moveCondition(rating);
+      },
+      onKeyDown: function onKeyDown(e) {
+        return onCarouselKey(e, rating);
+      },
+      "aria-label": "".concat(CONDITION_RATING_LABELS[rating], " \xB7 ").concat(rating, " de 5")
     }, /*#__PURE__*/React.createElement("span", {
       className: "condition-danta-face",
       role: "img",
@@ -7905,29 +8327,20 @@ var SecL = function SecL() {
       style: {
         backgroundPosition: "".concat(CONDITION_RATING_SPRITE_POSITION[rating], " center")
       }
-    }), /*#__PURE__*/React.createElement("small", null, CONDITION_RATING_LABELS[rating]));
-  })), /*#__PURE__*/React.createElement("input", {
-    className: "condition-slider",
-    type: "range",
-    min: "1",
-    max: "5",
-    step: "1",
-    value: conditionRating || 3,
-    onChange: function onChange(e) {
-      return setConditionRating(parseInt(e.target.value, 10));
+    }));
+  }))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "condition-carousel-arrow",
+    onClick: function onClick() {
+      return moveCondition(conditionCenter + 1);
     },
-    "aria-label": "Condici\xF3n final del sendero o tramo",
-    "aria-valuetext": conditionRating ? CONDITION_RATING_LABELS[conditionRating] : 'Sin calificar'
-  }), /*#__PURE__*/React.createElement("div", {
+    disabled: conditionCenter >= 5,
+    tabIndex: -1,
+    "aria-hidden": "true"
+  }, "\u203A")), /*#__PURE__*/React.createElement("div", {
     className: "condition-rating-label",
     "aria-live": "polite"
-  }, conditionRating && /*#__PURE__*/React.createElement("span", {
-    className: "condition-danta-face is-inline",
-    "aria-hidden": "true",
-    style: {
-      backgroundPosition: "".concat(CONDITION_RATING_SPRITE_POSITION[conditionRating], " center")
-    }
-  }), conditionRating ? "".concat(CONDITION_RATING_LABELS[conditionRating], " \xB7 ").concat(conditionRating, "/5") : 'Deslice la barra para calificar')), /*#__PURE__*/React.createElement("div", {
+  }, conditionRating ? "".concat(CONDITION_RATING_LABELS[conditionRating], " \xB7 ").concat(conditionRating, " de 5") : 'Toque una cara o gire con las flechas'))), /*#__PURE__*/React.createElement("div", {
     className: "pending-justification-field"
   }, /*#__PURE__*/React.createElement(Lbl, {
     c: "Justificaci\xF3n de pendientes no resueltos"
@@ -8149,7 +8562,10 @@ var SEC_MAP = {
 
 // ─── GENERADOR DOCX (JSZip + OOXML) ─────────────────────────────────────────
 var xmlEscape = function xmlEscape(s) {
-  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return String(s || '')
+  // XML 1.0 prohíbe los caracteres de control C0: si el texto viene pegado con
+  // alguno (U+000B, U+0007…), Word declara el archivo dañado y no lo abre.
+  .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 };
 var DOCX_NAVY = '0B1F3A';
 var DOCX_RFONTS = '<w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>';
@@ -8607,13 +9023,42 @@ var buildDocx = /*#__PURE__*/function () {
           blob = _context.v;
           blobUrl = URL.createObjectURL(blob);
           dlLink = document.createElement('a');
-          fechaStr = (rd.a_data || {}).fechaIni || new Date().toISOString().slice(0, 10);
+          fechaStr = (rd.a_data || {}).fechaIni || TODAY;
           dlLink.href = blobUrl;
           dlLink.download = "Reporte_Mantenimiento_".concat((sendero || 'PNLQ').replace(/\s+/g, '_'), "_").concat(fechaStr, ".docx");
           document.body.appendChild(dlLink);
           dlLink.click();
           try {
             Respaldo.marcarFinal();
+            // marcarFinal() solo cambia el estado interno del módulo. Sin encolar
+            // aquí, el informe queda como "borrador" en la hoja si la aplicación se
+            // cierra enseguida: beforeunload no es fiable en iOS ni cuando Android
+            // descarta el proceso. La huella incluye el estado, así que el cambio
+            // borrador → final genera un envío nuevo en vez de descartarse.
+            Respaldo.encolar({
+              app: 'PNLQ-Mantenimiento-Senderos',
+              version: '1.0',
+              timestamp: new Date().toISOString(),
+              context: {
+                sendero: sendero || ''
+              },
+              // Sin el base64 de las fotos: la cola vive en localStorage y la
+              // pestaña "fotos" de la hoja solo guarda nombre, descripción y categoría.
+              sections: Array.isArray(rd.j_fotos) ? _objectSpread(_objectSpread({}, rd), {}, {
+                j_fotos: rd.j_fotos.map(function (f) {
+                  return {
+                    id: f.id,
+                    nombre: f.nombre,
+                    desc: f.desc,
+                    categoria: f.categoria || ''
+                  };
+                })
+              }) : rd
+            });
+            // forzar solo con conexión: enviar(true) salta la comprobación de red y
+            // la espera progresiva, así que sin señal cada Word generado sumaría un
+            // intento fallido y alejaría el próximo reintento (30 s → 1 → 2 → 4 min).
+            Respaldo.enviar(navigator.onLine !== false);
           } catch (respaldoError) {
             console.warn('Respaldo:', respaldoError);
           }
@@ -8817,7 +9262,7 @@ var InformeModal = function InformeModal(_ref46) {
       var ur = URL.createObjectURL(bl),
         lk = document.createElement('a');
       lk.href = ur;
-      lk.download = "Borrador_PNLQ_".concat((ctx.sendero || 'form').replace(/\s+/g, '_'), "_").concat(new Date().toISOString().slice(0, 10), ".json");
+      lk.download = "Borrador_PNLQ_".concat((ctx.sendero || 'form').replace(/\s+/g, '_'), "_").concat(TODAY, ".json");
       document.body.appendChild(lk);
       lk.click();
       setTimeout(function () {
@@ -10114,6 +10559,9 @@ function App() {
   useEffect(function () {
     var dejarDeEscuchar = Respaldo.suscribir(setRespaldo);
     Respaldo.iniciar();
+    // Housekeeping: las fotos de jornadas cerradas hace más de 45 días se borran.
+    // La jornada en curso nunca se toca, por antigua que sea su fecha.
+    FotoStore.purgar(Respaldo.jornadaId());
     return dejarDeEscuchar;
   }, []);
   var performSave = useCallback(function () {
@@ -10123,8 +10571,11 @@ function App() {
     // Para localStorage: quitar base64 de fotos (puede exceder la cuota del navegador).
     // Las fotos se conservan en memoria, en el DOCX y en el JSON exportado.
     if (Array.isArray(sections.j_fotos)) {
+      // El base64 no cabe en localStorage, pero el id sí: es la llave con la que
+      // cada ficha vuelve a encontrar su imagen en el almacén de fotografías.
       sections.j_fotos = sections.j_fotos.map(function (f) {
         return {
+          id: f.id,
           nombre: f.nombre,
           desc: f.desc,
           categoria: f.categoria || ''
@@ -10205,7 +10656,7 @@ function App() {
     var url = URL.createObjectURL(blob);
     var lnk = document.createElement('a');
     lnk.href = url;
-    lnk.download = "Borrador_PNLQ_".concat((senderoRef.current || 'form').replace(/\s+/g, '_'), "_").concat(new Date().toISOString().slice(0, 10), ".json");
+    lnk.download = "Borrador_PNLQ_".concat((senderoRef.current || 'form').replace(/\s+/g, '_'), "_").concat(TODAY, ".json");
     document.body.appendChild(lnk);
     lnk.click();
     setTimeout(function () {
@@ -10276,17 +10727,43 @@ function App() {
         return;
       }
       var data = JSON.parse(raw);
+      // El borrador de localStorage no lleva la imagen, solo el id de cada foto.
+      // Las imágenes viven en el almacén, así que se comprueba cuántas siguen ahí
+      // antes de decirle al funcionario que su evidencia está completa.
+      var idsGuardados = ((data.sections || {}).j_fotos || []).filter(function (f) {
+        return f && !f.url;
+      }).map(function (f) {
+        return f && f.id;
+      }).filter(Boolean);
+      var fotosSinIdNiImagen = ((data.sections || {}).j_fotos || []).filter(function (f) {
+        return f && !f.url && !f.id;
+      }).length;
+      var jornadaDelBorrador = Respaldo.jornadaId();
       restoreFormData(data);
       autosaveSuspendedRef.current = false;
       setBannerVisible(false);
-      alert('✓ Borrador restaurado correctamente.');
+      if (!idsGuardados.length && !fotosSinIdNiImagen) {
+        alert('✓ Borrador restaurado correctamente.');
+      } else {
+        FotoStore.contarClaves(jornadaDelBorrador, idsGuardados).then(function (recuperadas) {
+          var esperadas = idsGuardados.length + fotosSinIdNiImagen;
+          if (recuperadas >= esperadas) {
+            alert('✓ Borrador restaurado correctamente, con sus ' + recuperadas + ' fotografía(s).');
+          } else if (recuperadas > 0) {
+            alert('✓ Borrador restaurado. Se recuperaron ' + recuperadas + ' de ' + esperadas + ' fotografía(s) de la sección J; el resto hay que volver a agregarlo.');
+          } else {
+            alert('✓ Borrador restaurado, pero las ' + esperadas + ' fotografía(s) de la sección J no se pudieron recuperar en este navegador: vuelva a agregarlas o importe un borrador .json que las contenga.');
+          }
+        });
+      }
     } catch (e) {
       alert('Error al restaurar: ' + e.message);
     }
   }, [restoreFormData]);
   var handleDiscardDraft = useCallback(function () {
-    var confirmed = window.confirm('Se borrarán el borrador actual y los participantes guardados en este navegador. Esta acción deja la app lista para un informe nuevo. ¿Continuar?');
+    var confirmed = window.confirm('Se borrarán el borrador actual, los participantes guardados y las fotografías de la sección J, y la aplicación se recargará. Si aún no generó el Word ni exportó el borrador (.json), esa evidencia no se puede recuperar. Esta acción deja la app lista para un informe nuevo. ¿Continuar?');
     if (!confirmed) return;
+    var jornadaAResetear = Respaldo.jornadaId();
     autosaveSuspendedRef.current = true;
     try {
       localStorage.removeItem(FORM_DRAFT_KEY);
@@ -10302,10 +10779,20 @@ function App() {
       alert('No fue posible limpiar los datos guardados en este navegador: ' + error.message);
       return;
     }
-    Respaldo.nuevaJornada();
-    setDraftTs(null);
-    setBannerVisible(false);
-    window.location.reload();
+    // Las fotografías de esta jornada viven fuera de localStorage, así que hay que
+    // borrarlas aparte. La recarga no espera indefinidamente: si el almacén no
+    // responde en dos segundos se continúa igual y la purga las quitará después.
+    var terminar = function terminar() {
+      if (terminado) return;
+      terminado = true;
+      Respaldo.nuevaJornada();
+      setDraftTs(null);
+      setBannerVisible(false);
+      window.location.reload();
+    };
+    var terminado = false;
+    setTimeout(terminar, 2000);
+    FotoStore.borrarJornada(jornadaAResetear).then(terminar, terminar);
   }, []);
   var findBlockingRequirement = function findBlockingRequirement(targetIndex) {
     var report = getReportData();
@@ -10870,7 +11357,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.51'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.53'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'senderos-pnlq-v43';
+const CACHE_NAME = 'senderos-pnlq-v45';
 const APP_SHELL = [
   './',
   './index.html',
@@ -143,6 +143,12 @@ self.addEventListener('fetch', (event) => {
         }
         return response;
       })
-      .catch(() => caches.match(event.request).then((cached) => cached || caches.match('./index.html')))
+      .catch(() => caches.match(event.request, { ignoreSearch: true }).then((cached) => {
+        if (cached) return cached;
+        // El HTML de respaldo solo tiene sentido para una navegación: devolverlo
+        // ante un .css o un .js deja la aplicación sin estilos o sin React.
+        if (event.request.mode === 'navigate') return caches.match('./index.html');
+        return Response.error();
+      }))
   );
 });

@@ -298,6 +298,192 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - `PROB_LIST` filtra `activeProbs` en el colector, así que un borrador anterior habría perdido el registro. Se añadió migración en el restaurador de `d_data`, igual que se hizo con `Chapia lateral de vegetación` en E.1: el nombre antiguo se traduce al nuevo en `activeProbs` y en `sevs`, conservando la gravedad.
 - Verificado en el navegador: la tarjeta y el colector usan el nombre nuevo, y un borrador con el nombre anterior se restaura con sus dos problemas y la gravedad `Alta` intactos.
 
+## Correcciones de la auditoría y dos mejoras de campo (versión 1.52)
+
+Versión preparada: `1.52`; caché: `senderos-pnlq-v44`; `responsive.css?v=1452`.
+Rama de trabajo: `claude/v1-52-handoff-audit-yrv2ho`. El tag `restore-v1.51` que mencionaba el
+relevo nunca llegó a GitHub: el único punto de restauración publicado es `restore-v1.18`.
+Conviene crear el tag sobre `main` antes de publicar esta versión.
+
+### Correcciones de robustez (Fase 1 de la auditoría)
+
+- `xmlEscape` filtra ahora los caracteres de control C0 (`U+0000-U+0008`, `U+000B`, `U+000C`, `U+000E-U+001F`, `U+007F`) antes de escapar. XML 1.0 los prohíbe: un texto pegado desde WhatsApp o un PDF con uno de ellos generaba un `document.xml` inválido y Word respondía «archivo dañado» sin posibilidad de recuperación.
+- `sw.js` busca en caché con `{ ignoreSearch: true }` y solo devuelve `index.html` cuando `event.request.mode === 'navigate'`; en el resto de los casos devuelve `Response.error()`. Antes, una petición de `responsive.css?v=NNNN` sin coincidencia exacta recibía HTML y la aplicación se abría sin estilos. La precarga seguía listando el CSS sin el query string.
+- Los nombres de archivo del DOCX y de los dos exportadores de borrador usan `TODAY` en lugar de `new Date().toISOString().slice(0, 10)`, que es fecha UTC: entre las 00:00 y las 05:59 de Costa Rica el archivo salía con el día anterior. `TODAY` ya compensaba la zona desde la versión 1.28.
+- Tras generar el Word, `buildDocx` llama a `Respaldo.encolar()` con el informe y al envío de la cola. `marcarFinal()` solo cambiaba una variable interna, así que el estado `final` dependía de un autoguardado posterior o de `beforeunload`, que no es fiable en iOS ni cuando Android descarta el proceso. El payload se encola sin el base64 de las fotos, igual que el autoguardado.
+- La restauración de un borrador cuenta las fotos que venían sin imagen y lo dice en el aviso: «Las N fotografía(s) de la sección J no se guardan en este navegador…». Las fotos nunca se han persistido en `localStorage` (se retiran en `performSave` para no reventar la cuota) y el mensaje anterior afirmaba que todo se había restaurado.
+- Se añadió una nota permanente en la galería de J (`.photo-persistence-note`) y el `confirm` de «Nuevo informe» menciona que las fotografías también se pierden.
+- El texto «Cargando formulario…» pasa de `#7a756a` a `#4B5563`: el contraste sube de 4,23:1 a 6,97:1 sobre `#F4F6F8` y cumple WCAG AA.
+- Quedó retirado el CSS muerto del deslizador de condición final (`.condition-slider-scale`, `.section-body .condition-slider`, `.condition-danta-face.is-inline`).
+
+### Sección C — selección de tramos
+
+- El botón **Agregar sendero completo** cambia a amarillo fluor (`#FFEA00` con borde `#B79E00` y texto `G.dark`) cuando el sendero completo ya está seleccionado, expone `aria-pressed` y recibe la clase `is-active`. Es el mismo código de color del modo secciones y del resaltado del mapa: en toda la aplicación el amarillo fluor significa «selección activa».
+- Nuevo botón **Limpiar selección** (`.trail-clear-button`), visible solo cuando hay algo seleccionado. Llama a `handleLimpiarSeleccion`, que vacía `tramos`, sale del modo secciones, cancela la captura manual y reinicia `activeTramoGroup` a 1. No pide confirmación: es un gesto explícito y reversible en dos toques.
+- Nuevo indicador **Distancia acumulada** (`.trail-accumulated`), visible desde que se elige el sendero y actualizado en vivo. Muestra el total en metros, el número de tramos y el porcentaje respecto de `activeTrail.total_m`. Usa el `totalM` que ya alimentaba `updCalcC({ totalMetros })`, así que también refleja los tramos capturados a mano y el sendero completo. Es `role="status"` con `aria-live="polite"`.
+- El conteo de tramos del indicador usa `totalTramos` (nuevo derivado): `selectedSectionGroups.length` más los tramos manuales. Contar `tramos.length` habría dicho «2 tramos» para dos secciones contiguas, en contradicción con el encabezado del panel que sí agrupa. Con `totalTramos` ambos textos coinciden.
+- Sin selección muestra la guía «Toque secciones en el mapa o agregue el sendero completo» en lugar de quedar oculto, para que el funcionario vea que el contador existe y responde.
+
+### Sección L — condición final como carrusel giratorio
+
+- **Las imágenes no cambian**: sigue el mismo sprite `l-danta-expresiones.webp` con las cinco posiciones `0% / 25% / 50% / 75% / 100%`. Solo se sustituyó el método de selección.
+- Fuera la escala estática de cinco caras y el `input[type=range]`. Entra un carrusel (`.condition-carousel`) donde la cara elegida queda grande al centro (84 px, 68 px en móvil) y las vecinas giran a los lados en tamaño decreciente (54 px y 40 px; 46 px y 34 px en móvil) con opacidad 0,85 y 0,5.
+- El giro es un `translateX(calc(N * var(--condition-slot)))` sobre la pista, con el relleno lateral `calc(50% - var(--condition-slot) / 2)` para llevar la primera cara al centro. Transición de 0,34 s y anulada con `prefers-reduced-motion: reduce`.
+- Cuatro formas de seleccionar: tocar cualquier cara, flechas ‹ › a los lados, arrastre horizontal (umbral de 28 px, con captura de puntero) y teclado.
+- Accesibilidad: el contenedor es `role="radiogroup"` y cada cara `role="radio"` con `aria-checked`, `id="condition-face-N"` y tabindex itinerante (solo el centro es alcanzable con Tab). Flechas ←/→/↑/↓, `Home` y `End` mueven la selección y el foco viaja con ella (`moveCondition` hace `focus()`); por eso `onClick` llama a `moveCondition` y no a `setConditionRating` a secas. Las flechas ‹ › son `aria-hidden` con `tabindex="-1"` para no duplicar controles en el orden de tabulación.
+- La etiqueta cualitativa queda bajo la cara central con `aria-live="polite"`: «Excelente · 5 de 5». Sin calificar dice «Toque una cara o gire con las flechas» y ninguna cara aparece como elegida, igual que antes.
+- **El modelo de datos no cambia**: `condFinal` y `condFinalRating` siguen saliendo del mismo `conditionRating` (1-5), así que el colector, el restaurador, la vista previa y el DOCX no se tocaron. Un borrador anterior se restaura igual, incluida la migración por etiqueta.
+- El centro por defecto sigue siendo 3 mientras no haya calificación, igual que el valor inicial del deslizador anterior.
+
+### Verificación realizada
+
+Prueba automatizada con jsdom cargando la aplicación real y el React/JSZip de `vendor/`: **64/64 comprobaciones superadas**. Cubre arranque sin errores, las 12 secciones en el DOM, versión visible 1.52, y en detalle:
+
+- Sección C: indicador presente y en 0 m; sendero completo → 1373 m y «1 tramo · 100% de los 1373 m»; botón de `rgb(0, 46, 122)` a `rgb(255, 234, 0)` con `aria-pressed="true"`; limpiar selección vuelve a 0 m, quita `is-active`, oculta las tarjetas y esconde el botón; marcar dos secciones acumula 98 m → 196 m y cuenta como **1 tramo**, igual que el encabezado del panel.
+- Sección L: cinco caras con las cinco posiciones del sprite distintas; radiogroup con `aria-checked`; centro inicial en la posición 3; dos caras `is-near` y dos `is-far`; tabindex itinerante; `translateX(calc(-2 * var(--condition-slot)))` inicial; flecha derecha → «Bueno · 4 de 5» y `calc(-3 * …)`; toque en cara lateral → «Muy malo · 1 de 5» con foco en `condition-face-1`; teclado →, `Home`, `End`; flechas deshabilitadas en ambos extremos; arrastre 300→210 px avanza una posición; deslizador antiguo ausente.
+- Fase 1: `xmlEscape` y `docxPara` sin caracteres ilegales y con `& < > "` escapados; una sola aparición de `toISOString().slice(0, 10)` y es dentro de `TODAY`; aviso de fotos al restaurar; nota en J; `confirm` actualizado; `encolar` + envío condicionado a la conexión tras el Word, y sin `url: f.url`; `ignoreSearch`, `mode === 'navigate'` y `Response.error()` en `sw.js`; caché `v44`.
+- Coherencia: las 12 clases nuevas tienen su regla CSS, sin CSS muerto del deslizador y llaves balanceadas (883/883).
+
+En jsdom React vuelca el estado en un macrotask (no hay `MessageChannel`), así que el arnés espera un tick tras cada interacción; no es un comportamiento de la aplicación.
+
+### Segunda revisión: comprobación en navegador real y tres correcciones
+
+La versión 1.52 se validó primero solo con jsdom, así que su aspecto y su comportamiento
+táctil quedaron sin mirar. Esa pasada se completó con Chromium sobre la aplicación real en
+`375`, `390`, `430`, `768` y `1280` px, sin ningún error de JavaScript. Se confirmó que la
+sección C se comporta como se describe (1503 m y «1 tramo · 100%» con el sendero completo, el
+botón pasa de `rgb(0, 46, 122)` a `rgb(255, 234, 0)`, limpiar selección vuelve a 0 m), que el
+arrastre del carrusel avanza exactamente un paso con ratón y con dedo sea cual sea la
+distancia, que `touch-action: pan-y` y el manejo de `pointercancel` dejan intacto el
+desplazamiento vertical de la página, y que la cara activa queda centrada con desviación de
+0 px en los cinco anchos.
+
+La revisión detectó tres defectos, corregidos aquí:
+
+- **El envío del respaldo no debe forzarse sin señal.** `buildDocx` llamaba a
+  `Respaldo.enviar(true)`, y `forzar` salta tanto la comprobación de red como la espera
+  progresiva. Medido en el navegador: generando el Word cuatro veces sin conexión, la entrada
+  de la cola acumulaba cuatro fallos y el próximo reintento se alejaba a 29 s → 59 s → 119 s →
+  239 s. Ahora la llamada es `Respaldo.enviar(navigator.onLine !== false)`: con conexión sigue
+  saltándose la espera y sale de inmediato, y sin conexión no se intenta y la cola queda en
+  cero intentos. El botón manual de reintento de la barra lateral conserva el envío forzado,
+  que ahí es lo correcto porque lo pide el funcionario.
+- **El foco desplazaba el visor del carrusel.** `moveCondition` hacía `focus()` sobre una cara
+  que todavía no había llegado al centro, y como `.condition-carousel-viewport` es
+  `overflow: hidden` el navegador desplazaba el contenedor para revelarla: con `End` el
+  `scrollLeft` saltaba a 226 px en un visor de 189 px, peleando con el `translateX` de la
+  pista. Se corrigió con `focus({ preventScroll: true })`. Verificado: `scrollLeft` se queda
+  en 0 con `Home` y con `End` en los cinco anchos.
+- **El anillo de foco era un cuadrado sobre una cara redonda.** La regla general del formulario
+  (`button:focus-visible`) dibuja un contorno ámbar de 3 px más una sombra azul de 2 px
+  alrededor del botón, lo que sobre la cara circular de 84 px daba dos cuadrados encima del aro
+  dorado de la selección. Se trasladó el indicador a la propia cara, que ya es circular, con el
+  mismo color y grosor. Sigue siendo un `outline`, así que el modo de alto contraste lo
+  respeta, y no lo recorta el visor: quedan 6 px de margen arriba y abajo. Solo aparecía con
+  teclado; con toque y con ratón `:focus-visible` no se activa y no había anillo.
+
+Los arneses de `revision-v1.52/smoke/` quedan en 64/64 y 29/29. La comprobación del respaldo se
+reescribió para exigir que el envío tras el Word no se fuerce a ciegas.
+
+El mecanismo que arregla el service worker se comprobó de forma directa contra su propia caché:
+para `responsive.css?v=1452` la búsqueda exacta no encuentra nada, con `ignoreSearch` devuelve
+`text/css`, y el respaldo anterior devolvía `text/html` para una petición de hoja de estilos.
+La precarga guarda el CSS sin el query string, así que la coincidencia exacta nunca acierta.
+
+Queda sin mirar el aspecto en un teléfono Android real: la validación fue con Chromium de
+escritorio emulando los anchos, no con el hardware ni el motor de un equipo de gama media.
+
+### Pendiente de la auditoría (no incluido en esta versión)
+
+- Persistir las fotografías en IndexedDB: esta versión solo avisa de la pérdida, no la evita.
+- Optimizar los dos JPEG del membrete (líneas 100-101 de `index.html`, ~924 KB en base64, el 62 % del archivo) y moverlos a un módulo de carga perezosa.
+- Avisos visibles cuando `localStorage` rechaza una escritura (autoguardado y cola de respaldo).
+- Memoizar el cálculo de bloqueos: `findBlockingRequirement` ejecuta los 12 colectores en cada render.
+- Apps Script: saneado de inyección de fórmulas en `texto()` y rechazo del `TOKEN` por defecto.
+- Unificar la exportación de borrador, duplicada en `InformeModal` y en `App`.
+- Decidir y documentar el salto de numeración: no existe la sección F.
+
+## Fotografías persistentes en IndexedDB (versión 1.53)
+
+Versión publicada: `1.53`; caché: `senderos-pnlq-v45`; `responsive.css?v=1453`.
+Incluye todo lo de la 1.52, que nunca llegó a publicarse.
+
+Este es el hallazgo crítico de la auditoría, y el único que quedaba abierto. Hasta ahora
+`performSave` retiraba el base64 de las fotos antes de escribir en `localStorage`, porque una
+foto a 1600 px ocupa entre 250 y 400 KB y la cuota del navegador ronda los 5 MB. La decisión
+era correcta, pero el restaurador filtraba por `f.url`, así que al recargar la aplicación las
+fotografías desaparecían en silencio mientras el mensaje decía «✓ Borrador restaurado
+correctamente». En Android el navegador descarta pestañas por presión de memoria, así que se
+perdía justamente lo irrepetible: la evidencia de una jornada ya terminada.
+
+### Cómo quedó resuelto
+
+- Nuevo módulo `FotoStore`, junto a `Respaldo` al principio de `index.html`. Guarda cada
+  imagen como `Blob` en IndexedDB (base `pnlq_fotos_v1`, almacén `fotos`), sin el inflado de
+  aproximadamente 1,33× que impone el base64. La clave es `jornada_id + '::' + foto_id` y hay
+  un índice `por_jornada` para recorrer una jornada completa.
+- Cada foto recibe un identificador estable al cargarse (`nuevoIdFoto()`). Antes el `id` era
+  un `Math.random()` que se regeneraba en cada restauración, así que no servía como llave.
+- El borrador de `localStorage` conserva ahora `id`, `nombre`, `desc` y `categoria`; sigue sin
+  guardar el base64. Un borrador con dos fotos ocupa alrededor de 1 KB.
+- Al restaurar, cada ficha se vuelve a unir con su imagen leyéndola del almacén. Se muestran
+  primero las que ya traen imagen y el resto se completa en cuanto responde IndexedDB, para
+  que no aparezcan huecos ni imágenes rotas.
+- Un `.json` exportado sí lleva las imágenes: al importarlo se ingresan al almacén, de modo
+  que también sobreviven a la siguiente recarga.
+- Quitar una foto la borra del almacén, y «Nuevo informe · limpiar memoria» borra las de esa
+  jornada antes de recargar, con un límite de dos segundos para no dejar la app colgada si el
+  almacén no responde.
+- Housekeeping: al arrancar se purgan las fotos de jornadas cerradas hace más de 45 días. La
+  jornada en curso nunca se toca, por antigua que sea su fecha, porque un informe puede quedar
+  a medias durante semanas.
+- Si IndexedDB no está disponible (navegación privada estricta, almacenamiento bloqueado), la
+  aplicación funciona igual que antes y el aviso al restaurar lo dice con claridad. Ninguna
+  operación del almacén rechaza su promesa: un fallo nunca corta el flujo del formulario.
+
+### Textos que cambiaron
+
+- La nota permanente de la sección J ya no advierte una pérdida: dice que las fotografías
+  quedan guardadas en el teléfono y se recuperan al volver a abrir la aplicación, y recomienda
+  el Word o el `.json` para llevarlas a otro equipo.
+- El aviso al restaurar informa cuántas fotografías se recuperaron de verdad, comprobándolo
+  contra el almacén en vez de suponerlo.
+- El `confirm` de «Nuevo informe» advierte que también borra las fotografías y que, si aún no
+  se generó el Word ni se exportó el borrador, esa evidencia no se puede recuperar.
+
+### Verificación realizada
+
+Arneses en `revision-v1.52/smoke/`: **77/77** sobre la aplicación real y **29/29** sobre la
+vista previa. Además se probó en Chromium sobre la aplicación real, sirviéndola por HTTP para
+que el service worker funcione:
+
+- Cargar dos fotografías deja dos registros en IndexedDB y un borrador de 1 KB en
+  `localStorage`, con los dos identificadores y sin base64.
+- Al recargar y restaurar vuelven las dos imágenes, y el aviso dice «con sus 2 fotografía(s)».
+- La imagen recuperada es idéntica byte a byte a la original, se decodifica a 400×300 y
+  conserva la cabecera JPEG, que es exactamente lo que empaqueta el generador del Word.
+- «Nuevo informe» deja el almacén en cero y genera un identificador de jornada nuevo.
+- Un `.json` importado adopta su jornada, muestra sus dos fotos, las ingresa al almacén y
+  sobreviven a la recarga siguiente.
+- Con `indexedDB` bloqueado la aplicación arranca sin errores, la foto se ve mientras la sesión
+  está abierta y el aviso al restaurar es honesto.
+- La purga borra las jornadas viejas sembradas a propósito y deja intacta la actual.
+
+Sin regresiones: la sección C, el carrusel de la sección L en los cinco anchos, la caché del
+service worker y la cola de respaldo se volvieron a comprobar después del cambio.
+
+### Lo que sigue abierto
+
+- Optimizar los dos JPEG del membrete (líneas 100-101 de `index.html`, unos 898 KB en base64,
+  el 60 % del archivo) y moverlos a un módulo de carga perezosa.
+- Avisos visibles cuando `localStorage` rechaza una escritura.
+- Memoizar el cálculo de bloqueos: `findBlockingRequirement` ejecuta los 12 colectores en cada
+  render.
+- Apps Script: saneado de inyección de fórmulas en `texto()` y rechazo del `TOKEN` por defecto.
+- Unificar la exportación de borrador, duplicada en `InformeModal` y en `App`.
+- Decidir y documentar el salto de numeración: no existe la sección F.
+- Sigue sin mirarse la interfaz en un teléfono Android real.
+
 ## Precauciones
 
 - No convertir `index.html` a un proyecto npm durante esta etapa.
