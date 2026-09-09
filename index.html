@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
   <meta http-equiv="Pragma" content="no-cache"/>
   <meta http-equiv="Expires" content="0"/>
-  <!-- PNLQ · v20260615_225405 -->
+  <!-- PNLQ · v20260909_170500 -->
   <title>Reporte Mantenimiento Senderos — PNLQ</title>
   <meta name="description" content="Formulario para reportar el mantenimiento de senderos del Parque Nacional Los Quetzales."/>
   <meta name="theme-color" content="#021A53"/>
@@ -17,12 +17,12 @@
   <link rel="manifest" href="./manifest.webmanifest"/>
   <link rel="icon" href="./icons/icon.svg" type="image/svg+xml"/>
   <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
-  <link rel="stylesheet" href="./responsive.css?v=1451"/>
+  <link rel="stylesheet" href="./responsive.css?v=1452"/>
   <script src="./vendor/react.production.min.js"></script>
   <script src="./vendor/react-dom.production.min.js"></script>
   <script src="./vendor/jszip.min.js"></script>
   <script src="./respaldo-config.js?v=1"></script>
-  <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',system-ui,sans-serif}#root:empty::after{content:"Cargando formulario…";display:block;padding:40px;font-size:15px;color:#7a756a;text-align:center}@media print{body>*:not(#root){display:none}#root>div>div:first-child{display:none!important}#informe-preview{box-shadow:none!important;max-width:100%!important}}</style>
+  <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',system-ui,sans-serif}#root:empty::after{content:"Cargando formulario…";display:block;padding:40px;font-size:15px;color:#4B5563;text-align:center}@media print{body>*:not(#root){display:none}#root>div>div:first-child{display:none!important}#informe-preview{box-shadow:none!important;max-width:100%!important}}</style>
 </head>
 <body><div id="root"></div><script>var _excluded = ["seguimiento"];
 function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i.return) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
@@ -4380,6 +4380,11 @@ var SecC_sec = function SecC_sec() {
     return t.id;
   });
   var showAutoSegments = segmentMode || selectedAutoTramos.length > 0;
+  // Tramos reales: cada grupo de secciones contiguas cuenta como uno, más los
+  // tramos capturados a mano. Coincide con el encabezado del panel de tramos.
+  var totalTramos = selectedSectionGroups.length + tramos.filter(function (t) {
+    return !t.autoSegment;
+  }).length;
   var fullTrailSelected = tramos.some(function (t) {
     return !t.autoSegment && t.estIni !== '' && t.estFin !== '';
   });
@@ -4750,6 +4755,13 @@ var SecC_sec = function SecC_sec() {
     setActiveTramoGroup(1);
     setTramos([newTr]);
   };
+  // Deja la sección C en blanco: quita secciones marcadas, tramos manuales y modos activos.
+  var handleLimpiarSeleccion = function handleLimpiarSeleccion() {
+    setSelecting(null);
+    setSegmentMode(false);
+    setActiveTramoGroup(1);
+    setTramos([]);
+  };
   var TH = function TH(_ref34) {
     var c = _ref34.c,
       w = _ref34.w;
@@ -4893,13 +4905,16 @@ var SecC_sec = function SecC_sec() {
     }
   }, /*#__PURE__*/React.createElement("button", {
     onClick: handleSenderoCompleto,
-    className: "trail-mode-button",
+    className: "trail-mode-button".concat(fullTrailSelected ? ' is-active' : ''),
+    "aria-pressed": fullTrailSelected,
     style: {
       padding: '10px 14px',
-      background: G.mid,
-      border: 'none',
+      // Amarillo fluor idéntico al del modo secciones y al resaltado del mapa:
+      // en toda la aplicación ese color significa "selección activa".
+      background: fullTrailSelected ? '#FFEA00' : G.mid,
+      border: "1px solid ".concat(fullTrailSelected ? '#B79E00' : G.mid),
       borderRadius: 4,
-      color: 'white',
+      color: fullTrailSelected ? G.dark : 'white',
       fontSize: 12,
       fontFamily: 'inherit',
       fontWeight: 700,
@@ -4935,7 +4950,32 @@ var SecC_sec = function SecC_sec() {
       fontWeight: 700,
       cursor: 'pointer'
     }
-  }, "\u2715 Cancelar selecci\xF3n")), showAutoSegments && /*#__PURE__*/React.createElement("section", {
+  }, "\u2715 Cancelar selecci\xF3n"), tramos.length > 0 && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: handleLimpiarSeleccion,
+    className: "trail-mode-button trail-clear-button",
+    style: {
+      padding: '10px 14px',
+      background: '#FFF5F4',
+      border: '1px solid #B42318',
+      borderRadius: 4,
+      color: '#B42318',
+      fontSize: 12,
+      fontFamily: 'inherit',
+      fontWeight: 700,
+      cursor: 'pointer'
+    }
+  }, "\uD83E\uDDF9 Limpiar selecci\xF3n")), sendero && activeTrail && /*#__PURE__*/React.createElement("div", {
+    className: "trail-accumulated",
+    role: "status",
+    "aria-live": "polite"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "trail-accumulated-label"
+  }, "Distancia acumulada"), /*#__PURE__*/React.createElement("strong", {
+    className: "trail-accumulated-value"
+  }, totalM, " m"), /*#__PURE__*/React.createElement("small", {
+    className: "trail-accumulated-detail"
+  }, tramos.length ? "".concat(totalTramos, " ").concat(totalTramos === 1 ? 'tramo' : 'tramos', " \xB7 ").concat(Math.min(100, Math.round(totalM / (activeTrail.total_m || 1) * 100)), "% de los ").concat(activeTrail.total_m, " m del sendero") : 'Toque secciones en el mapa o agregue el sendero completo')), showAutoSegments && /*#__PURE__*/React.createElement("section", {
     className: "trail-selected-panel",
     "aria-live": "polite"
   }, /*#__PURE__*/React.createElement("div", {
@@ -7044,7 +7084,10 @@ var SecJ = function SecJ() {
     className: "photo-guide"
   }, /*#__PURE__*/React.createElement("div", {
     className: "photo-guide-copy"
-  }, /*#__PURE__*/React.createElement("span", null, "Galería guiada"), /*#__PURE__*/React.createElement("strong", null, "Seleccione las fotos tomadas durante la jornada"), /*#__PURE__*/React.createElement("p", null, "Puede cargar varias a la vez y clasificarlas después. La categoría identificará cada evidencia en el informe Word.")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", null, "Galería guiada"), /*#__PURE__*/React.createElement("strong", null, "Seleccione las fotos tomadas durante la jornada"), /*#__PURE__*/React.createElement("p", null, "Puede cargar varias a la vez y clasificarlas después. La categoría identificará cada evidencia en el informe Word."), /*#__PURE__*/React.createElement("p", {
+    className: "photo-persistence-note",
+    role: "note"
+  }, "\u26A0\uFE0F Las fotograf\xEDas se conservan mientras la aplicaci\xF3n permanezca abierta. Antes de cerrarla, genere el Word o exporte el borrador (.json) para que la evidencia quede guardada.")), /*#__PURE__*/React.createElement("div", {
     className: "photo-guide-types",
     "aria-label": "Tipos de evidencia sugeridos"
   }, PHOTO_CATEGORIES.map(function (category) {
@@ -7763,6 +7806,8 @@ var SecL = function SecL() {
     _useStateLRating2 = _slicedToArray(_useStateLRating, 2),
     conditionRating = _useStateLRating2[0],
     setConditionRating = _useStateLRating2[1];
+  // Arrastre horizontal del carrusel de condición final: guarda el X inicial.
+  var carouselDragRef = useRef(null);
   var _useStateLJustification = useState([]),
     _useStateLJustification2 = _slicedToArray(_useStateLJustification, 2),
     justifChoices = _useStateLJustification2[0],
@@ -7875,6 +7920,57 @@ var SecL = function SecL() {
       });
     });
   };
+  // ── Carrusel de condición final ─────────────────────────────────────────────
+  // El centro es la calificación elegida (3 mientras no se califica). Las caras
+  // giran a izquierda y derecha: la del centro va grande y las vecinas pequeñas.
+  // Las imágenes de la escala no cambian, solo el método de selección.
+  var conditionCenter = conditionRating || 3;
+  var moveCondition = function moveCondition(next) {
+    var value = Math.min(5, Math.max(1, next));
+    setConditionRating(value);
+    // Mover también el foco: el patrón radiogroup usa tabindex itinerante.
+    var face = document.getElementById("condition-face-".concat(value));
+    if (face && typeof face.focus === 'function') face.focus();
+  };
+  var onCarouselKey = function onCarouselKey(e, rating) {
+    var key = e.key;
+    if (key === 'ArrowRight' || key === 'ArrowDown') {
+      e.preventDefault();
+      moveCondition(rating + 1);
+    } else if (key === 'ArrowLeft' || key === 'ArrowUp') {
+      e.preventDefault();
+      moveCondition(rating - 1);
+    } else if (key === 'Home') {
+      e.preventDefault();
+      moveCondition(1);
+    } else if (key === 'End') {
+      e.preventDefault();
+      moveCondition(5);
+    } else if (key === ' ' || key === 'Enter') {
+      e.preventDefault();
+      setConditionRating(rating);
+    }
+  };
+  var onCarouselPointerDown = function onCarouselPointerDown(e) {
+    carouselDragRef.current = e.clientX;
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch (_) {}
+  };
+  var onCarouselPointerUp = function onCarouselPointerUp(e) {
+    if (carouselDragRef.current === null) return;
+    var dx = e.clientX - carouselDragRef.current;
+    carouselDragRef.current = null;
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch (_) {}
+    // Por debajo del umbral fue un toque sobre una cara, que ya resuelve onClick.
+    if (Math.abs(dx) < 28) return;
+    moveCondition(conditionCenter + (dx < 0 ? 1 : -1));
+  };
+  var onCarouselPointerCancel = function onCarouselPointerCancel() {
+    carouselDragRef.current = null;
+  };
   var toggleJustification = function toggleJustification(option) {
     return setJustifChoices(function (choices) {
       return choices.indexOf(option) >= 0 ? choices.filter(function (choice) {
@@ -7892,12 +7988,50 @@ var SecL = function SecL() {
   }, /*#__PURE__*/React.createElement(Lbl, {
     c: "Condici\xF3n final del sendero / tramo"
   }), /*#__PURE__*/React.createElement("div", {
-    className: "condition-slider-scale",
+    className: "condition-carousel",
+    role: "radiogroup",
+    "aria-label": "Condici\xF3n final del sendero o tramo"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "condition-carousel-row"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "condition-carousel-arrow",
+    onClick: function onClick() {
+      return moveCondition(conditionCenter - 1);
+    },
+    disabled: conditionCenter <= 1,
+    tabIndex: -1,
     "aria-hidden": "true"
+  }, "\u2039"), /*#__PURE__*/React.createElement("div", {
+    className: "condition-carousel-viewport",
+    onPointerDown: onCarouselPointerDown,
+    onPointerUp: onCarouselPointerUp,
+    onPointerCancel: onCarouselPointerCancel
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "condition-carousel-track",
+    style: {
+      transform: "translateX(calc(".concat(1 - conditionCenter, " * var(--condition-slot)))")
+    }
   }, [1, 2, 3, 4, 5].map(function (rating) {
-    return /*#__PURE__*/React.createElement("span", {
+    var offset = Math.abs(rating - conditionCenter);
+    return /*#__PURE__*/React.createElement("button", {
       key: rating,
-      className: conditionRating === rating ? 'is-selected' : ''
+      id: "condition-face-".concat(rating),
+      type: "button",
+      role: "radio",
+      className: "condition-carousel-item".concat(rating === conditionCenter ? ' is-center' : offset === 1 ? ' is-near' : ' is-far').concat(rating === conditionCenter && conditionRating ? ' is-chosen' : ''),
+      "aria-checked": conditionRating === rating,
+      tabIndex: rating === conditionCenter ? 0 : -1,
+      onClick: function onClick() {
+        // moveCondition (y no setConditionRating a secas) para que el foco siga a
+        // la selección también con toque: quien usa lector de pantalla necesita
+        // que la cara elegida quede enfocada.
+        return moveCondition(rating);
+      },
+      onKeyDown: function onKeyDown(e) {
+        return onCarouselKey(e, rating);
+      },
+      "aria-label": "".concat(CONDITION_RATING_LABELS[rating], " \xB7 ").concat(rating, " de 5")
     }, /*#__PURE__*/React.createElement("span", {
       className: "condition-danta-face",
       role: "img",
@@ -7905,29 +8039,20 @@ var SecL = function SecL() {
       style: {
         backgroundPosition: "".concat(CONDITION_RATING_SPRITE_POSITION[rating], " center")
       }
-    }), /*#__PURE__*/React.createElement("small", null, CONDITION_RATING_LABELS[rating]));
-  })), /*#__PURE__*/React.createElement("input", {
-    className: "condition-slider",
-    type: "range",
-    min: "1",
-    max: "5",
-    step: "1",
-    value: conditionRating || 3,
-    onChange: function onChange(e) {
-      return setConditionRating(parseInt(e.target.value, 10));
+    }));
+  }))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "condition-carousel-arrow",
+    onClick: function onClick() {
+      return moveCondition(conditionCenter + 1);
     },
-    "aria-label": "Condici\xF3n final del sendero o tramo",
-    "aria-valuetext": conditionRating ? CONDITION_RATING_LABELS[conditionRating] : 'Sin calificar'
-  }), /*#__PURE__*/React.createElement("div", {
+    disabled: conditionCenter >= 5,
+    tabIndex: -1,
+    "aria-hidden": "true"
+  }, "\u203A")), /*#__PURE__*/React.createElement("div", {
     className: "condition-rating-label",
     "aria-live": "polite"
-  }, conditionRating && /*#__PURE__*/React.createElement("span", {
-    className: "condition-danta-face is-inline",
-    "aria-hidden": "true",
-    style: {
-      backgroundPosition: "".concat(CONDITION_RATING_SPRITE_POSITION[conditionRating], " center")
-    }
-  }), conditionRating ? "".concat(CONDITION_RATING_LABELS[conditionRating], " \xB7 ").concat(conditionRating, "/5") : 'Deslice la barra para calificar')), /*#__PURE__*/React.createElement("div", {
+  }, conditionRating ? "".concat(CONDITION_RATING_LABELS[conditionRating], " \xB7 ").concat(conditionRating, " de 5") : 'Toque una cara o gire con las flechas'))), /*#__PURE__*/React.createElement("div", {
     className: "pending-justification-field"
   }, /*#__PURE__*/React.createElement(Lbl, {
     c: "Justificaci\xF3n de pendientes no resueltos"
@@ -8149,7 +8274,10 @@ var SEC_MAP = {
 
 // ─── GENERADOR DOCX (JSZip + OOXML) ─────────────────────────────────────────
 var xmlEscape = function xmlEscape(s) {
-  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return String(s || '')
+  // XML 1.0 prohíbe los caracteres de control C0: si el texto viene pegado con
+  // alguno (U+000B, U+0007…), Word declara el archivo dañado y no lo abre.
+  .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 };
 var DOCX_NAVY = '0B1F3A';
 var DOCX_RFONTS = '<w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>';
@@ -8607,13 +8735,38 @@ var buildDocx = /*#__PURE__*/function () {
           blob = _context.v;
           blobUrl = URL.createObjectURL(blob);
           dlLink = document.createElement('a');
-          fechaStr = (rd.a_data || {}).fechaIni || new Date().toISOString().slice(0, 10);
+          fechaStr = (rd.a_data || {}).fechaIni || TODAY;
           dlLink.href = blobUrl;
           dlLink.download = "Reporte_Mantenimiento_".concat((sendero || 'PNLQ').replace(/\s+/g, '_'), "_").concat(fechaStr, ".docx");
           document.body.appendChild(dlLink);
           dlLink.click();
           try {
             Respaldo.marcarFinal();
+            // marcarFinal() solo cambia el estado interno del módulo. Sin encolar
+            // aquí, el informe queda como "borrador" en la hoja si la aplicación se
+            // cierra enseguida: beforeunload no es fiable en iOS ni cuando Android
+            // descarta el proceso. La huella incluye el estado, así que el cambio
+            // borrador → final genera un envío nuevo en vez de descartarse.
+            Respaldo.encolar({
+              app: 'PNLQ-Mantenimiento-Senderos',
+              version: '1.0',
+              timestamp: new Date().toISOString(),
+              context: {
+                sendero: sendero || ''
+              },
+              // Sin el base64 de las fotos: la cola vive en localStorage y la
+              // pestaña "fotos" de la hoja solo guarda nombre, descripción y categoría.
+              sections: Array.isArray(rd.j_fotos) ? _objectSpread(_objectSpread({}, rd), {}, {
+                j_fotos: rd.j_fotos.map(function (f) {
+                  return {
+                    nombre: f.nombre,
+                    desc: f.desc,
+                    categoria: f.categoria || ''
+                  };
+                })
+              }) : rd
+            });
+            Respaldo.enviar(true);
           } catch (respaldoError) {
             console.warn('Respaldo:', respaldoError);
           }
@@ -8817,7 +8970,7 @@ var InformeModal = function InformeModal(_ref46) {
       var ur = URL.createObjectURL(bl),
         lk = document.createElement('a');
       lk.href = ur;
-      lk.download = "Borrador_PNLQ_".concat((ctx.sendero || 'form').replace(/\s+/g, '_'), "_").concat(new Date().toISOString().slice(0, 10), ".json");
+      lk.download = "Borrador_PNLQ_".concat((ctx.sendero || 'form').replace(/\s+/g, '_'), "_").concat(TODAY, ".json");
       document.body.appendChild(lk);
       lk.click();
       setTimeout(function () {
@@ -10205,7 +10358,7 @@ function App() {
     var url = URL.createObjectURL(blob);
     var lnk = document.createElement('a');
     lnk.href = url;
-    lnk.download = "Borrador_PNLQ_".concat((senderoRef.current || 'form').replace(/\s+/g, '_'), "_").concat(new Date().toISOString().slice(0, 10), ".json");
+    lnk.download = "Borrador_PNLQ_".concat((senderoRef.current || 'form').replace(/\s+/g, '_'), "_").concat(TODAY, ".json");
     document.body.appendChild(lnk);
     lnk.click();
     setTimeout(function () {
@@ -10276,16 +10429,21 @@ function App() {
         return;
       }
       var data = JSON.parse(raw);
+      // Las fotos no caben en localStorage: el borrador conserva sus datos pero no
+      // la imagen. Decirlo explícitamente evita creer que la evidencia está a salvo.
+      var fotosSinImagen = ((data.sections || {}).j_fotos || []).filter(function (f) {
+        return f && !f.url;
+      }).length;
       restoreFormData(data);
       autosaveSuspendedRef.current = false;
       setBannerVisible(false);
-      alert('✓ Borrador restaurado correctamente.');
+      alert(fotosSinImagen ? '✓ Borrador restaurado. Las ' + fotosSinImagen + ' fotografía(s) de la sección J no se guardan en este navegador: vuelva a agregarlas o importe un borrador .json que las contenga.' : '✓ Borrador restaurado correctamente.');
     } catch (e) {
       alert('Error al restaurar: ' + e.message);
     }
   }, [restoreFormData]);
   var handleDiscardDraft = useCallback(function () {
-    var confirmed = window.confirm('Se borrarán el borrador actual y los participantes guardados en este navegador. Esta acción deja la app lista para un informe nuevo. ¿Continuar?');
+    var confirmed = window.confirm('Se borrarán el borrador actual y los participantes guardados en este navegador, y la aplicación se recargará: las fotografías cargadas en la sección J también se pierden. Esta acción deja la app lista para un informe nuevo. ¿Continuar?');
     if (!confirmed) return;
     autosaveSuspendedRef.current = true;
     try {
@@ -10870,7 +11028,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.51'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.52'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];

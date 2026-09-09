@@ -298,6 +298,62 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 - `PROB_LIST` filtra `activeProbs` en el colector, así que un borrador anterior habría perdido el registro. Se añadió migración en el restaurador de `d_data`, igual que se hizo con `Chapia lateral de vegetación` en E.1: el nombre antiguo se traduce al nuevo en `activeProbs` y en `sevs`, conservando la gravedad.
 - Verificado en el navegador: la tarjeta y el colector usan el nombre nuevo, y un borrador con el nombre anterior se restaura con sus dos problemas y la gravedad `Alta` intactos.
 
+## Correcciones de la auditoría y dos mejoras de campo (versión 1.52)
+
+Versión preparada: `1.52`; caché: `senderos-pnlq-v44`; `responsive.css?v=1452`.
+Punto de restauración: tag `restore-v1.51`. Rama de trabajo: `mejoras-v1.52`.
+
+### Correcciones de robustez (Fase 1 de la auditoría)
+
+- `xmlEscape` filtra ahora los caracteres de control C0 (`U+0000-U+0008`, `U+000B`, `U+000C`, `U+000E-U+001F`, `U+007F`) antes de escapar. XML 1.0 los prohíbe: un texto pegado desde WhatsApp o un PDF con uno de ellos generaba un `document.xml` inválido y Word respondía «archivo dañado» sin posibilidad de recuperación.
+- `sw.js` busca en caché con `{ ignoreSearch: true }` y solo devuelve `index.html` cuando `event.request.mode === 'navigate'`; en el resto de los casos devuelve `Response.error()`. Antes, una petición de `responsive.css?v=NNNN` sin coincidencia exacta recibía HTML y la aplicación se abría sin estilos. La precarga seguía listando el CSS sin el query string.
+- Los nombres de archivo del DOCX y de los dos exportadores de borrador usan `TODAY` en lugar de `new Date().toISOString().slice(0, 10)`, que es fecha UTC: entre las 00:00 y las 05:59 de Costa Rica el archivo salía con el día anterior. `TODAY` ya compensaba la zona desde la versión 1.28.
+- Tras generar el Word, `buildDocx` llama a `Respaldo.encolar()` con el informe y a `Respaldo.enviar(true)`. `marcarFinal()` solo cambiaba una variable interna, así que el estado `final` dependía de un autoguardado posterior o de `beforeunload`, que no es fiable en iOS ni cuando Android descarta el proceso. El payload se encola sin el base64 de las fotos, igual que el autoguardado.
+- La restauración de un borrador cuenta las fotos que venían sin imagen y lo dice en el aviso: «Las N fotografía(s) de la sección J no se guardan en este navegador…». Las fotos nunca se han persistido en `localStorage` (se retiran en `performSave` para no reventar la cuota) y el mensaje anterior afirmaba que todo se había restaurado.
+- Se añadió una nota permanente en la galería de J (`.photo-persistence-note`) y el `confirm` de «Nuevo informe» menciona que las fotografías también se pierden.
+- El texto «Cargando formulario…» pasa de `#7a756a` a `#4B5563`: el contraste sube de 4,23:1 a 6,97:1 sobre `#F4F6F8` y cumple WCAG AA.
+- Quedó retirado el CSS muerto del deslizador de condición final (`.condition-slider-scale`, `.section-body .condition-slider`, `.condition-danta-face.is-inline`).
+
+### Sección C — selección de tramos
+
+- El botón **Agregar sendero completo** cambia a amarillo fluor (`#FFEA00` con borde `#B79E00` y texto `G.dark`) cuando el sendero completo ya está seleccionado, expone `aria-pressed` y recibe la clase `is-active`. Es el mismo código de color del modo secciones y del resaltado del mapa: en toda la aplicación el amarillo fluor significa «selección activa».
+- Nuevo botón **Limpiar selección** (`.trail-clear-button`), visible solo cuando hay algo seleccionado. Llama a `handleLimpiarSeleccion`, que vacía `tramos`, sale del modo secciones, cancela la captura manual y reinicia `activeTramoGroup` a 1. No pide confirmación: es un gesto explícito y reversible en dos toques.
+- Nuevo indicador **Distancia acumulada** (`.trail-accumulated`), visible desde que se elige el sendero y actualizado en vivo. Muestra el total en metros, el número de tramos y el porcentaje respecto de `activeTrail.total_m`. Usa el `totalM` que ya alimentaba `updCalcC({ totalMetros })`, así que también refleja los tramos capturados a mano y el sendero completo. Es `role="status"` con `aria-live="polite"`.
+- El conteo de tramos del indicador usa `totalTramos` (nuevo derivado): `selectedSectionGroups.length` más los tramos manuales. Contar `tramos.length` habría dicho «2 tramos» para dos secciones contiguas, en contradicción con el encabezado del panel que sí agrupa. Con `totalTramos` ambos textos coinciden.
+- Sin selección muestra la guía «Toque secciones en el mapa o agregue el sendero completo» en lugar de quedar oculto, para que el funcionario vea que el contador existe y responde.
+
+### Sección L — condición final como carrusel giratorio
+
+- **Las imágenes no cambian**: sigue el mismo sprite `l-danta-expresiones.webp` con las cinco posiciones `0% / 25% / 50% / 75% / 100%`. Solo se sustituyó el método de selección.
+- Fuera la escala estática de cinco caras y el `input[type=range]`. Entra un carrusel (`.condition-carousel`) donde la cara elegida queda grande al centro (84 px, 68 px en móvil) y las vecinas giran a los lados en tamaño decreciente (54 px y 40 px; 46 px y 34 px en móvil) con opacidad 0,85 y 0,5.
+- El giro es un `translateX(calc(N * var(--condition-slot)))` sobre la pista, con el relleno lateral `calc(50% - var(--condition-slot) / 2)` para llevar la primera cara al centro. Transición de 0,34 s y anulada con `prefers-reduced-motion: reduce`.
+- Cuatro formas de seleccionar: tocar cualquier cara, flechas ‹ › a los lados, arrastre horizontal (umbral de 28 px, con captura de puntero) y teclado.
+- Accesibilidad: el contenedor es `role="radiogroup"` y cada cara `role="radio"` con `aria-checked`, `id="condition-face-N"` y tabindex itinerante (solo el centro es alcanzable con Tab). Flechas ←/→/↑/↓, `Home` y `End` mueven la selección y el foco viaja con ella (`moveCondition` hace `focus()`); por eso `onClick` llama a `moveCondition` y no a `setConditionRating` a secas. Las flechas ‹ › son `aria-hidden` con `tabindex="-1"` para no duplicar controles en el orden de tabulación.
+- La etiqueta cualitativa queda bajo la cara central con `aria-live="polite"`: «Excelente · 5 de 5». Sin calificar dice «Toque una cara o gire con las flechas» y ninguna cara aparece como elegida, igual que antes.
+- **El modelo de datos no cambia**: `condFinal` y `condFinalRating` siguen saliendo del mismo `conditionRating` (1-5), así que el colector, el restaurador, la vista previa y el DOCX no se tocaron. Un borrador anterior se restaura igual, incluida la migración por etiqueta.
+- El centro por defecto sigue siendo 3 mientras no haya calificación, igual que el valor inicial del deslizador anterior.
+
+### Verificación realizada
+
+Prueba automatizada con jsdom cargando la aplicación real y el React/JSZip de `vendor/`: **63/63 comprobaciones superadas**. Cubre arranque sin errores, las 12 secciones en el DOM, versión visible 1.52, y en detalle:
+
+- Sección C: indicador presente y en 0 m; sendero completo → 1373 m y «1 tramo · 100% de los 1373 m»; botón de `rgb(0, 46, 122)` a `rgb(255, 234, 0)` con `aria-pressed="true"`; limpiar selección vuelve a 0 m, quita `is-active`, oculta las tarjetas y esconde el botón; marcar dos secciones acumula 98 m → 196 m y cuenta como **1 tramo**, igual que el encabezado del panel.
+- Sección L: cinco caras con las cinco posiciones del sprite distintas; radiogroup con `aria-checked`; centro inicial en la posición 3; dos caras `is-near` y dos `is-far`; tabindex itinerante; `translateX(calc(-2 * var(--condition-slot)))` inicial; flecha derecha → «Bueno · 4 de 5» y `calc(-3 * …)`; toque en cara lateral → «Muy malo · 1 de 5» con foco en `condition-face-1`; teclado →, `Home`, `End`; flechas deshabilitadas en ambos extremos; arrastre 300→210 px avanza una posición; deslizador antiguo ausente.
+- Fase 1: `xmlEscape` y `docxPara` sin caracteres ilegales y con `& < > "` escapados; una sola aparición de `toISOString().slice(0, 10)` y es dentro de `TODAY`; aviso de fotos al restaurar; nota en J; `confirm` actualizado; `encolar` + `enviar(true)` tras el Word y sin `url: f.url`; `ignoreSearch`, `mode === 'navigate'` y `Response.error()` en `sw.js`; caché `v44`.
+- Coherencia: las 12 clases nuevas tienen su regla CSS, sin CSS muerto del deslizador y llaves balanceadas (883/883).
+
+En jsdom React vuelca el estado en un macrotask (no hay `MessageChannel`), así que el arnés espera un tick tras cada interacción; no es un comportamiento de la aplicación.
+
+### Pendiente de la auditoría (no incluido en esta versión)
+
+- Persistir las fotografías en IndexedDB: esta versión solo avisa de la pérdida, no la evita.
+- Optimizar los dos JPEG del membrete (líneas 100-101 de `index.html`, ~924 KB en base64, el 62 % del archivo) y moverlos a un módulo de carga perezosa.
+- Avisos visibles cuando `localStorage` rechaza una escritura (autoguardado y cola de respaldo).
+- Memoizar el cálculo de bloqueos: `findBlockingRequirement` ejecuta los 12 colectores en cada render.
+- Apps Script: saneado de inyección de fórmulas en `texto()` y rechazo del `TOKEN` por defecto.
+- Unificar la exportación de borrador, duplicada en `InformeModal` y en `App`.
+- Decidir y documentar el salto de numeración: no existe la sección F.
+
 ## Precauciones
 
 - No convertir `index.html` a un proyecto npm durante esta etapa.
