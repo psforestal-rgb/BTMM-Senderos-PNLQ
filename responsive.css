@@ -4895,6 +4895,20 @@ body.preview-mobile .closing-review-overlay {
   }
 }
 
+/* El anillo de foco general del formulario es un rectángulo alrededor del botón:
+   sobre una cara redonda de 84 px queda un cuadrado que choca con el aro dorado de
+   la selección. Se traslada a la propia cara, que ya es circular, conservando color
+   y grosor. Sigue siendo un outline, así que el modo de alto contraste lo respeta. */
+.condition-carousel-item:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.condition-carousel-item:focus-visible .condition-danta-face {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .condition-carousel-track,
   .condition-carousel-item,

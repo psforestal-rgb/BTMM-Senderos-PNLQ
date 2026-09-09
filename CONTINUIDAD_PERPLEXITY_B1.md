@@ -301,14 +301,16 @@ Se probó con Chrome/Playwright en `375`, `390`, `430`, `768` y `1280` px:
 ## Correcciones de la auditoría y dos mejoras de campo (versión 1.52)
 
 Versión preparada: `1.52`; caché: `senderos-pnlq-v44`; `responsive.css?v=1452`.
-Punto de restauración: tag `restore-v1.51`. Rama de trabajo: `mejoras-v1.52`.
+Rama de trabajo: `claude/v1-52-handoff-audit-yrv2ho`. El tag `restore-v1.51` que mencionaba el
+relevo nunca llegó a GitHub: el único punto de restauración publicado es `restore-v1.18`.
+Conviene crear el tag sobre `main` antes de publicar esta versión.
 
 ### Correcciones de robustez (Fase 1 de la auditoría)
 
 - `xmlEscape` filtra ahora los caracteres de control C0 (`U+0000-U+0008`, `U+000B`, `U+000C`, `U+000E-U+001F`, `U+007F`) antes de escapar. XML 1.0 los prohíbe: un texto pegado desde WhatsApp o un PDF con uno de ellos generaba un `document.xml` inválido y Word respondía «archivo dañado» sin posibilidad de recuperación.
 - `sw.js` busca en caché con `{ ignoreSearch: true }` y solo devuelve `index.html` cuando `event.request.mode === 'navigate'`; en el resto de los casos devuelve `Response.error()`. Antes, una petición de `responsive.css?v=NNNN` sin coincidencia exacta recibía HTML y la aplicación se abría sin estilos. La precarga seguía listando el CSS sin el query string.
 - Los nombres de archivo del DOCX y de los dos exportadores de borrador usan `TODAY` en lugar de `new Date().toISOString().slice(0, 10)`, que es fecha UTC: entre las 00:00 y las 05:59 de Costa Rica el archivo salía con el día anterior. `TODAY` ya compensaba la zona desde la versión 1.28.
-- Tras generar el Word, `buildDocx` llama a `Respaldo.encolar()` con el informe y a `Respaldo.enviar(true)`. `marcarFinal()` solo cambiaba una variable interna, así que el estado `final` dependía de un autoguardado posterior o de `beforeunload`, que no es fiable en iOS ni cuando Android descarta el proceso. El payload se encola sin el base64 de las fotos, igual que el autoguardado.
+- Tras generar el Word, `buildDocx` llama a `Respaldo.encolar()` con el informe y al envío de la cola. `marcarFinal()` solo cambiaba una variable interna, así que el estado `final` dependía de un autoguardado posterior o de `beforeunload`, que no es fiable en iOS ni cuando Android descarta el proceso. El payload se encola sin el base64 de las fotos, igual que el autoguardado.
 - La restauración de un borrador cuenta las fotos que venían sin imagen y lo dice en el aviso: «Las N fotografía(s) de la sección J no se guardan en este navegador…». Las fotos nunca se han persistido en `localStorage` (se retiran en `performSave` para no reventar la cuota) y el mensaje anterior afirmaba que todo se había restaurado.
 - Se añadió una nota permanente en la galería de J (`.photo-persistence-note`) y el `confirm` de «Nuevo informe» menciona que las fotografías también se pierden.
 - El texto «Cargando formulario…» pasa de `#7a756a` a `#4B5563`: el contraste sube de 4,23:1 a 6,97:1 sobre `#F4F6F8` y cumple WCAG AA.
@@ -335,14 +337,61 @@ Punto de restauración: tag `restore-v1.51`. Rama de trabajo: `mejoras-v1.52`.
 
 ### Verificación realizada
 
-Prueba automatizada con jsdom cargando la aplicación real y el React/JSZip de `vendor/`: **63/63 comprobaciones superadas**. Cubre arranque sin errores, las 12 secciones en el DOM, versión visible 1.52, y en detalle:
+Prueba automatizada con jsdom cargando la aplicación real y el React/JSZip de `vendor/`: **64/64 comprobaciones superadas**. Cubre arranque sin errores, las 12 secciones en el DOM, versión visible 1.52, y en detalle:
 
 - Sección C: indicador presente y en 0 m; sendero completo → 1373 m y «1 tramo · 100% de los 1373 m»; botón de `rgb(0, 46, 122)` a `rgb(255, 234, 0)` con `aria-pressed="true"`; limpiar selección vuelve a 0 m, quita `is-active`, oculta las tarjetas y esconde el botón; marcar dos secciones acumula 98 m → 196 m y cuenta como **1 tramo**, igual que el encabezado del panel.
 - Sección L: cinco caras con las cinco posiciones del sprite distintas; radiogroup con `aria-checked`; centro inicial en la posición 3; dos caras `is-near` y dos `is-far`; tabindex itinerante; `translateX(calc(-2 * var(--condition-slot)))` inicial; flecha derecha → «Bueno · 4 de 5» y `calc(-3 * …)`; toque en cara lateral → «Muy malo · 1 de 5» con foco en `condition-face-1`; teclado →, `Home`, `End`; flechas deshabilitadas en ambos extremos; arrastre 300→210 px avanza una posición; deslizador antiguo ausente.
-- Fase 1: `xmlEscape` y `docxPara` sin caracteres ilegales y con `& < > "` escapados; una sola aparición de `toISOString().slice(0, 10)` y es dentro de `TODAY`; aviso de fotos al restaurar; nota en J; `confirm` actualizado; `encolar` + `enviar(true)` tras el Word y sin `url: f.url`; `ignoreSearch`, `mode === 'navigate'` y `Response.error()` en `sw.js`; caché `v44`.
+- Fase 1: `xmlEscape` y `docxPara` sin caracteres ilegales y con `& < > "` escapados; una sola aparición de `toISOString().slice(0, 10)` y es dentro de `TODAY`; aviso de fotos al restaurar; nota en J; `confirm` actualizado; `encolar` + envío condicionado a la conexión tras el Word, y sin `url: f.url`; `ignoreSearch`, `mode === 'navigate'` y `Response.error()` en `sw.js`; caché `v44`.
 - Coherencia: las 12 clases nuevas tienen su regla CSS, sin CSS muerto del deslizador y llaves balanceadas (883/883).
 
 En jsdom React vuelca el estado en un macrotask (no hay `MessageChannel`), así que el arnés espera un tick tras cada interacción; no es un comportamiento de la aplicación.
+
+### Segunda revisión: comprobación en navegador real y tres correcciones
+
+La versión 1.52 se validó primero solo con jsdom, así que su aspecto y su comportamiento
+táctil quedaron sin mirar. Esa pasada se completó con Chromium sobre la aplicación real en
+`375`, `390`, `430`, `768` y `1280` px, sin ningún error de JavaScript. Se confirmó que la
+sección C se comporta como se describe (1503 m y «1 tramo · 100%» con el sendero completo, el
+botón pasa de `rgb(0, 46, 122)` a `rgb(255, 234, 0)`, limpiar selección vuelve a 0 m), que el
+arrastre del carrusel avanza exactamente un paso con ratón y con dedo sea cual sea la
+distancia, que `touch-action: pan-y` y el manejo de `pointercancel` dejan intacto el
+desplazamiento vertical de la página, y que la cara activa queda centrada con desviación de
+0 px en los cinco anchos.
+
+La revisión detectó tres defectos, corregidos aquí:
+
+- **El envío del respaldo no debe forzarse sin señal.** `buildDocx` llamaba a
+  `Respaldo.enviar(true)`, y `forzar` salta tanto la comprobación de red como la espera
+  progresiva. Medido en el navegador: generando el Word cuatro veces sin conexión, la entrada
+  de la cola acumulaba cuatro fallos y el próximo reintento se alejaba a 29 s → 59 s → 119 s →
+  239 s. Ahora la llamada es `Respaldo.enviar(navigator.onLine !== false)`: con conexión sigue
+  saltándose la espera y sale de inmediato, y sin conexión no se intenta y la cola queda en
+  cero intentos. El botón manual de reintento de la barra lateral conserva el envío forzado,
+  que ahí es lo correcto porque lo pide el funcionario.
+- **El foco desplazaba el visor del carrusel.** `moveCondition` hacía `focus()` sobre una cara
+  que todavía no había llegado al centro, y como `.condition-carousel-viewport` es
+  `overflow: hidden` el navegador desplazaba el contenedor para revelarla: con `End` el
+  `scrollLeft` saltaba a 226 px en un visor de 189 px, peleando con el `translateX` de la
+  pista. Se corrigió con `focus({ preventScroll: true })`. Verificado: `scrollLeft` se queda
+  en 0 con `Home` y con `End` en los cinco anchos.
+- **El anillo de foco era un cuadrado sobre una cara redonda.** La regla general del formulario
+  (`button:focus-visible`) dibuja un contorno ámbar de 3 px más una sombra azul de 2 px
+  alrededor del botón, lo que sobre la cara circular de 84 px daba dos cuadrados encima del aro
+  dorado de la selección. Se trasladó el indicador a la propia cara, que ya es circular, con el
+  mismo color y grosor. Sigue siendo un `outline`, así que el modo de alto contraste lo
+  respeta, y no lo recorta el visor: quedan 6 px de margen arriba y abajo. Solo aparecía con
+  teclado; con toque y con ratón `:focus-visible` no se activa y no había anillo.
+
+Los arneses de `revision-v1.52/smoke/` quedan en 64/64 y 29/29. La comprobación del respaldo se
+reescribió para exigir que el envío tras el Word no se fuerce a ciegas.
+
+El mecanismo que arregla el service worker se comprobó de forma directa contra su propia caché:
+para `responsive.css?v=1452` la búsqueda exacta no encuentra nada, con `ignoreSearch` devuelve
+`text/css`, y el respaldo anterior devolvía `text/html` para una petición de hoja de estilos.
+La precarga guarda el CSS sin el query string, así que la coincidencia exacta nunca acierta.
+
+Queda sin mirar el aspecto en un teléfono Android real: la validación fue con Chromium de
+escritorio emulando los anchos, no con el hardware ni el motor de un equipo de gama media.
 
 ### Pendiente de la auditoría (no incluido en esta versión)
 

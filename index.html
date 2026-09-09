@@ -7930,7 +7930,12 @@ var SecL = function SecL() {
     setConditionRating(value);
     // Mover también el foco: el patrón radiogroup usa tabindex itinerante.
     var face = document.getElementById("condition-face-".concat(value));
-    if (face && typeof face.focus === 'function') face.focus();
+    // preventScroll: el visor del carrusel es overflow:hidden, así que enfocar una
+    // cara que todavía no llegó al centro hace que el navegador lo desplace
+    // lateralmente y pelee con el translateX de la pista.
+    if (face && typeof face.focus === 'function') face.focus({
+      preventScroll: true
+    });
   };
   var onCarouselKey = function onCarouselKey(e, rating) {
     var key = e.key;
@@ -8766,7 +8771,10 @@ var buildDocx = /*#__PURE__*/function () {
                 })
               }) : rd
             });
-            Respaldo.enviar(true);
+            // forzar solo con conexión: enviar(true) salta la comprobación de red y
+            // la espera progresiva, así que sin señal cada Word generado sumaría un
+            // intento fallido y alejaría el próximo reintento (30 s → 1 → 2 → 4 min).
+            Respaldo.enviar(navigator.onLine !== false);
           } catch (respaldoError) {
             console.warn('Respaldo:', respaldoError);
           }

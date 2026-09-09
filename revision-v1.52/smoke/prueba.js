@@ -221,8 +221,11 @@ const ok = (nombre, cond, extra = '') => resultados.push({ nombre, pasa: !!cond,
   ok('F1 · confirm de borrado menciona las fotografías', /las fotografías cargadas en la sección J también se pierden/.test(html));
 
   // ── FASE 1 · respaldo del estado final ────────────────────────────────────
-  const bloqueFinal = html.slice(html.indexOf('Respaldo.marcarFinal();'), html.indexOf('Respaldo.marcarFinal();') + 1400);
-  ok('F1 · Tras generar el Word se encola el informe final', /Respaldo\.encolar\(\{/.test(bloqueFinal) && /Respaldo\.enviar\(true\)/.test(bloqueFinal));
+  const bloqueFinal = html.slice(html.indexOf('Respaldo.marcarFinal();'), html.indexOf('Respaldo.marcarFinal();') + 2000);
+  ok('F1 · Tras generar el Word se encola el informe final', /Respaldo\.encolar\(\{/.test(bloqueFinal) && /Respaldo\.enviar\(/.test(bloqueFinal));
+  // El envío no debe forzarse a ciegas: forzar salta la comprobación de red y la
+  // espera progresiva, así que sin señal cada Word generado alejaría el reintento.
+  ok('F1 · El envío tras el Word no se fuerza sin conexión', /Respaldo\.enviar\(navigator\.onLine !== false\)/.test(bloqueFinal) && !/Respaldo\.enviar\(true\)/.test(bloqueFinal));
   ok('F1 · El envío final no incluye el base64 de las fotos', /j_fotos: rd\.j_fotos\.map/.test(bloqueFinal) && !/url: f\.url/.test(bloqueFinal));
 
   // ── FASE 1 · service worker ───────────────────────────────────────────────
