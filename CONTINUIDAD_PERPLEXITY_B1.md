@@ -484,6 +484,102 @@ service worker y la cola de respaldo se volvieron a comprobar después del cambi
 - Decidir y documentar el salto de numeración: no existe la sección F.
 - Sigue sin mirarse la interfaz en un teléfono Android real.
 
+## Escala de condición final: ilustraciones del sendero en un tambor (versión 1.54)
+
+Versión publicada: `1.54`; caché: `senderos-pnlq-v46`; `responsive.css?v=1454`.
+
+Lo pidió el dueño del proyecto. Las cinco caras de danta se sustituyen por cinco ilustraciones
+del propio sendero, y el carrusel horizontal pasa a ser un tambor que gira sobre un eje
+horizontal, con los paneles montados como radios de una rueda.
+
+### Las ilustraciones
+
+Llegaron cinco dioramas isométricos del mismo bosque, que solo se diferencian en el estado de
+la huella. Se acomodaron por gravedad real de lo que muestra cada uno, no por la tabla que las
+acompañaba, porque esa tabla describía dos niveles que ninguna imagen representa.
+
+| Nivel | Etiqueta | Qué muestra |
+| --- | --- | --- |
+| 1 | Muy malo | Tronco caído atravesado, ramas y barro |
+| 2 | Malo | Tronco caído al costado y charca de agua |
+| 3 | Regular | Charca grande sobre toda la huella |
+| 4 | Bueno | Tramo húmedo puntual y piedras sueltas |
+| 5 | Excelente | Gradas de piedra y desagüe lateral |
+
+**Las etiquetas no cambiaron.** Siguen siendo `Muy malo`, `Malo`, `Regular`, `Bueno` y
+`Excelente`, porque `condFinal` guarda ese texto y el restaurador de borradores antiguos migra
+comparándolo. Cambiarlas habría dejado sin calificación los borradores ya guardados y habría
+partido en dos la columna del respaldo en la hoja.
+
+**Advertencia sobre la parte alta de la escala.** La única ilustración de sendero bien
+mantenido es la del nivel 5. El nivel 4 muestra un tramo húmedo con piedras sueltas, así que
+quien marque «Bueno» estará viendo humedad. Queda anotado por si algún día se consigue una
+imagen de huella limpia y seca para el 4.
+
+Cada archivo es un recorte cuadrado de la huella, no el diorama completo: a tamaño de teléfono
+la escena entera resulta indistinguible entre niveles, y solo el piso del sendero se lee. El
+fondo blanco residual se rellenó con `#141A12`, que es la sombra del propio dibujo, así que la
+unión no se nota. Los cinco `l-condicion-N.webp` a 384 px suman 81 KB; el sprite de dantas que
+deja de precargarse pesaba 33 KB, de modo que el arranque crece 48 KB netos.
+
+### El tambor
+
+- Cinco paneles montados como radios de una rueda con el eje horizontal. Cada radio va a 72
+  grados del siguiente, así que los cinco cierran la vuelta completa: el giro es cíclico por
+  construcción, del nivel 5 se pasa al 1 sin rebobinar y las flechas nunca se deshabilitan.
+- El ángulo se acumula en una variable de estado en lugar de derivarse del nivel. Eso permite
+  que el giro tome siempre el camino más corto: de 4 a 1 adelanta dos posiciones en vez de
+  retroceder tres.
+- Los niveles altos quedan abajo en la rueda, igual que en una lista. Arrastrar hacia arriba
+  avanza en la escala, que es a la vez el gesto físico de girar la rueda y el de desplazar una
+  lista, así que las dos intuiciones coinciden.
+- Cuatro formas de calificar: arrastre vertical con umbral de 28 px, flechas ‹ ›, toque directo
+  sobre un panel y teclado. Se conserva el patrón `radiogroup` con `aria-checked`, tabindex
+  itinerante y las teclas ←/→/↑/↓, `Inicio` y `Fin`.
+- Bajo el tambor se despliega el detalle del nivel elegido (`.condition-detail`), con cuatro
+  puntos de lo que se observa. Sin calificar, explica que aparecerá al elegir.
+
+Tres detalles que costaron encontrar y conviene no volver a romper:
+
+- Las imágenes llevan `draggable="false"` y `pointer-events: none`. Sin eso, arrastrar sobre la
+  ilustración dispara el arrastre de imagen del navegador, que cancela el gesto a mitad de
+  camino con un `pointercancel` y el tambor no gira nunca.
+- Al soltar el dedo, el navegador dispara además el clic del panel que quedó debajo. Sin la
+  marca `carouselClickGuardRef`, ese clic deshace el giro que acaba de hacer el gesto.
+- Las imágenes no llevan carga diferida. Los cinco paneles ya vienen en la precarga del service
+  worker, y diferirlos dejaba en blanco a los vecinos hasta el primer giro.
+
+El visor declara `touch-action: pan-x`, de modo que el gesto vertical es del tambor y el
+desplazamiento horizontal sigue siendo de la página. Con `prefers-reduced-motion: reduce` el
+giro se desactiva y el cambio es instantáneo.
+
+### El modelo de datos no cambia
+
+`condFinal` y `condFinalRating` siguen saliendo del mismo `conditionRating` de 1 a 5. Colector,
+restaurador, vista previa, DOCX y respaldo a la hoja quedaron intactos. Un borrador guardado
+antes de esta versión se restaura igual: la rueda se sincroniza por el camino más corto para
+dejar al frente el panel que corresponde, mediante un efecto que escucha `conditionRating`.
+
+### Verificación realizada
+
+Arnés con jsdom sobre la aplicación real: **83/83**. Además, en Chromium sobre la aplicación
+servida por HTTP, en 375, 390, 430, 768 y 1280 px y sin un solo error de JavaScript:
+
+- Arranca centrado en el nivel 3 con tres paneles visibles, igual que el control anterior.
+- Dos arrastres con el dedo hacia arriba llevan del 3 al 5, con su detalle de cuatro puntos.
+- La tecla `Fin` no produce desplazamiento espurio del visor: `scrollTop` y `scrollLeft` en 0.
+- Del nivel 5 la rueda sigue al 1 y el panel queda centrado con desviación de 0 px.
+- Calificar, autoguardar, recargar y restaurar devuelve el nivel correcto en 1, 2, 4 y 5, con
+  la rueda en el ángulo que corresponde y el detalle desplegado.
+- Sin señal la aplicación arranca con estilos, las doce secciones y las cinco ilustraciones.
+- Sin regresiones en la sección C, las fotografías en IndexedDB ni la cola de respaldo.
+
+Queda sin mirar la interfaz en un teléfono Android real: la validación fue con Chromium de
+escritorio emulando los anchos.
+
+El sprite `assets/icons-ui/l-danta-expresiones.webp` queda en el repositorio pero ya no se
+referencia ni se precarga. Si alguna vez se quisieran recuperar las caras, el archivo está.
+
 ## Precauciones
 
 - No convertir `index.html` a un proyecto npm durante esta etapa.

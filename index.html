@@ -17,7 +17,7 @@
   <link rel="manifest" href="./manifest.webmanifest"/>
   <link rel="icon" href="./icons/icon.svg" type="image/svg+xml"/>
   <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
-  <link rel="stylesheet" href="./responsive.css?v=1453"/>
+  <link rel="stylesheet" href="./responsive.css?v=1454"/>
   <script src="./vendor/react.production.min.js"></script>
   <script src="./vendor/react-dom.production.min.js"></script>
   <script src="./vendor/jszip.min.js"></script>
@@ -8060,13 +8060,30 @@ var CONDITION_RATING_LABELS = {
   4: 'Bueno',
   5: 'Excelente'
 };
-var CONDITION_RATING_SPRITE_POSITION = {
-  1: '0%',
-  2: '25%',
-  3: '50%',
-  4: '75%',
-  5: '100%'
+// La escala pasó de las caras de danta a cinco ilustraciones del propio sendero,
+// ordenadas de peor a mejor estado. Cada archivo es un recorte cuadrado de la
+// huella, que es lo único que se distingue a tamaño de teléfono.
+var CONDITION_RATING_IMAGE = {
+  1: './assets/icons-ui/l-condicion-1.webp',
+  2: './assets/icons-ui/l-condicion-2.webp',
+  3: './assets/icons-ui/l-condicion-3.webp',
+  4: './assets/icons-ui/l-condicion-4.webp',
+  5: './assets/icons-ui/l-condicion-5.webp'
 };
+// Qué se observa en cada nivel. Se despliega bajo el panel elegido para que el
+// funcionario no tenga que adivinar el criterio a partir de la ilustración.
+var CONDITION_RATING_DETAILS = {
+  1: ['Tronco caído atravesado que obliga a rodear', 'Huella cubierta de ramas y hojarasca', 'Barro y encharcamiento en el paso', 'Piedras sueltas sin acomodo'],
+  2: ['Tronco caído sobre el borde, invade parte del ancho', 'Agua estancada sobre la huella', 'Piedras sueltas dispersas', 'Borde del sendero sin definir'],
+  3: ['Sin obstáculos que bloqueen el paso', 'Charca extendida sobre la huella', 'Piedras de borde acomodadas', 'Vegetación contenida a los lados'],
+  4: ['Huella continua y transitable', 'Tramo húmedo puntual, sin charca permanente', 'Quedan piedras sueltas por acomodar', 'Sotobosque intacto, sin invadir el paso'],
+  5: ['Gradas de piedra estabilizadas', 'Desagüe lateral funcionando', 'Huella limpia, seca y pareja', 'Borde definido y sotobosque intacto']
+};
+// Geometría del tambor: cinco paneles montados como radios de una rueda cuyo eje
+// es horizontal. 5 x 72 grados cierran la vuelta completa, así que el giro es
+// cíclico por construcción y nunca hace falta rebobinar.
+var CONDITION_STEP = 72;
+var CONDITION_RADIUS = 132;
 var PENDING_JUSTIFICATION_OPTIONS = ['Requiere más tiempo', 'Condiciones atmosféricas', 'Emergencias o accidente', 'Cambio de actividad', 'Daño en equipo', 'Equipo insuficiente', 'Otro'];
 var LEGACY_PENDING_JUSTIFICATION_MAP = {
   'Requiere más tiempo de trabajo': 'Requiere más tiempo',
@@ -8089,8 +8106,17 @@ var SecL = function SecL() {
     _useStateLRating2 = _slicedToArray(_useStateLRating, 2),
     conditionRating = _useStateLRating2[0],
     setConditionRating = _useStateLRating2[1];
-  // Arrastre horizontal del carrusel de condición final: guarda el X inicial.
+  // Arrastre vertical del tambor de condición final: guarda el Y inicial.
   var carouselDragRef = useRef(null);
+  // Evita que el clic posterior al arrastre deshaga el giro recién hecho.
+  var carouselClickGuardRef = useRef(false);
+  // Ángulo acumulado de la rueda. Arranca en el nivel 3, igual que el centro por
+  // defecto del control anterior, y se sincroniza si la calificación llega de un
+  // borrador restaurado en vez de un gesto del usuario.
+  var _useStateLAngle = useState(2 * CONDITION_STEP),
+    _useStateLAngle2 = _slicedToArray(_useStateLAngle, 2),
+    conditionAngle = _useStateLAngle2[0],
+    setConditionAngle = _useStateLAngle2[1];
   var _useStateLJustification = useState([]),
     _useStateLJustification2 = _slicedToArray(_useStateLJustification, 2),
     justifChoices = _useStateLJustification2[0],
@@ -8159,6 +8185,20 @@ var SecL = function SecL() {
     });
   }, []); // eslint-disable-line
 
+  // Si la calificación llega de un borrador restaurado, la rueda no se movió con
+  // ella: se la sincroniza por el camino más corto para que el panel elegido
+  // quede al frente sin dar la vuelta larga.
+  useEffect(function () {
+    if (!conditionRating) return;
+    setConditionAngle(function (a) {
+      var centro = ((Math.round(a / CONDITION_STEP) % 5) + 5) % 5 + 1;
+      if (centro === conditionRating) return a;
+      var delta = ((conditionRating - centro) % 5 + 5) % 5;
+      if (delta > 2.5) delta -= 5;
+      return a + delta * CONDITION_STEP;
+    });
+  }, [conditionRating]);
+
   // Sincronizar con cambios en SecE: agregar/quitar ítems de E sin perder ediciones ni custom
   useEffect(function () {
     setLines(function (prev) {
@@ -8203,19 +8243,24 @@ var SecL = function SecL() {
       });
     });
   };
-  // ── Carrusel de condición final ─────────────────────────────────────────────
-  // El centro es la calificación elegida (3 mientras no se califica). Las caras
-  // giran a izquierda y derecha: la del centro va grande y las vecinas pequeñas.
-  // Las imágenes de la escala no cambian, solo el método de selección.
-  var conditionCenter = conditionRating || 3;
+  // ── Tambor de condición final ───────────────────────────────────────────────
+  // Los cinco paneles son radios de una rueda con el eje horizontal. El ángulo se
+  // acumula en lugar de fijarse por nivel: así el giro toma siempre el camino más
+  // corto y pasar del 5 al 1 no rebobina cuatro posiciones.
+  var conditionCenter = ((Math.round(conditionAngle / CONDITION_STEP) % 5) + 5) % 5 + 1;
   var moveCondition = function moveCondition(next) {
-    var value = Math.min(5, Math.max(1, next));
+    var value = ((next - 1) % 5 + 5) % 5 + 1;
+    var delta = ((value - conditionCenter) % 5 + 5) % 5;
+    if (delta > 2.5) delta -= 5;
+    setConditionAngle(function (a) {
+      return a + delta * CONDITION_STEP;
+    });
     setConditionRating(value);
     // Mover también el foco: el patrón radiogroup usa tabindex itinerante.
     var face = document.getElementById("condition-face-".concat(value));
-    // preventScroll: el visor del carrusel es overflow:hidden, así que enfocar una
-    // cara que todavía no llegó al centro hace que el navegador lo desplace
-    // lateralmente y pelee con el translateX de la pista.
+    // preventScroll: el visor recorta el desbordamiento, así que enfocar un panel
+    // que todavía no llegó al centro haría que el navegador desplazara el
+    // contenedor y peleara con el giro de la pista.
     if (face && typeof face.focus === 'function') face.focus({
       preventScroll: true
     });
@@ -8236,28 +8281,42 @@ var SecL = function SecL() {
       moveCondition(5);
     } else if (key === ' ' || key === 'Enter') {
       e.preventDefault();
-      setConditionRating(rating);
+      moveCondition(rating);
     }
   };
   var onCarouselPointerDown = function onCarouselPointerDown(e) {
-    carouselDragRef.current = e.clientX;
+    carouselDragRef.current = e.clientY;
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
     } catch (_) {}
   };
   var onCarouselPointerUp = function onCarouselPointerUp(e) {
     if (carouselDragRef.current === null) return;
-    var dx = e.clientX - carouselDragRef.current;
+    var dy = e.clientY - carouselDragRef.current;
     carouselDragRef.current = null;
     try {
       e.currentTarget.releasePointerCapture(e.pointerId);
     } catch (_) {}
-    // Por debajo del umbral fue un toque sobre una cara, que ya resuelve onClick.
-    if (Math.abs(dx) < 28) return;
-    moveCondition(conditionCenter + (dx < 0 ? 1 : -1));
+    // Por debajo del umbral fue un toque sobre un panel, que ya resuelve onClick.
+    if (Math.abs(dy) < 28) return;
+    // Al soltar, el navegador dispara además el clic del panel que quedó bajo el
+    // dedo. Sin esta marca, ese clic desharía el giro que acaba de hacer el gesto.
+    carouselClickGuardRef.current = true;
+    // Arrastrar hacia arriba sube en la escala: los niveles altos están abajo en
+    // la rueda, igual que en una lista donde bajar avanza.
+    moveCondition(conditionCenter + (dy < 0 ? 1 : -1));
   };
   var onCarouselPointerCancel = function onCarouselPointerCancel() {
     carouselDragRef.current = null;
+  };
+  var onCarouselItemClick = function onCarouselItemClick(rating) {
+    if (carouselClickGuardRef.current) {
+      carouselClickGuardRef.current = false;
+      return;
+    }
+    // moveCondition (y no setConditionRating a secas) para que el foco siga a la
+    // selección también con toque: quien usa lector de pantalla lo necesita.
+    moveCondition(rating);
   };
   var toggleJustification = function toggleJustification(option) {
     return setJustifChoices(function (choices) {
@@ -8287,7 +8346,6 @@ var SecL = function SecL() {
     onClick: function onClick() {
       return moveCondition(conditionCenter - 1);
     },
-    disabled: conditionCenter <= 1,
     tabIndex: -1,
     "aria-hidden": "true"
   }, "\u2039"), /*#__PURE__*/React.createElement("div", {
@@ -8298,35 +8356,41 @@ var SecL = function SecL() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "condition-carousel-track",
     style: {
-      transform: "translateX(calc(".concat(1 - conditionCenter, " * var(--condition-slot)))")
+      transform: "rotateX(".concat(conditionAngle, "deg)")
     }
   }, [1, 2, 3, 4, 5].map(function (rating) {
-    var offset = Math.abs(rating - conditionCenter);
+    // Ángulo del panel frente al observador, normalizado a -180..180. Por encima
+    // de 90 grados el panel mira hacia el otro lado de la rueda y se oculta.
+    var ef = ((conditionAngle - (rating - 1) * CONDITION_STEP) % 360 + 540) % 360 - 180;
+    var abs = Math.abs(ef);
+    var oculto = abs >= 90;
+    var centrado = abs < 1;
     return /*#__PURE__*/React.createElement("button", {
       key: rating,
       id: "condition-face-".concat(rating),
       type: "button",
       role: "radio",
-      className: "condition-carousel-item".concat(rating === conditionCenter ? ' is-center' : offset === 1 ? ' is-near' : ' is-far').concat(rating === conditionCenter && conditionRating ? ' is-chosen' : ''),
+      className: "condition-carousel-item".concat(centrado ? ' is-center' : '').concat(centrado && conditionRating ? ' is-chosen' : ''),
       "aria-checked": conditionRating === rating,
-      tabIndex: rating === conditionCenter ? 0 : -1,
+      tabIndex: centrado ? 0 : -1,
+      style: {
+        transform: "rotateX(".concat(-(rating - 1) * CONDITION_STEP, "deg) translateZ(").concat(CONDITION_RADIUS, "px)"),
+        opacity: oculto ? 0 : centrado ? 1 : Math.max(0.62, Math.cos(ef * Math.PI / 180)),
+        pointerEvents: oculto ? 'none' : 'auto'
+      },
       onClick: function onClick() {
-        // moveCondition (y no setConditionRating a secas) para que el foco siga a
-        // la selección también con toque: quien usa lector de pantalla necesita
-        // que la cara elegida quede enfocada.
-        return moveCondition(rating);
+        return onCarouselItemClick(rating);
       },
       onKeyDown: function onKeyDown(e) {
         return onCarouselKey(e, rating);
       },
       "aria-label": "".concat(CONDITION_RATING_LABELS[rating], " \xB7 ").concat(rating, " de 5")
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "condition-danta-face",
-      role: "img",
-      "aria-label": "Danta con expresi\xF3n ".concat(CONDITION_RATING_LABELS[rating]),
-      style: {
-        backgroundPosition: "".concat(CONDITION_RATING_SPRITE_POSITION[rating], " center")
-      }
+    }, /*#__PURE__*/React.createElement("img", {
+      src: CONDITION_RATING_IMAGE[rating],
+      alt: "",
+      // Sin carga diferida: los cinco paneles ya vienen en la precarga del service
+      // worker, y diferirlos dejaría en blanco a los vecinos hasta el primer giro.
+      draggable: false
     }));
   }))), /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -8334,13 +8398,25 @@ var SecL = function SecL() {
     onClick: function onClick() {
       return moveCondition(conditionCenter + 1);
     },
-    disabled: conditionCenter >= 5,
     tabIndex: -1,
     "aria-hidden": "true"
   }, "\u203A")), /*#__PURE__*/React.createElement("div", {
     className: "condition-rating-label",
     "aria-live": "polite"
-  }, conditionRating ? "".concat(CONDITION_RATING_LABELS[conditionRating], " \xB7 ").concat(conditionRating, " de 5") : 'Toque una cara o gire con las flechas'))), /*#__PURE__*/React.createElement("div", {
+  }, conditionRating ? "".concat(CONDITION_RATING_LABELS[conditionRating], " \xB7 ").concat(conditionRating, " de 5") : 'Toque un panel o gire la rueda para calificar'), /*#__PURE__*/React.createElement("div", {
+    className: "condition-detail",
+    "aria-live": "polite"
+  }, conditionRating ? [/*#__PURE__*/React.createElement("strong", {
+    key: "t"
+  }, "Qu\xE9 se observa en este nivel"), /*#__PURE__*/React.createElement("ul", {
+    key: "l"
+  }, (CONDITION_RATING_DETAILS[conditionRating] || []).map(function (punto, i) {
+    return /*#__PURE__*/React.createElement("li", {
+      key: i
+    }, punto);
+  }))] : /*#__PURE__*/React.createElement("span", {
+    className: "condition-detail-empty"
+  }, "Al elegir un nivel aparece aqu\xED el detalle de lo que se observa en \xE9l.")))), /*#__PURE__*/React.createElement("div", {
     className: "pending-justification-field"
   }, /*#__PURE__*/React.createElement(Lbl, {
     c: "Justificaci\xF3n de pendientes no resueltos"
@@ -11357,7 +11433,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.53'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.54'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];

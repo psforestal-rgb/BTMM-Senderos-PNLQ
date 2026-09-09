@@ -1,4 +1,4 @@
-const CACHE_NAME = 'senderos-pnlq-v45';
+const CACHE_NAME = 'senderos-pnlq-v46';
 const APP_SHELL = [
   './',
   './index.html',
@@ -86,7 +86,11 @@ const APP_SHELL = [
   './assets/icons-ui/g1-residuos-retirados.webp',
   './assets/icons-ui/g1-proteccion-ambiente.webp',
   './assets/icons-ui/g1-otro.webp',
-  './assets/icons-ui/l-danta-expresiones.webp',
+  './assets/icons-ui/l-condicion-1.webp',
+  './assets/icons-ui/l-condicion-2.webp',
+  './assets/icons-ui/l-condicion-3.webp',
+  './assets/icons-ui/l-condicion-4.webp',
+  './assets/icons-ui/l-condicion-5.webp',
   './assets/icons-ui/res-machete.webp',
   './assets/icons-ui/res-pala.webp',
   './assets/icons-ui/res-palin.webp',
