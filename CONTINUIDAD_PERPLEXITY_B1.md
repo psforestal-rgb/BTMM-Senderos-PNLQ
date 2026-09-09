@@ -403,6 +403,87 @@ escritorio emulando los anchos, no con el hardware ni el motor de un equipo de g
 - Unificar la exportación de borrador, duplicada en `InformeModal` y en `App`.
 - Decidir y documentar el salto de numeración: no existe la sección F.
 
+## Fotografías persistentes en IndexedDB (versión 1.53)
+
+Versión publicada: `1.53`; caché: `senderos-pnlq-v45`; `responsive.css?v=1453`.
+Incluye todo lo de la 1.52, que nunca llegó a publicarse.
+
+Este es el hallazgo crítico de la auditoría, y el único que quedaba abierto. Hasta ahora
+`performSave` retiraba el base64 de las fotos antes de escribir en `localStorage`, porque una
+foto a 1600 px ocupa entre 250 y 400 KB y la cuota del navegador ronda los 5 MB. La decisión
+era correcta, pero el restaurador filtraba por `f.url`, así que al recargar la aplicación las
+fotografías desaparecían en silencio mientras el mensaje decía «✓ Borrador restaurado
+correctamente». En Android el navegador descarta pestañas por presión de memoria, así que se
+perdía justamente lo irrepetible: la evidencia de una jornada ya terminada.
+
+### Cómo quedó resuelto
+
+- Nuevo módulo `FotoStore`, junto a `Respaldo` al principio de `index.html`. Guarda cada
+  imagen como `Blob` en IndexedDB (base `pnlq_fotos_v1`, almacén `fotos`), sin el inflado de
+  aproximadamente 1,33× que impone el base64. La clave es `jornada_id + '::' + foto_id` y hay
+  un índice `por_jornada` para recorrer una jornada completa.
+- Cada foto recibe un identificador estable al cargarse (`nuevoIdFoto()`). Antes el `id` era
+  un `Math.random()` que se regeneraba en cada restauración, así que no servía como llave.
+- El borrador de `localStorage` conserva ahora `id`, `nombre`, `desc` y `categoria`; sigue sin
+  guardar el base64. Un borrador con dos fotos ocupa alrededor de 1 KB.
+- Al restaurar, cada ficha se vuelve a unir con su imagen leyéndola del almacén. Se muestran
+  primero las que ya traen imagen y el resto se completa en cuanto responde IndexedDB, para
+  que no aparezcan huecos ni imágenes rotas.
+- Un `.json` exportado sí lleva las imágenes: al importarlo se ingresan al almacén, de modo
+  que también sobreviven a la siguiente recarga.
+- Quitar una foto la borra del almacén, y «Nuevo informe · limpiar memoria» borra las de esa
+  jornada antes de recargar, con un límite de dos segundos para no dejar la app colgada si el
+  almacén no responde.
+- Housekeeping: al arrancar se purgan las fotos de jornadas cerradas hace más de 45 días. La
+  jornada en curso nunca se toca, por antigua que sea su fecha, porque un informe puede quedar
+  a medias durante semanas.
+- Si IndexedDB no está disponible (navegación privada estricta, almacenamiento bloqueado), la
+  aplicación funciona igual que antes y el aviso al restaurar lo dice con claridad. Ninguna
+  operación del almacén rechaza su promesa: un fallo nunca corta el flujo del formulario.
+
+### Textos que cambiaron
+
+- La nota permanente de la sección J ya no advierte una pérdida: dice que las fotografías
+  quedan guardadas en el teléfono y se recuperan al volver a abrir la aplicación, y recomienda
+  el Word o el `.json` para llevarlas a otro equipo.
+- El aviso al restaurar informa cuántas fotografías se recuperaron de verdad, comprobándolo
+  contra el almacén en vez de suponerlo.
+- El `confirm` de «Nuevo informe» advierte que también borra las fotografías y que, si aún no
+  se generó el Word ni se exportó el borrador, esa evidencia no se puede recuperar.
+
+### Verificación realizada
+
+Arneses en `revision-v1.52/smoke/`: **77/77** sobre la aplicación real y **29/29** sobre la
+vista previa. Además se probó en Chromium sobre la aplicación real, sirviéndola por HTTP para
+que el service worker funcione:
+
+- Cargar dos fotografías deja dos registros en IndexedDB y un borrador de 1 KB en
+  `localStorage`, con los dos identificadores y sin base64.
+- Al recargar y restaurar vuelven las dos imágenes, y el aviso dice «con sus 2 fotografía(s)».
+- La imagen recuperada es idéntica byte a byte a la original, se decodifica a 400×300 y
+  conserva la cabecera JPEG, que es exactamente lo que empaqueta el generador del Word.
+- «Nuevo informe» deja el almacén en cero y genera un identificador de jornada nuevo.
+- Un `.json` importado adopta su jornada, muestra sus dos fotos, las ingresa al almacén y
+  sobreviven a la recarga siguiente.
+- Con `indexedDB` bloqueado la aplicación arranca sin errores, la foto se ve mientras la sesión
+  está abierta y el aviso al restaurar es honesto.
+- La purga borra las jornadas viejas sembradas a propósito y deja intacta la actual.
+
+Sin regresiones: la sección C, el carrusel de la sección L en los cinco anchos, la caché del
+service worker y la cola de respaldo se volvieron a comprobar después del cambio.
+
+### Lo que sigue abierto
+
+- Optimizar los dos JPEG del membrete (líneas 100-101 de `index.html`, unos 898 KB en base64,
+  el 60 % del archivo) y moverlos a un módulo de carga perezosa.
+- Avisos visibles cuando `localStorage` rechaza una escritura.
+- Memoizar el cálculo de bloqueos: `findBlockingRequirement` ejecuta los 12 colectores en cada
+  render.
+- Apps Script: saneado de inyección de fórmulas en `texto()` y rechazo del `TOKEN` por defecto.
+- Unificar la exportación de borrador, duplicada en `InformeModal` y en `App`.
+- Decidir y documentar el salto de numeración: no existe la sección F.
+- Sigue sin mirarse la interfaz en un teléfono Android real.
+
 ## Precauciones
 
 - No convertir `index.html` a un proyecto npm durante esta etapa.

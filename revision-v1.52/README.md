@@ -12,17 +12,25 @@ quedarían accesibles en la dirección pública del parque.
 | `handoff-claude-v1.52.md` | El documento de relevo que describe el estado del trabajo. |
 | `auditoria-btmm-senderos-pnlq.md` | Los 16 hallazgos de la auditoría, con detalle. |
 | `vista-previa-v1.52.html` | Réplica autónoma de las dos piezas cambiadas, para verlas sin desplegar. |
-| `smoke/prueba.js` | 64 comprobaciones sobre la aplicación real, con jsdom. |
+| `smoke/prueba.js` | 77 comprobaciones sobre la aplicación real, con jsdom. |
 | `smoke/previa.js` | 29 comprobaciones sobre la vista previa. |
+| `smoke/navegador.js` | Sección C, carrusel de L, service worker y cola de respaldo, en Chromium. |
+| `smoke/fotos.js` | Persistencia de las fotografías en IndexedDB a través de una recarga. |
+| `smoke/png.js` | Genera las imágenes de prueba que usa `fotos.js`. |
 
 ## Cómo ejecutar las pruebas
 
 ```bash
 cd revision-v1.52/smoke
-npm install jsdom     # una sola vez
-node prueba.js        # 64/64 sobre la aplicación real
-node previa.js        # 29/29 sobre la vista previa
+npm install           # una sola vez
+npm test              # 77/77 y 29/29 con jsdom, sin navegador
+npm run navegador     # pruebas en Chromium: hacen falta Playwright y un Chromium instalado
 ```
+
+Las pruebas de navegador levantan un servidor HTTP local sobre la raíz del repositorio,
+porque el service worker y IndexedDB no funcionan abriendo el archivo directamente. La ruta
+del ejecutable de Chromium está al principio de `navegador.js` y `fotos.js`: si en su equipo
+está en otro sitio, cámbiela ahí.
 
 `prueba.js` busca el repositorio hacia arriba desde su propia carpeta, así que funciona
 desde aquí sin configurar rutas. `previa.js` espera encontrar `vista-previa-v1.52.html`

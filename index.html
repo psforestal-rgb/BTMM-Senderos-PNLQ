@@ -17,7 +17,7 @@
   <link rel="manifest" href="./manifest.webmanifest"/>
   <link rel="icon" href="./icons/icon.svg" type="image/svg+xml"/>
   <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
-  <link rel="stylesheet" href="./responsive.css?v=1452"/>
+  <link rel="stylesheet" href="./responsive.css?v=1453"/>
   <script src="./vendor/react.production.min.js"></script>
   <script src="./vendor/react-dom.production.min.js"></script>
   <script src="./vendor/jszip.min.js"></script>
@@ -445,6 +445,244 @@ var Respaldo = function () {
     sembrarCatalogo: sembrarCatalogo
   };
 }();
+
+// ─── ALMACÉN DE FOTOGRAFÍAS (IndexedDB) ──────────────────────────────────────
+// Las fotos no caben en localStorage: cada una pesa 250-400 KB y la cuota del
+// navegador ronda los 5 MB, así que el autoguardado siempre las retiró y al
+// recargar la aplicación se perdía la evidencia de la jornada. Aquí se guardan
+// como Blob, sin el inflado del base64, con clave jornada + foto. El borrador de
+// localStorage conserva solo el identificador, el nombre, la descripción y la
+// categoría, y al restaurar cada ficha se vuelve a unir con su imagen.
+var FotoStore = function () {
+  var BASE = 'pnlq_fotos_v1';
+  var ALMACEN = 'fotos';
+  var INDICE = 'por_jornada';
+  var DIAS_MAX = 45; // fotos de jornadas antiguas: se purgan para no crecer sin fin
+  var bd = null;
+  var soportado = null;
+
+  function disponible() {
+    if (soportado === null) {
+      try {
+        soportado = typeof indexedDB !== 'undefined' && !!indexedDB;
+      } catch (e) {
+        soportado = false; // navegación privada o almacenamiento bloqueado
+      }
+    }
+    return soportado;
+  }
+
+  function abrir() {
+    if (!disponible()) return Promise.reject(new Error('IndexedDB no disponible'));
+    if (bd) return Promise.resolve(bd);
+    return new Promise(function (resolve, reject) {
+      var pet;
+      try {
+        pet = indexedDB.open(BASE, 1);
+      } catch (e) {
+        soportado = false;
+        return reject(e);
+      }
+      pet.onupgradeneeded = function () {
+        var d = pet.result;
+        if (!d.objectStoreNames.contains(ALMACEN)) {
+          var almacen = d.createObjectStore(ALMACEN, { keyPath: 'clave' });
+          almacen.createIndex(INDICE, 'jornada_id', { unique: false });
+        }
+      };
+      pet.onsuccess = function () {
+        bd = pet.result;
+        // Si otra pestaña pide una versión nueva hay que soltar la conexión.
+        bd.onversionchange = function () {
+          try { bd.close(); } catch (e) { /* ya cerrada */ }
+          bd = null;
+        };
+        resolve(bd);
+      };
+      pet.onerror = function () {
+        soportado = false;
+        reject(pet.error || new Error('No se pudo abrir IndexedDB'));
+      };
+      pet.onblocked = function () {
+        reject(new Error('IndexedDB bloqueada por otra pestaña'));
+      };
+    });
+  }
+
+  function almacen(modo) {
+    return abrir().then(function (d) {
+      return d.transaction(ALMACEN, modo).objectStore(ALMACEN);
+    });
+  }
+
+  function promesa(pet) {
+    return new Promise(function (resolve, reject) {
+      pet.onsuccess = function () { resolve(pet.result); };
+      pet.onerror = function () { reject(pet.error); };
+    });
+  }
+
+  function clave(jornadaId, fotoId) {
+    return String(jornadaId) + '::' + String(fotoId);
+  }
+
+  /** El lienzo ya entrega un data URL; se pasa a Blob sin recomprimir la imagen. */
+  function aBlob(dataUrl) {
+    var partes = String(dataUrl || '').split(',');
+    if (partes.length < 2 || !/;base64/.test(partes[0])) return null;
+    var tipo = (partes[0].match(/data:([^;]+)/) || [])[1] || 'image/jpeg';
+    var binario;
+    try {
+      binario = atob(partes[1]);
+    } catch (e) {
+      return null;
+    }
+    var bytes = new Uint8Array(binario.length);
+    for (var i = 0; i < binario.length; i++) bytes[i] = binario.charCodeAt(i);
+    return new Blob([bytes], { type: tipo });
+  }
+
+  function aDataUrl(blob) {
+    return new Promise(function (resolve, reject) {
+      var lector = new FileReader();
+      lector.onload = function () { resolve(lector.result); };
+      lector.onerror = function () { reject(lector.error || new Error('lectura fallida')); };
+      lector.readAsDataURL(blob);
+    });
+  }
+
+  /** Guarda o reemplaza una foto. Nunca rechaza: el fallo no debe cortar el flujo. */
+  function guardar(jornadaId, fotoId, dataUrl) {
+    var blob = aBlob(dataUrl);
+    if (!blob) return Promise.resolve(false);
+    return almacen('readwrite').then(function (a) {
+      return promesa(a.put({
+        clave: clave(jornadaId, fotoId),
+        jornada_id: String(jornadaId),
+        foto_id: String(fotoId),
+        blob: blob,
+        bytes: blob.size,
+        creado: Date.now()
+      }));
+    }).then(function () {
+      return true;
+    }, function (e) {
+      console.warn('FotoStore.guardar:', e);
+      return false;
+    });
+  }
+
+  /** Devuelve el data URL de una foto, o null si no está. */
+  function leer(jornadaId, fotoId) {
+    return almacen('readonly').then(function (a) {
+      return promesa(a.get(clave(jornadaId, fotoId)));
+    }).then(function (reg) {
+      return reg && reg.blob ? aDataUrl(reg.blob) : null;
+    }).then(null, function () {
+      return null;
+    });
+  }
+
+  function borrar(jornadaId, fotoId) {
+    return almacen('readwrite').then(function (a) {
+      return promesa(a['delete'](clave(jornadaId, fotoId)));
+    }).then(function () {
+      return true;
+    }, function () {
+      return false;
+    });
+  }
+
+  /** Recorre con cursor por el índice de jornada: compatible con navegadores viejos. */
+  function recorrerJornada(jornadaId, modo, porCada) {
+    return almacen(modo).then(function (a) {
+      return new Promise(function (resolve, reject) {
+        var pet = a.index(INDICE).openCursor(IDBKeyRange.only(String(jornadaId)));
+        pet.onsuccess = function () {
+          var cur = pet.result;
+          if (!cur) return resolve();
+          porCada(cur);
+          cur['continue']();
+        };
+        pet.onerror = function () { reject(pet.error); };
+      });
+    });
+  }
+
+  function borrarJornada(jornadaId) {
+    if (!jornadaId) return Promise.resolve(0);
+    var n = 0;
+    return recorrerJornada(jornadaId, 'readwrite', function (cur) {
+      cur['delete']();
+      n++;
+    }).then(function () {
+      return n;
+    }, function () {
+      return n;
+    });
+  }
+
+  /** Cuántas de estas fotos están realmente guardadas para la jornada. */
+  function contarClaves(jornadaId, ids) {
+    if (!ids || !ids.length || !disponible()) return Promise.resolve(0);
+    var buscados = {};
+    ids.forEach(function (id) { buscados[String(id)] = true; });
+    var n = 0;
+    return recorrerJornada(jornadaId, 'readonly', function (cur) {
+      if (buscados[String(cur.value.foto_id)]) n++;
+    }).then(function () {
+      return n;
+    }, function () {
+      return 0;
+    });
+  }
+
+  /**
+   * Purga las fotos de jornadas viejas. Nunca toca la jornada en curso, aunque
+   * su fecha sea antigua: un informe puede quedar a medias durante semanas.
+   */
+  function purgar(jornadaActual) {
+    if (!disponible()) return Promise.resolve(0);
+    var limite = Date.now() - DIAS_MAX * 86400000;
+    var actual = String(jornadaActual || '');
+    var n = 0;
+    return almacen('readwrite').then(function (a) {
+      return new Promise(function (resolve, reject) {
+        var pet = a.openCursor();
+        pet.onsuccess = function () {
+          var cur = pet.result;
+          if (!cur) return resolve();
+          var v = cur.value;
+          if (String(v.jornada_id) !== actual && (v.creado || 0) < limite) {
+            cur['delete']();
+            n++;
+          }
+          cur['continue']();
+        };
+        pet.onerror = function () { reject(pet.error); };
+      });
+    }).then(function () {
+      return n;
+    }, function () {
+      return n;
+    });
+  }
+
+  return {
+    disponible: disponible,
+    guardar: guardar,
+    leer: leer,
+    borrar: borrar,
+    borrarJornada: borrarJornada,
+    contarClaves: contarClaves,
+    purgar: purgar
+  };
+}();
+
+/** Identificador estable de una foto: sobrevive a la recarga y es la clave del almacén. */
+var nuevoIdFoto = function nuevoIdFoto() {
+  return 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+};
 
 /** Rótulo del estado del respaldo para la barra lateral. */
 var textoRespaldo = function textoRespaldo(e) {
@@ -6964,6 +7202,9 @@ var SecJ = function SecJ() {
     rcJ('j_fotos', function () {
       return fotosRef.current.map(function (f) {
         return {
+          // El id viaja con la ficha: es la clave con la que se recupera la
+          // imagen del almacén cuando el borrador se restaura sin el base64.
+          id: f.id,
           url: f.url,
           nombre: f.nombre,
           desc: f.desc,
@@ -6972,17 +7213,72 @@ var SecJ = function SecJ() {
       });
     });
     rrJ('j_fotos', function (saved) {
-      if (Array.isArray(saved)) setFotos(saved.filter(function (f) {
-        return f.url;
-      }).map(function (f) {
-        return _objectSpread(_objectSpread({}, f), {}, {
-          id: Math.random(),
+      if (!Array.isArray(saved)) return;
+      var jornada = Respaldo.jornadaId();
+      var fichas = saved.map(function (f) {
+        return {
+          // Un borrador anterior a la 1.53 no trae id: se le asigna uno nuevo.
+          // Si además viene sin imagen, esa foto ya se había perdido y no hay
+          // nada que recuperar; se descarta más abajo como se hacía antes.
+          id: f.id || nuevoIdFoto(),
+          url: f.url || '',
+          nombre: f.nombre || '',
+          desc: f.desc || '',
           categoria: f.categoria || ''
+        };
+      });
+      var conImagen = fichas.filter(function (f) {
+        return f.url;
+      });
+      // Un .json exportado sí trae las imágenes: se ingresan al almacén para que
+      // sobrevivan a la siguiente recarga igual que las tomadas en esta sesión.
+      conImagen.forEach(function (f) {
+        FotoStore.guardar(jornada, f.id, f.url);
+      });
+      setFotos(conImagen);
+      var sinImagen = fichas.filter(function (f) {
+        return !f.url;
+      });
+      if (!sinImagen.length || !FotoStore.disponible()) return;
+      Promise.all(sinImagen.map(function (f) {
+        return FotoStore.leer(jornada, f.id).then(function (url) {
+          return {
+            id: f.id,
+            url: url
+          };
         });
-      }));
+      })).then(function (leidas) {
+        var recuperadas = {};
+        leidas.forEach(function (r) {
+          if (r.url) recuperadas[r.id] = r.url;
+        });
+        if (!Object.keys(recuperadas).length) return;
+        // Se rearma la lista completa desde el borrador para conservar el orden.
+        setFotos(fichas.filter(function (f) {
+          return f.url || recuperadas[f.id];
+        }).map(function (f) {
+          return f.url ? f : _objectSpread(_objectSpread({}, f), {}, {
+            url: recuperadas[f.id]
+          });
+        }));
+      });
     });
   }, []); // eslint-disable-line
 
+  // Alta de una foto: entra en la lista y se guarda en el almacén con su id.
+  var agregarFoto = function agregarFoto(dataUrl, nombre) {
+    var id = nuevoIdFoto();
+    FotoStore.guardar(Respaldo.jornadaId(), id, dataUrl);
+    setFotos(function (fs) {
+      return [].concat(_toConsumableArray(fs), [{
+        id: id,
+        url: dataUrl,
+        nombre: nombre,
+        desc: '',
+        categoria: ''
+      }]);
+    });
+  };
   var handleFiles = function handleFiles(e) {
     Array.from(e.target.files).forEach(function (file) {
       if (!file.type.startsWith('image/')) return;
@@ -7016,27 +7312,11 @@ var SecJ = function SecJ() {
           } catch (err) {
             dataUrl = ev.target.result;
           } // fallback al original
-          setFotos(function (fs) {
-            return [].concat(_toConsumableArray(fs), [{
-              id: Math.random(),
-              url: dataUrl,
-              nombre: file.name,
-              desc: '',
-              categoria: ''
-            }]);
-          });
+          agregarFoto(dataUrl, file.name);
         };
         img.onerror = function () {
           // Si el navegador no puede decodificar (p.ej. HEIC), usar el original tal cual
-          setFotos(function (fs) {
-            return [].concat(_toConsumableArray(fs), [{
-              id: Math.random(),
-              url: ev.target.result,
-              nombre: file.name,
-              desc: '',
-              categoria: ''
-            }]);
-          });
+          agregarFoto(ev.target.result, file.name);
         };
         img.src = ev.target.result;
       };
@@ -7063,6 +7343,9 @@ var SecJ = function SecJ() {
     });
   };
   var removeFoto = function removeFoto(id) {
+    // Quitar la ficha y su imagen a la vez: si no, el almacén acumularía fotos
+    // que ya nadie referencia y que volverían a aparecer al restaurar.
+    FotoStore.borrar(Respaldo.jornadaId(), id);
     return setFotos(function (fs) {
       return fs.filter(function (x) {
         return x.id !== id;
@@ -7087,7 +7370,7 @@ var SecJ = function SecJ() {
   }, /*#__PURE__*/React.createElement("span", null, "Galería guiada"), /*#__PURE__*/React.createElement("strong", null, "Seleccione las fotos tomadas durante la jornada"), /*#__PURE__*/React.createElement("p", null, "Puede cargar varias a la vez y clasificarlas después. La categoría identificará cada evidencia en el informe Word."), /*#__PURE__*/React.createElement("p", {
     className: "photo-persistence-note",
     role: "note"
-  }, "\u26A0\uFE0F Las fotograf\xEDas se conservan mientras la aplicaci\xF3n permanezca abierta. Antes de cerrarla, genere el Word o exporte el borrador (.json) para que la evidencia quede guardada.")), /*#__PURE__*/React.createElement("div", {
+  }, "\uD83D\uDCF7 Las fotograf\xEDas quedan guardadas en este tel\xE9fono y se recuperan al volver a abrir la aplicaci\xF3n. Para llevarlas a otro equipo, genere el Word o exporte el borrador (.json).")), /*#__PURE__*/React.createElement("div", {
     className: "photo-guide-types",
     "aria-label": "Tipos de evidencia sugeridos"
   }, PHOTO_CATEGORIES.map(function (category) {
@@ -8764,6 +9047,7 @@ var buildDocx = /*#__PURE__*/function () {
               sections: Array.isArray(rd.j_fotos) ? _objectSpread(_objectSpread({}, rd), {}, {
                 j_fotos: rd.j_fotos.map(function (f) {
                   return {
+                    id: f.id,
                     nombre: f.nombre,
                     desc: f.desc,
                     categoria: f.categoria || ''
@@ -10275,6 +10559,9 @@ function App() {
   useEffect(function () {
     var dejarDeEscuchar = Respaldo.suscribir(setRespaldo);
     Respaldo.iniciar();
+    // Housekeeping: las fotos de jornadas cerradas hace más de 45 días se borran.
+    // La jornada en curso nunca se toca, por antigua que sea su fecha.
+    FotoStore.purgar(Respaldo.jornadaId());
     return dejarDeEscuchar;
   }, []);
   var performSave = useCallback(function () {
@@ -10284,8 +10571,11 @@ function App() {
     // Para localStorage: quitar base64 de fotos (puede exceder la cuota del navegador).
     // Las fotos se conservan en memoria, en el DOCX y en el JSON exportado.
     if (Array.isArray(sections.j_fotos)) {
+      // El base64 no cabe en localStorage, pero el id sí: es la llave con la que
+      // cada ficha vuelve a encontrar su imagen en el almacén de fotografías.
       sections.j_fotos = sections.j_fotos.map(function (f) {
         return {
+          id: f.id,
           nombre: f.nombre,
           desc: f.desc,
           categoria: f.categoria || ''
@@ -10437,22 +10727,43 @@ function App() {
         return;
       }
       var data = JSON.parse(raw);
-      // Las fotos no caben en localStorage: el borrador conserva sus datos pero no
-      // la imagen. Decirlo explícitamente evita creer que la evidencia está a salvo.
-      var fotosSinImagen = ((data.sections || {}).j_fotos || []).filter(function (f) {
+      // El borrador de localStorage no lleva la imagen, solo el id de cada foto.
+      // Las imágenes viven en el almacén, así que se comprueba cuántas siguen ahí
+      // antes de decirle al funcionario que su evidencia está completa.
+      var idsGuardados = ((data.sections || {}).j_fotos || []).filter(function (f) {
         return f && !f.url;
+      }).map(function (f) {
+        return f && f.id;
+      }).filter(Boolean);
+      var fotosSinIdNiImagen = ((data.sections || {}).j_fotos || []).filter(function (f) {
+        return f && !f.url && !f.id;
       }).length;
+      var jornadaDelBorrador = Respaldo.jornadaId();
       restoreFormData(data);
       autosaveSuspendedRef.current = false;
       setBannerVisible(false);
-      alert(fotosSinImagen ? '✓ Borrador restaurado. Las ' + fotosSinImagen + ' fotografía(s) de la sección J no se guardan en este navegador: vuelva a agregarlas o importe un borrador .json que las contenga.' : '✓ Borrador restaurado correctamente.');
+      if (!idsGuardados.length && !fotosSinIdNiImagen) {
+        alert('✓ Borrador restaurado correctamente.');
+      } else {
+        FotoStore.contarClaves(jornadaDelBorrador, idsGuardados).then(function (recuperadas) {
+          var esperadas = idsGuardados.length + fotosSinIdNiImagen;
+          if (recuperadas >= esperadas) {
+            alert('✓ Borrador restaurado correctamente, con sus ' + recuperadas + ' fotografía(s).');
+          } else if (recuperadas > 0) {
+            alert('✓ Borrador restaurado. Se recuperaron ' + recuperadas + ' de ' + esperadas + ' fotografía(s) de la sección J; el resto hay que volver a agregarlo.');
+          } else {
+            alert('✓ Borrador restaurado, pero las ' + esperadas + ' fotografía(s) de la sección J no se pudieron recuperar en este navegador: vuelva a agregarlas o importe un borrador .json que las contenga.');
+          }
+        });
+      }
     } catch (e) {
       alert('Error al restaurar: ' + e.message);
     }
   }, [restoreFormData]);
   var handleDiscardDraft = useCallback(function () {
-    var confirmed = window.confirm('Se borrarán el borrador actual y los participantes guardados en este navegador, y la aplicación se recargará: las fotografías cargadas en la sección J también se pierden. Esta acción deja la app lista para un informe nuevo. ¿Continuar?');
+    var confirmed = window.confirm('Se borrarán el borrador actual, los participantes guardados y las fotografías de la sección J, y la aplicación se recargará. Si aún no generó el Word ni exportó el borrador (.json), esa evidencia no se puede recuperar. Esta acción deja la app lista para un informe nuevo. ¿Continuar?');
     if (!confirmed) return;
+    var jornadaAResetear = Respaldo.jornadaId();
     autosaveSuspendedRef.current = true;
     try {
       localStorage.removeItem(FORM_DRAFT_KEY);
@@ -10468,10 +10779,20 @@ function App() {
       alert('No fue posible limpiar los datos guardados en este navegador: ' + error.message);
       return;
     }
-    Respaldo.nuevaJornada();
-    setDraftTs(null);
-    setBannerVisible(false);
-    window.location.reload();
+    // Las fotografías de esta jornada viven fuera de localStorage, así que hay que
+    // borrarlas aparte. La recarga no espera indefinidamente: si el almacén no
+    // responde en dos segundos se continúa igual y la purga las quitará después.
+    var terminar = function terminar() {
+      if (terminado) return;
+      terminado = true;
+      Respaldo.nuevaJornada();
+      setDraftTs(null);
+      setBannerVisible(false);
+      window.location.reload();
+    };
+    var terminado = false;
+    setTimeout(terminar, 2000);
+    FotoStore.borrarJornada(jornadaAResetear).then(terminar, terminar);
   }, []);
   var findBlockingRequirement = function findBlockingRequirement(targetIndex) {
     var report = getReportData();
@@ -11036,7 +11357,7 @@ function App() {
       borderRadius: 6,
       overflow: 'hidden'
     }
-  }, [['Versión', '1.52'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
+  }, [['Versión', '1.53'], ['Elaboración', fmtHoy()], ['Unidad', 'Uso Público / Adm. ASP']].map(function (_ref63, i) {
     var _ref64 = _slicedToArray(_ref63, 2),
       l = _ref64[0],
       v = _ref64[1];

@@ -100,7 +100,7 @@ const ok = (nombre, cond, extra = '') => resultados.push({ nombre, pasa: !!cond,
   ok('La aplicación renderiza', root && root.children.length > 0, `${root ? root.innerHTML.length : 0} caracteres de DOM`);
   ok('Las 12 secciones están en el DOM', $$('[id^="section-panel-"]').length === 12, $$('[id^="section-panel-"]').map((e) => e.id.replace('section-panel-', '')).join(''));
   ok('Sin errores de React ni excepciones', errores.length === 0, errores.slice(0, 2).join(' | '));
-  ok('Versión visible actualizada a 1.52', /1\.52/.test(texto(root)), (texto(root).match(/Versión\s*([\d.]+)/) || [])[1] || '');
+  ok('Versión visible actualizada a 1.53', /1\.53/.test(texto(root)), (texto(root).match(/Versión\s*([\d.]+)/) || [])[1] || '');
 
   // ── Sección A: sector y sendero (requisito para que exista la sección C) ───
   await clic(porTexto('button', 'Elegir'));
@@ -216,9 +216,9 @@ const ok = (nombre, cond, extra = '') => resultados.push({ nombre, pasa: !!cond,
     `${(html.match(/toISOString\(\)\.slice\(0, 10\)/g) || []).length} uso(s), todos dentro de TODAY`);
 
   // ── FASE 1 · aviso de fotos al restaurar ──────────────────────────────────
-  ok('F1 · Aviso de fotos perdidas al restaurar borrador', /fotografía\(s\) de la sección J no se guardan/.test(html));
-  ok('F1 · Nota permanente en la sección J', !!$('.photo-persistence-note') && /se conservan mientras la aplicación permanezca abierta/.test(texto($('.photo-persistence-note'))), texto($('.photo-persistence-note')).slice(0, 70));
-  ok('F1 · confirm de borrado menciona las fotografías', /las fotografías cargadas en la sección J también se pierden/.test(html));
+  ok('F2 · El aviso al restaurar informa cuántas fotos se recuperaron', /con sus ' \+ recuperadas \+ ' fotografía/.test(html) && /Se recuperaron ' \+ recuperadas \+ ' de '/.test(html));
+  ok('F2 · Nota de la sección J dice que las fotos quedan guardadas', !!$('.photo-persistence-note') && /quedan guardadas en este teléfono/.test(texto($('.photo-persistence-note'))), texto($('.photo-persistence-note')).slice(0, 70));
+  ok('F2 · confirm de borrado advierte que borra las fotografías', /las fotografías de la sección J, y la aplicación se recargará/.test(html));
 
   // ── FASE 1 · respaldo del estado final ────────────────────────────────────
   const bloqueFinal = html.slice(html.indexOf('Respaldo.marcarFinal();'), html.indexOf('Respaldo.marcarFinal();') + 2000);
@@ -228,11 +228,31 @@ const ok = (nombre, cond, extra = '') => resultados.push({ nombre, pasa: !!cond,
   ok('F1 · El envío tras el Word no se fuerza sin conexión', /Respaldo\.enviar\(navigator\.onLine !== false\)/.test(bloqueFinal) && !/Respaldo\.enviar\(true\)/.test(bloqueFinal));
   ok('F1 · El envío final no incluye el base64 de las fotos', /j_fotos: rd\.j_fotos\.map/.test(bloqueFinal) && !/url: f\.url/.test(bloqueFinal));
 
+  // ── FASE 2 · almacén de fotografías en IndexedDB ──────────────────────────
+  ok('F2 · Existe el módulo FotoStore', typeof w.FotoStore === 'object' && typeof w.FotoStore.guardar === 'function');
+  ok('F2 · Expone las operaciones que necesita el formulario',
+    ['disponible', 'guardar', 'leer', 'borrar', 'borrarJornada', 'contarClaves', 'purgar']
+      .every((m) => typeof w.FotoStore[m] === 'function'));
+  ok('F2 · Degrada sin romperse cuando no hay IndexedDB', w.FotoStore.disponible() === false, 'jsdom no implementa IndexedDB');
+  ok('F2 · Los identificadores de foto son estables y únicos',
+    typeof w.nuevoIdFoto === 'function' && w.nuevoIdFoto() !== w.nuevoIdFoto() && /^f[a-z0-9]+$/.test(w.nuevoIdFoto()), w.nuevoIdFoto());
+  ok('F2 · El borrador de localStorage guarda el id de cada foto',
+    /sections\.j_fotos = sections\.j_fotos\.map/.test(html) && /id: f\.id,\s*\n\s*nombre: f\.nombre/.test(html));
+  ok('F2 · El borrador de localStorage no guarda el base64',
+    !/sections\.j_fotos[\s\S]{0,200}url: f\.url/.test(html));
+  ok('F2 · Al agregar una foto se escribe en el almacén', /FotoStore\.guardar\(Respaldo\.jornadaId\(\), id, dataUrl\)/.test(html));
+  ok('F2 · Al quitar una foto se borra del almacén', /FotoStore\.borrar\(Respaldo\.jornadaId\(\), id\)/.test(html));
+  ok('F2 · Al restaurar se recupera la imagen por su id', /FotoStore\.leer\(jornada, f\.id\)/.test(html));
+  ok('F2 · Un .json importado ingresa sus imágenes al almacén', /conImagen\.forEach\([\s\S]{0,120}FotoStore\.guardar\(jornada, f\.id, f\.url\)/.test(html));
+  ok('F2 · «Nuevo informe» borra las fotos de esa jornada', /FotoStore\.borrarJornada\(jornadaAResetear\)/.test(html));
+  ok('F2 · Se purgan las jornadas viejas al arrancar', /FotoStore\.purgar\(Respaldo\.jornadaId\(\)\)/.test(html));
+  ok('F2 · La purga nunca toca la jornada en curso', /String\(v\.jornada_id\) !== actual && \(v\.creado \|\| 0\) < limite/.test(html));
+
   // ── FASE 1 · service worker ───────────────────────────────────────────────
   const sw = fs.readFileSync(REPO + 'sw.js', 'utf8');
   ok('F1 · sw.js busca en caché ignorando el query string', /ignoreSearch: true/.test(sw));
   ok('F1 · sw.js solo devuelve HTML en navegaciones', /request\.mode === 'navigate'/.test(sw) && /Response\.error\(\)/.test(sw));
-  ok('F1 · Caché del service worker incrementada', /senderos-pnlq-v44/.test(sw), (sw.match(/senderos-pnlq-v\d+/) || [])[0]);
+  ok('F1 · Caché del service worker incrementada', /senderos-pnlq-v45/.test(sw), (sw.match(/senderos-pnlq-v\d+/) || [])[0]);
 
   // ── coherencia general ────────────────────────────────────────────────────
   const css = fs.readFileSync(REPO + 'responsive.css', 'utf8');
