@@ -1,9 +1,10 @@
-const CACHE_NAME = 'senderos-pnlq-v42';
+const CACHE_NAME = 'senderos-pnlq-v43';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
   './responsive.css',
+  './respaldo-config.js',
   './icons/icon.svg',
   './icons/icon-192.png',
   './icons/icon-512.png',
