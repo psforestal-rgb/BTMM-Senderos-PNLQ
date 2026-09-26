@@ -2,9 +2,9 @@
 
 ## Proyecto
 
-- Repositorio: https://github.com/psforestal-rgb/BTMM-Senderos-PNLQ
+- Repositorio: https://github.com/psforestal-rgb/BTMM-Senderos-PNLQ-v2
 - Rama de publicación: `main`
-- Sitio: https://psforestal-rgb.github.io/BTMM-Senderos-PNLQ/
+- Sitio: https://psforestal-rgb.github.io/BTMM-Senderos-PNLQ-v2/
 - Carpeta local: `C:\Users\psfor\OneDrive\Documents\SENDEROS`
 - Punto de restauración anterior: tag `restore-v1.18`, commit `fd6ef68`.
 - Versión preparada: `1.28`; caché: `senderos-pnlq-v18`.

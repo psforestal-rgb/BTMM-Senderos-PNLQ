@@ -4,7 +4,7 @@ Aplicación web progresiva (PWA) para registrar y generar reportes de mantenimie
 
 ## Uso
 
-Abra la aplicación publicada en GitHub Pages. En navegadores compatibles puede instalarla desde la opción **Instalar aplicación** o **Agregar a la pantalla principal**. Después de la primera carga, la interfaz y sus dependencias quedan disponibles sin conexión.
+Abra la aplicación publicada en GitHub Pages: <https://psforestal-rgb.github.io/BTMM-Senderos-PNLQ-v2/>. En navegadores compatibles puede instalarla desde la opción **Instalar aplicación** o **Agregar a la pantalla principal**. Después de la primera carga, la interfaz y sus dependencias quedan disponibles sin conexión.
 
 Los borradores se guardan localmente en el navegador del dispositivo.
 
@@ -22,4 +22,7 @@ El botón flotante **Vista móvil / Vista PC** permite alternar temporalmente am
 
 ## Publicación
 
-El sitio es estático y se publica directamente desde la raíz del repositorio mediante GitHub Pages.
+El sitio es estático y se publica directamente desde la raíz del repositorio mediante GitHub Pages, en
+<https://psforestal-rgb.github.io/BTMM-Senderos-PNLQ-v2/>. La dirección la fija el nombre del
+repositorio (`BTMM-Senderos-PNLQ-v2`); todas las rutas internas de la aplicación son relativas, así
+que no dependen de ese nombre.
